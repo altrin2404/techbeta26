@@ -1,12 +1,30 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import Navbar from "@/components/Navbar";
+import HeroSection from "@/components/HeroSection";
+import AboutSection from "@/components/AboutSection";
+import EventsSection from "@/components/EventsSection";
+import TeamSection from "@/components/TeamSection";
+import BusRoutesSection from "@/components/BusRoutesSection";
+import SponsorsContactSection from "@/components/SponsorsContactSection";
+import FAQSection from "@/components/FAQSection";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main>
+        <HeroSection />
+        <AboutSection />
+        <EventsSection />
+        <TeamSection />
+        <BusRoutesSection />
+        <SponsorsContactSection />
+        <FAQSection />
+      </main>
+      <footer className="border-t border-border py-8 text-center">
+        <p className="font-display text-xs tracking-widest text-muted-foreground">
+          © 2026 TECHBETA26 — All Rights Reserved
+        </p>
+      </footer>
     </div>
   );
 };
