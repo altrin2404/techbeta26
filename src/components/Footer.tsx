@@ -51,7 +51,7 @@ const Footer = () => {
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                    <p className="relative z-10 font-mono text-xs tracking-[0.4em] text-foreground/50 uppercase font-bold">
+                    <p className="relative z-10 font-mono text-sm tracking-[0.4em] text-foreground/50 uppercase font-bold">
                         <span className="text-base mr-1">©</span> ALTRIN BENSER, 3rd Yr IT
                     </p>
 
