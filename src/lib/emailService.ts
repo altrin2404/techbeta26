@@ -2,9 +2,9 @@
 import emailjs from '@emailjs/browser';
 
 const SERVICE_ID = "service_zhauh4p";
-const TEMPLATE_ID = "template_kmm8oux";
+const TEMPLATE_ID = "template_unfu8bk";
 // TODO: Update with your actual Public Key from EmailJS Account > Keys
-const PUBLIC_KEY = "gluzbrNSgCiShPi7Z";
+const PUBLIC_KEY = "eT0YTxHkG0KjnuAOZ";
 
 interface EmailParams {
     to_name: string;
@@ -27,6 +27,11 @@ export const sendVerificationEmail = async (
     qrCodeUrl: string
 ) => {
     try {
+        console.log("Sending with Credentials:", {
+            service: SERVICE_ID,
+            template: TEMPLATE_ID,
+            key: PUBLIC_KEY
+        });
         console.log("Attempting to send email with params:", { toName, toEmail, transactionId });
         const response = await emailjs.send(
             SERVICE_ID,
