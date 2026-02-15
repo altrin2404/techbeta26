@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode } from "lucide-react";
+import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode, CheckCircle } from "lucide-react";
 import type { Registration } from "@/lib/registrationService";
 
 
@@ -52,6 +52,7 @@ interface RegistrationDialogProps {
 const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
     const [open, setOpen] = React.useState(false);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [showSuccess, setShowSuccess] = React.useState(false);
     const [step, setStep] = React.useState(1);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -164,10 +165,12 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
 
                 fireConfetti();
 
-                toast.success("Registration Submitted!", {
-                    description: "Payment verification is in progress. NOTE: Check your SPAM folder for the verification email.",
-                    duration: 6000,
-                });
+                setShowSuccess(true);
+                // Keeping toast for feedback but primary is now popup
+                // toast.success("Registration Submitted!", {
+                //     description: "Payment verification is in progress. NOTE: Check your SPAM folder for the verification email.",
+                //     duration: 6000,
+                // });
             } else {
                 toast.error("Registration Failed", {
                     description: "Please try again or contact support.",
@@ -178,266 +181,295 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
     }
 
     return (
-        <Dialog open={open} onOpenChange={(val) => {
-            setOpen(val);
-            if (!val) setStep(1);
-        }}>
-            <DialogTrigger asChild>
-                {children}
-            </DialogTrigger>
-            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto sm:max-w-lg glass-card border-black/5 p-0 bg-background/95 backdrop-blur-xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+        <>
+            <Dialog open={open} onOpenChange={(val) => {
+                setOpen(val);
+                if (!val) setStep(1);
+            }}>
+                <DialogTrigger asChild>
+                    {children}
+                </DialogTrigger>
+                <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto sm:max-w-lg glass-card border-black/5 p-0 bg-background/95 backdrop-blur-xl">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
 
-                <div className="p-6 pt-8">
-                    <DialogHeader className="mb-6">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                            {step === 1 ? <Rocket className="h-8 w-8 text-primary" /> : <CreditCard className="h-8 w-8 text-primary" />}
-                        </div>
-                        <DialogTitle className="font-display text-2xl font-bold text-center text-foreground">
-                            {step === 1 ? (
-                                <>Register for <span className="text-primary">TECHBETA 2K26</span></>
-                            ) : (
-                                <>Complete <span className="text-primary">Payment</span></>
-                            )}
-                        </DialogTitle>
-                        <DialogDescription className="text-center font-medium text-muted-foreground">
-                            {step === 1 ? "Step 1: Participant Details" : "Step 2: Scan QR & Pay (Registration: ₹1)"}
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                            <AnimatePresence mode="wait">
+                    <div className="p-6 pt-8">
+                        <DialogHeader className="mb-6">
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+                                {step === 1 ? <Rocket className="h-8 w-8 text-primary" /> : <CreditCard className="h-8 w-8 text-primary" />}
+                            </div>
+                            <DialogTitle className="font-display text-2xl font-bold text-center text-foreground">
                                 {step === 1 ? (
-                                    <motion.div
-                                        key="step1"
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 20 }}
-                                        className="space-y-4"
-                                    >
-                                        <div className="grid gap-4 sm:grid-cols-2">
-                                            <FormField
-                                                control={form.control}
-                                                name="name"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-xs font-bold uppercase tracking-widest">Full Name</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="xyz" {...field} className="bg-background/50 border-black/5" />
-                                                        </FormControl>
-                                                        <FormMessage className="text-[10px]" />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="email"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-xs font-bold uppercase tracking-widest">Email Address</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="john@example.com" {...field} className="bg-background/50 border-black/5" />
-                                                        </FormControl>
-                                                        <FormMessage className="text-[10px]" />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        <div className="grid gap-4 sm:grid-cols-2">
-                                            <FormField
-                                                control={form.control}
-                                                name="phone"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-xs font-bold uppercase tracking-widest">Mobile Number</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="10-digit number" {...field} className="bg-background/50 border-black/5" />
-                                                        </FormControl>
-                                                        <FormMessage className="text-[10px]" />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="department"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-xs font-bold uppercase tracking-widest">Department</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="e.g. IT, CSE" {...field} className="bg-background/50 border-black/5" />
-                                                        </FormControl>
-                                                        <FormMessage className="text-[10px]" />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        <FormField
-                                            control={form.control}
-                                            name="college"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-xs font-bold uppercase tracking-widest">College Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter your college" {...field} className="bg-background/50 border-black/5" />
-                                                    </FormControl>
-                                                    <FormMessage className="text-[10px]" />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <div className="space-y-3 pt-2">
-                                            <FormLabel className="text-xs font-bold uppercase tracking-widest">Select Events</FormLabel>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                {eventOptions.map((event) => (
-                                                    <FormField
-                                                        key={event}
-                                                        control={form.control}
-                                                        name="events"
-                                                        render={({ field }) => (
-                                                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-black/5 bg-background/30 p-3 hover:bg-black/5 transition-colors">
-                                                                <FormControl>
-                                                                    <Checkbox
-                                                                        checked={field.value?.includes(event)}
-                                                                        onCheckedChange={(checked) => {
-                                                                            return checked
-                                                                                ? field.onChange([...field.value, event])
-                                                                                : field.onChange(
-                                                                                    field.value?.filter(
-                                                                                        (value) => value !== event
-                                                                                    )
-                                                                                )
-                                                                        }}
-                                                                        className="border-primary"
-                                                                    />
-                                                                </FormControl>
-                                                                <FormLabel className="text-xs font-bold cursor-pointer">
-                                                                    {event}
-                                                                </FormLabel>
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                ))}
-                                            </div>
-                                            <FormMessage className="text-[10px]" />
-                                        </div>
-
-                                        <Button
-                                            type="button"
-                                            onClick={nextStep}
-                                            className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
-                                        >
-                                            Proceed to Payment <ChevronRight className="ml-2 h-4 w-4" />
-                                        </Button>
-                                    </motion.div>
+                                    <>Register for <span className="text-primary">TECHBETA 2K26</span></>
                                 ) : (
-                                    <motion.div
-                                        key="step2"
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        className="space-y-6"
-                                    >
-                                        <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 mb-2">
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-3 text-center">Steps to Follow</h4>
-                                            <div className="space-y-2">
-                                                {[
-                                                    "Scan the QR code with any UPI App",
-                                                    "Pay the registration fee of ₹1.00",
-                                                    "Copy the 12-digit Ref No. / Transaction ID",
-                                                    "Enter it below & click Complete Registration"
-                                                ].map((step, i) => (
-                                                    <div key={i} className="flex gap-3 items-start">
-                                                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                                                            {i + 1}
-                                                        </span>
-                                                        <p className="text-xs font-medium text-foreground/80 leading-5">{step}</p>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                    <>Complete <span className="text-primary">Payment</span></>
+                                )}
+                            </DialogTitle>
+                            <DialogDescription className="text-center font-medium text-muted-foreground">
+                                {step === 1 ? "Step 1: Participant Details" : "Step 2: Scan QR & Pay (Registration: ₹1)"}
+                            </DialogDescription>
+                        </DialogHeader>
 
-                                        <div className="flex flex-col items-center bg-white p-4 rounded-2xl border border-black/5 shadow-inner">
-                                            <div className="h-48 w-48 bg-white rounded-lg flex items-center justify-center p-2 border border-black/5 shadow-sm overflow-hidden">
-                                                <img
-                                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('upi://pay?pa=9385675451-3@ybl&pn=TECHBETA2K26&am=1&cu=INR')}`}
-                                                    alt="Payment QR Code"
-                                                    className="max-h-full max-w-full object-contain"
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                <AnimatePresence mode="wait">
+                                    {step === 1 ? (
+                                        <motion.div
+                                            key="step1"
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: 20 }}
+                                            className="space-y-4"
+                                        >
+                                            <div className="grid gap-4 sm:grid-cols-2">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="name"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="text-xs font-bold uppercase tracking-widest">Full Name</FormLabel>
+                                                            <FormControl>
+                                                                <Input placeholder="xyz" {...field} className="bg-background/50 border-black/5" />
+                                                            </FormControl>
+                                                            <FormMessage className="text-[10px]" />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="email"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="text-xs font-bold uppercase tracking-widest">Email Address</FormLabel>
+                                                            <FormControl>
+                                                                <Input placeholder="john@example.com" {...field} className="bg-background/50 border-black/5" />
+                                                            </FormControl>
+                                                            <FormMessage className="text-[10px]" />
+                                                        </FormItem>
+                                                    )}
                                                 />
                                             </div>
-                                            <div className="mt-4 text-center">
-                                                <p className="text-lg font-black text-slate-800">₹ 1.00</p>
-                                                <p className="text-xs text-slate-500 font-medium italic">Scan via UPI</p>
 
-                                                <div className="flex items-center gap-4 mt-3 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-4" />
-                                                    <div className="w-[1px] h-3 bg-slate-200" />
-                                                    <img src="/phonepe.png" alt="PhonePe" className="h-10 w-auto object-contain" />
-                                                    <div className="w-[1px] h-3 bg-slate-200" />
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-3" />
-                                                </div>
+                                            <div className="grid gap-4 sm:grid-cols-2">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="phone"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="text-xs font-bold uppercase tracking-widest">Mobile Number</FormLabel>
+                                                            <FormControl>
+                                                                <Input placeholder="10-digit number" {...field} className="bg-background/50 border-black/5" />
+                                                            </FormControl>
+                                                            <FormMessage className="text-[10px]" />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="department"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="text-xs font-bold uppercase tracking-widest">Department</FormLabel>
+                                                            <FormControl>
+                                                                <Input placeholder="e.g. IT, CSE" {...field} className="bg-background/50 border-black/5" />
+                                                            </FormControl>
+                                                            <FormMessage className="text-[10px]" />
+                                                        </FormItem>
+                                                    )}
+                                                />
                                             </div>
-                                        </div>
 
-                                        <div className="space-y-4">
                                             <FormField
                                                 control={form.control}
-                                                name="transactionId"
+                                                name="college"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Transaction ID / Ref ID *</FormLabel>
+                                                        <FormLabel className="text-xs font-bold uppercase tracking-widest">College Name</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Enter 12-digit Ref No." {...field} className="bg-background/50 border-black/5" />
+                                                            <Input placeholder="Enter your college" {...field} className="bg-background/50 border-black/5" />
                                                         </FormControl>
                                                         <FormMessage className="text-[10px]" />
                                                     </FormItem>
                                                 )}
                                             />
-                                            <FormField
-                                                control={form.control}
-                                                name="upiName"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-foreground/60">UPI Name (Optional)</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="Name on your Payment App" {...field} className="bg-background/50 border-black/5" />
-                                                        </FormControl>
-                                                        <FormMessage className="text-[10px]" />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <p className="text-[9px] text-muted-foreground italic text-center px-4">
-                                                Tip: You can find the Ref No. in GPay, PhonePe, or Paytm transaction history.
-                                            </p>
-                                        </div>
 
-                                        <div className="flex gap-3">
+                                            <div className="space-y-3 pt-2">
+                                                <FormLabel className="text-xs font-bold uppercase tracking-widest">Select Events</FormLabel>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    {eventOptions.map((event) => (
+                                                        <FormField
+                                                            key={event}
+                                                            control={form.control}
+                                                            name="events"
+                                                            render={({ field }) => (
+                                                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-black/5 bg-background/30 p-3 hover:bg-black/5 transition-colors">
+                                                                    <FormControl>
+                                                                        <Checkbox
+                                                                            checked={field.value?.includes(event)}
+                                                                            onCheckedChange={(checked) => {
+                                                                                return checked
+                                                                                    ? field.onChange([...field.value, event])
+                                                                                    : field.onChange(
+                                                                                        field.value?.filter(
+                                                                                            (value) => value !== event
+                                                                                        )
+                                                                                    )
+                                                                            }}
+                                                                            className="border-primary"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormLabel className="text-xs font-bold cursor-pointer">
+                                                                        {event}
+                                                                    </FormLabel>
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    ))}
+                                                </div>
+                                                <FormMessage className="text-[10px]" />
+                                            </div>
+
                                             <Button
                                                 type="button"
-                                                variant="outline"
-                                                onClick={prevStep}
-                                                className="flex-1 h-11 font-bold"
+                                                onClick={nextStep}
+                                                className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
                                             >
-                                                <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                                                Proceed to Payment <ChevronRight className="ml-2 h-4 w-4" />
                                             </Button>
-                                            <Button
-                                                type="submit"
-                                                disabled={isSubmitting}
-                                                className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
-                                            >
-                                                {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Complete Registration"}
-                                            </Button>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </form>
-                    </Form>
-                </div>
-            </DialogContent>
-        </Dialog>
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div
+                                            key="step2"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            className="space-y-6"
+                                        >
+                                            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 mb-2">
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-3 text-center">Steps to Follow</h4>
+                                                <div className="space-y-2">
+                                                    {[
+                                                        "Scan the QR code with any UPI App",
+                                                        "Pay the registration fee of ₹1.00",
+                                                        "Copy the 12-digit Ref No. / Transaction ID",
+                                                        "Enter it below & click Complete Registration"
+                                                    ].map((step, i) => (
+                                                        <div key={i} className="flex gap-3 items-start">
+                                                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                                                                {i + 1}
+                                                            </span>
+                                                            <p className="text-xs font-medium text-foreground/80 leading-5">{step}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col items-center bg-white p-4 rounded-2xl border border-black/5 shadow-inner">
+                                                <div className="h-48 w-48 bg-white rounded-lg flex items-center justify-center p-2 border border-black/5 shadow-sm overflow-hidden">
+                                                    <img
+                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('upi://pay?pa=9385675451-3@ybl&pn=TECHBETA2K26&am=1&cu=INR')}`}
+                                                        alt="Payment QR Code"
+                                                        className="max-h-full max-w-full object-contain"
+                                                    />
+                                                </div>
+                                                <div className="mt-4 text-center">
+                                                    <p className="text-lg font-black text-slate-800">₹ 1.00</p>
+                                                    <p className="text-xs text-slate-500 font-medium italic">Scan via UPI</p>
+
+                                                    <div className="flex items-center gap-4 mt-3 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
+                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-4" />
+                                                        <div className="w-[1px] h-3 bg-slate-200" />
+                                                        <img src="/phonepe.png" alt="PhonePe" className="h-10 w-auto object-contain" />
+                                                        <div className="w-[1px] h-3 bg-slate-200" />
+                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-3" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="transactionId"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Transaction ID / Ref ID *</FormLabel>
+                                                            <FormControl>
+                                                                <Input placeholder="Enter 12-digit Ref No." {...field} className="bg-background/50 border-black/5" />
+                                                            </FormControl>
+                                                            <FormMessage className="text-[10px]" />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="upiName"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-foreground/60">UPI Name (Optional)</FormLabel>
+                                                            <FormControl>
+                                                                <Input placeholder="Name on your Payment App" {...field} className="bg-background/50 border-black/5" />
+                                                            </FormControl>
+                                                            <FormMessage className="text-[10px]" />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <p className="text-[9px] text-muted-foreground italic text-center px-4">
+                                                    Tip: You can find the Ref No. in GPay, PhonePe, or Paytm transaction history.
+                                                </p>
+                                            </div>
+
+                                            <div className="flex gap-3">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={prevStep}
+                                                    className="flex-1 h-11 font-bold"
+                                                >
+                                                    <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                                                </Button>
+                                                <Button
+                                                    type="submit"
+                                                    disabled={isSubmitting}
+                                                    className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
+                                                >
+                                                    {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Complete Registration"}
+                                                </Button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </form>
+                        </Form>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Success Popup */}
+            <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
+                <DialogContent className="max-w-sm bg-white dark:bg-slate-900 border-2 border-green-500 rounded-3xl p-0 overflow-hidden">
+                    <div className="bg-green-500 p-6 flex flex-col items-center justify-center text-white">
+                        <CheckCircle className="h-16 w-16 mb-2" />
+                        <DialogTitle className="text-2xl font-black uppercase tracking-tight text-center">Registration Successful!</DialogTitle>
+                    </div>
+                    <div className="p-6 text-center space-y-4">
+                        <p className="font-medium text-slate-600 dark:text-slate-300">
+                            Welcome to <span className="font-bold text-primary">TECHBETA 2K26</span>
+                        </p>
+                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left">
+                            <p className="text-[10px] font-black uppercase text-orange-500 tracking-widest mb-1">Important</p>
+                            <p className="text-sm font-bold text-orange-900 leading-tight">
+                                Please check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span> for the verification email.
+                            </p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Your registration has been submitted and is pending payment verification.
+                        </p>
+                        <Button onClick={() => setShowSuccess(false)} className="w-full font-bold bg-slate-900 text-white hover:bg-slate-800">
+                            Got it!
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 };
 
