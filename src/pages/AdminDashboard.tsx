@@ -145,17 +145,18 @@ const AdminDashboard = () => {
         a.click();
     };
 
+    const [scannedParticipant, setScannedParticipant] = useState<Registration | null>(null);
+
     const handleScan = (decodedText: string) => {
         try {
             const data = JSON.parse(decodedText);
             if (data.id) {
                 const participant = registrations.find(r => r.id === data.id);
                 if (participant) {
-                    setSearchQuery(data.id); // Filter via search
-                    toast.success("Participant Found!", {
-                        description: `${participant.name} - ${participant.college}`
-                    });
-                    // Highlight or scroll to participant could go here
+                    setScannedParticipant(participant);
+                    // toast.success("Participant Found!", {
+                    //     description: `${participant.name} - ${participant.college}`
+                    // });
                 } else {
                     toast.error("Participant not found in database.");
                 }
@@ -165,6 +166,7 @@ const AdminDashboard = () => {
         } catch (e) {
             toast.error("Failed to read QR Code.");
         }
+        setIsScannerOpen(false);
     };
 
     const filteredRegistrations = registrations.filter(reg =>
@@ -239,6 +241,72 @@ const AdminDashboard = () => {
                     onClose={() => setIsScannerOpen(false)}
                     onScan={handleScan}
                 />
+
+                {/* Scanned Participant Details Dialog */}
+                <Dialog open={!!scannedParticipant} onOpenChange={(open) => !open && setScannedParticipant(null)}>
+                    <DialogContent className="max-w-sm bg-white border-2 border-purple-500 rounded-3xl p-0 overflow-hidden">
+                        <div className="bg-purple-600 p-6 flex flex-col items-center justify-center text-white">
+                            <CheckCircle className="h-16 w-16 mb-2" />
+                            <DialogTitle className="text-2xl font-black uppercase tracking-tight text-center">Verified!</DialogTitle>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="text-center">
+                                <h3 className="text-xl font-bold text-slate-900">{scannedParticipant?.name}</h3>
+                                <p className="text-sm font-medium text-slate-500 uppercase tracking-widest">{scannedParticipant?.college}</p>
+                            </div>
+
+                            <div className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-100">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-slate-400 font-bold uppercase text-[10px]">ID</span>
+                                    <span className="font-mono font-bold text-slate-800">{scannedParticipant?.id}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-slate-400 font-bold uppercase text-[10px]">Email</span>
+                                    <span className="font-medium text-slate-800 truncate max-w-[150px]">{scannedParticipant?.email}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-slate-400 font-bold uppercase text-[10px]">Phone</span>
+                                    <span className="font-mono font-bold text-slate-800">{scannedParticipant?.phone}</span>
+                                </div>
+                                <div className="flex flex-col gap-1 text-sm pt-2 border-t border-slate-100">
+                                    <span className="text-slate-400 font-bold uppercase text-[10px]">Events</span>
+                                    <div className="flex flex-wrap gap-1">
+                                        {scannedParticipant?.events.map((e, i) => (
+                                            <span key={i} className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-bold">{e}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                {scannedParticipant?.status === "Pending Verification" ? (
+                                    <Button
+                                        onClick={() => {
+                                            if (scannedParticipant) {
+                                                updateStatus(scannedParticipant.id, "Verified");
+                                                setScannedParticipant(null);
+                                            }
+                                        }}
+                                        className="w-full bg-green-500 hover:bg-green-600 text-white font-bold h-12 text-lg shadow-lg shadow-green-200"
+                                    >
+                                        Verify & Admit
+                                    </Button>
+                                ) : (
+                                    <div className="flex items-center justify-center gap-2 bg-green-50 text-green-700 p-3 rounded-xl font-bold border border-green-200">
+                                        <CheckCircle size={18} /> Already Verified
+                                    </div>
+                                )}
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setScannedParticipant(null)}
+                                    className="w-full font-bold"
+                                >
+                                    Close
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
 
                 <div className="bg-white rounded-2xl border overflow-hidden">
                     <div className="overflow-x-auto">
