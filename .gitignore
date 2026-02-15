@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 *.tsbuildinfo
 compile_output.txt
+
+server/serviceAccountKey.json
