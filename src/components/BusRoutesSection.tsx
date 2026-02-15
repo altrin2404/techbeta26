@@ -37,13 +37,13 @@ const BusRoutesSection = () => {
               <div className="flex flex-wrap justify-center items-center gap-3 mb-4 text-center">
                 <Bus className="text-secondary h-6 w-6 group-hover:scale-110 transition-transform flex-shrink-0" />
                 <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl px-2">
-                  College Bus Routes
+                  College Bus
                 </h2>
                 {isOpen ? <ChevronUp className="text-primary h-6 w-6 flex-shrink-0" /> : <ChevronDown className="text-primary h-6 w-6 animate-bounce flex-shrink-0" />}
               </div>
               <div className="mx-auto h-1 w-20 rounded-full bg-secondary/30 group-hover:bg-secondary/60 transition-colors" />
               <p className="mt-4 text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40">
-                {isOpen ? "Click to Close" : "Click to View College Bus Routes"}
+                {isOpen ? "Click to Close" : "Click to View College Bus"}
               </p>
             </motion.div>
           </Button>

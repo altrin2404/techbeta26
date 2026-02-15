@@ -24,7 +24,7 @@ const AboutSection = () => {
               <div className="flex flex-wrap justify-center items-center gap-3 mb-4 text-center">
                 <Info className="text-primary h-6 w-6 group-hover:scale-110 transition-transform flex-shrink-0" />
                 <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl px-2">
-                  About TECHBETA 2K26
+                  About Us
                 </h2>
                 {isOpen ? <ChevronUp className="text-primary h-6 w-6 flex-shrink-0" /> : <ChevronDown className="text-primary h-6 w-6 animate-bounce flex-shrink-0" />}
               </div>
