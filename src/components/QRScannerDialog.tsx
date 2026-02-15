@@ -9,7 +9,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, RefreshCcw } from "lucide-react";
+import { Camera, RefreshCcw, AlertTriangle } from "lucide-react";
 
 interface QRScannerDialogProps {
     isOpen: boolean;
@@ -22,8 +22,16 @@ const QRScannerDialog = ({ isOpen, onClose, onScan }: QRScannerDialogProps) => {
     const [scanError, setScanError] = useState<string | null>(null);
     const [isScanning, setIsScanning] = useState(false);
     const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+    const [isSecure, setIsSecure] = useState(true);
 
     useEffect(() => {
+        // Check for secure context immediately
+        if (typeof window !== "undefined" && !window.isSecureContext) {
+            setIsSecure(false);
+            setScanError("Camera access requires a secure connection (HTTPS). Please utilize localhost or a valid SSL certificate.");
+            return;
+        }
+
         let isMounted = true;
 
         const initScanner = async () => {
@@ -95,8 +103,13 @@ const QRScannerDialog = ({ isOpen, onClose, onScan }: QRScannerDialogProps) => {
             await startScanning(facingMode);
         };
 
-        if (isOpen) {
-            initScanner();
+        if (isOpen && isSecure) {
+            // cleanup previous instance if it exists to be safe
+            if (scannerRef.current && scannerRef.current.isScanning) {
+                scannerRef.current.stop().then(() => initScanner()).catch(() => initScanner());
+            } else {
+                initScanner();
+            }
         } else {
             // Cleanup if dialog closes
             if (scannerRef.current && scannerRef.current.isScanning) {
@@ -128,35 +141,55 @@ const QRScannerDialog = ({ isOpen, onClose, onScan }: QRScannerDialogProps) => {
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col items-center justify-center p-4">
-                    <div id="reader" className="w-full h-[300px] bg-black/10 rounded-lg overflow-hidden relative">
-                        {!isScanning && !scanError && (
-                            <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-                                Starting Camera...
-                            </div>
-                        )}
-                    </div>
-                    {scanError && (
-                        <div className="mt-4 text-center">
-                            <p className="text-red-500 text-sm font-medium mb-2">{scanError}</p>
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => {
-                                    setScanError(null);
-                                    // Retry with current mode
-                                    setFacingMode(prev => prev);
-                                }}
-                            >
-                                Retry
-                            </Button>
+                    {!isSecure ? (
+                        <div className="text-center p-4 bg-red-50 text-red-600 rounded-lg">
+                            <AlertTriangle className="h-10 w-10 mx-auto mb-2" />
+                            <p className="font-bold">Insecure Connection</p>
+                            <p className="text-xs mt-1">Camera access is blocked by the browser because this site is not being served over HTTPS.</p>
                         </div>
-                    )}
+                    ) : (
+                        <>
+                            <div className="w-full h-[300px] bg-black/10 rounded-lg overflow-hidden relative">
+                                <div id="reader" className="w-full h-full"></div>
+                                {!isScanning && !scanError && (
+                                    <div className="absolute inset-0 flex items-center justify-center text-gray-500 z-0">
+                                        Starting Camera...
+                                    </div>
+                                )}
+                                {/* Overlay to ensure video fits */}
+                                <style>{`
+                                    #reader video {
+                                        object-fit: cover !important;
+                                        width: 100% !important;
+                                        height: 100% !important;
+                                        border-radius: 0.5rem;
+                                    }
+                                `}</style>
+                            </div>
+                            {scanError && (
+                                <div className="mt-4 text-center">
+                                    <p className="text-red-500 text-sm font-medium mb-2">{scanError}</p>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => {
+                                            setScanError(null);
+                                            // Retry with current mode
+                                            setFacingMode(prev => prev);
+                                        }}
+                                    >
+                                        Retry
+                                    </Button>
+                                </div>
+                            )}
 
-                    <div className="mt-4 flex gap-2">
-                        <Button variant="outline" size="sm" onClick={toggleCamera}>
-                            <RefreshCcw className="mr-2 h-4 w-4" /> Switch Camera ({facingMode === 'environment' ? 'Back' : 'Front'})
-                        </Button>
-                    </div>
+                            <div className="mt-4 flex gap-2">
+                                <Button variant="outline" size="sm" onClick={toggleCamera}>
+                                    <RefreshCcw className="mr-2 h-4 w-4" /> Switch Camera ({facingMode === 'environment' ? 'Back' : 'Front'})
+                                </Button>
+                            </div>
+                        </>
+                    )}
                 </div>
                 <Button variant="ghost" onClick={onClose} className="w-full">
                     Cancel
