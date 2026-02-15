@@ -14,7 +14,8 @@ import {
     CheckCircle,
     XCircle,
     Clock,
-    QrCode
+    QrCode,
+    ScanLine
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,8 @@ import {
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { subscribeToRegistrations, updateRegistrationStatus, deleteRegistration, type Registration } from "@/lib/registrationService";
+import { sendVerificationEmail } from "@/lib/emailService";
+import QRScannerDialog from "@/components/QRScannerDialog";
 
 const AdminDashboard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,6 +39,7 @@ const AdminDashboard = () => {
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
 
     useEffect(() => {
         const authStatus = sessionStorage.getItem("adminAuth");
@@ -71,7 +75,7 @@ const AdminDashboard = () => {
     const updateStatus = async (id: string, newStatus: string) => {
         // Optimistic update
         const updatedData = registrations.map(reg =>
-            reg.id === id ? { ...reg, status: newStatus } : reg
+            reg.id === id ? { ...reg, status: newStatus as Registration['status'] } : reg
         );
         setRegistrations(updatedData);
 
@@ -79,6 +83,30 @@ const AdminDashboard = () => {
 
         if (result.success) {
             toast.success(`Status updated to ${newStatus}`);
+
+            if (newStatus === "Verified") {
+                toast.loading("Sending verification email...");
+
+                const participant = registrations.find(r => r.id === id);
+                if (participant) {
+                    // Generate QR Code URL
+                    const qrData = JSON.stringify({ id: participant.id, name: participant.name, events: participant.events });
+                    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
+
+                    const emailResult = await sendVerificationEmail(
+                        participant.name,
+                        participant.email,
+                        participant.transactionId,
+                        qrCodeUrl
+                    );
+
+                    if (emailResult.success) {
+                        toast.success("Verification email sent!");
+                    } else {
+                        toast.error("Failed to send email. Check console.");
+                    }
+                }
+            }
         } else {
             toast.error("Failed to update status");
             // Revert optimistic update if needed, but subscription will handle it eventually
@@ -115,6 +143,28 @@ const AdminDashboard = () => {
         a.href = url;
         a.download = "techbeta26_registrations.csv";
         a.click();
+    };
+
+    const handleScan = (decodedText: string) => {
+        try {
+            const data = JSON.parse(decodedText);
+            if (data.id) {
+                const participant = registrations.find(r => r.id === data.id);
+                if (participant) {
+                    setSearchQuery(data.id); // Filter via search
+                    toast.success("Participant Found!", {
+                        description: `${participant.name} - ${participant.college}`
+                    });
+                    // Highlight or scroll to participant could go here
+                } else {
+                    toast.error("Participant not found in database.");
+                }
+            } else {
+                toast.error("Invalid QR Code format.");
+            }
+        } catch (e) {
+            toast.error("Failed to read QR Code.");
+        }
     };
 
     const filteredRegistrations = registrations.filter(reg =>
@@ -178,8 +228,17 @@ const AdminDashboard = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <Input placeholder="Search participants or TxIDs..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
                     </div>
+                    <Button onClick={() => setIsScannerOpen(true)} className="bg-purple-600 hover:bg-purple-700 font-bold">
+                        <ScanLine className="h-4 w-4 mr-2" /> Scan Ticket
+                    </Button>
                     <Button onClick={downloadCSV} variant="outline" className="font-bold"><Download className="h-4 w-4 mr-2" /> Export CSV</Button>
                 </div>
+
+                <QRScannerDialog
+                    isOpen={isScannerOpen}
+                    onClose={() => setIsScannerOpen(false)}
+                    onScan={handleScan}
+                />
 
                 <div className="bg-white rounded-2xl border overflow-hidden">
                     <div className="overflow-x-auto">
