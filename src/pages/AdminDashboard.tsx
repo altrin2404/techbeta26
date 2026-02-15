@@ -196,23 +196,23 @@ const AdminDashboard = () => {
                                 {filteredRegistrations.map((reg) => (
                                     <tr key={reg.id} className="hover:bg-slate-50/50">
                                         <td className="px-6 py-4">
-                                            <div className="font-bold text-slate-800">{reg.name}</div>
-                                            <div className="text-[10px] font-bold text-purple-600 uppercase">{reg.college}</div>
+                                            <div className="font-bold text-foreground">{reg.name}</div>
+                                            <div className="text-[10px] font-bold text-primary uppercase">{reg.college}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm font-bold text-slate-600">{reg.phone}</div>
-                                            <div className="text-[10px] text-slate-400">{reg.email}</div>
+                                            <div className="text-sm font-bold text-foreground">{reg.phone}</div>
+                                            <div className="text-[10px] text-muted-foreground">{reg.email}</div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-wrap gap-1 mb-2">
                                                 {reg.events.map((e, i) => (
-                                                    <span key={i} className="text-[9px] font-black bg-slate-100 px-1.5 py-0.5 rounded">{e}</span>
+                                                    <span key={i} className="text-[9px] font-black bg-primary/10 text-foreground px-1.5 py-0.5 rounded">{e}</span>
                                                 ))}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-[10px] font-bold text-slate-800 font-mono">ID: {reg.transactionId}</div>
-                                            {reg.upiName && <div className="text-[10px] text-purple-600 font-black uppercase">UPI: {reg.upiName}</div>}
+                                            <div className="text-[10px] font-bold text-foreground font-mono">ID: {reg.transactionId}</div>
+                                            {reg.upiName && <div className="text-[10px] text-primary font-black uppercase">UPI: {reg.upiName}</div>}
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-full ${reg.status === 'Verified' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
