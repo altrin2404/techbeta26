@@ -148,22 +148,32 @@ const AdminDashboard = () => {
     const [scannedParticipant, setScannedParticipant] = useState<Registration | null>(null);
 
     const handleScan = (decodedText: string) => {
+        console.log("Scanned Text:", decodedText);
+        // alert(`Raw Scan: ${decodedText}`); // Option to enable if needed
+
         try {
             const data = JSON.parse(decodedText);
+            console.log("Parsed Data:", data);
+
             if (data.id) {
+                // alert(`Searching for ID: ${data.id}`); // Debug Alert
                 const participant = registrations.find(r => r.id === data.id);
+                console.log("Found Participant:", participant);
+
                 if (participant) {
                     setScannedParticipant(participant);
-                    // toast.success("Participant Found!", {
-                    //     description: `${participant.name} - ${participant.college}`
-                    // });
+                    setIsScannerOpen(false);
                 } else {
+                    alert(`Error: Participant ID '${data.id}' not found in database.`);
                     toast.error("Participant not found in database.");
                 }
             } else {
+                alert("Error: Invalid QR Code (No ID found).");
                 toast.error("Invalid QR Code format.");
             }
         } catch (e) {
+            console.error("JSON Parse Error:", e);
+            alert(`Scan Error: ${e}`);
             toast.error("Failed to read QR Code.");
         }
         setIsScannerOpen(false);
