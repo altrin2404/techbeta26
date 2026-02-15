@@ -457,7 +457,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left">
                             <p className="text-[10px] font-black uppercase text-orange-500 tracking-widest mb-1">Important</p>
                             <p className="text-sm font-bold text-orange-900 leading-tight">
-                                Please check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span> for the verification email.
+                                Registration Completed! You will receive a verification email on your registered email address. If not found, please check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span>.
                             </p>
                         </div>
                         <p className="text-xs text-muted-foreground">
