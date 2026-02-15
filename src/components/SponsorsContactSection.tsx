@@ -47,8 +47,8 @@ const SponsorsContactSection = () => {
             >
               <div className="mt-12 grid gap-6 sm:grid-cols-3 pb-8">
                 {[
-                  { Icon: Mail, text: "techbeta26@gmail.com", label: "Email", href: "https://mail.google.com/mail/?view=cm&fs=1&to=techbeta26@gmail.com" },
-                  { Icon: Phone, text: "+91 98765 43210", label: "Phone", href: "tel:+919876543210" },
+                  { Icon: Mail, text: "techbeta2k26@gmail.com", label: "Email", href: "https://mail.google.com/mail/?view=cm&fs=1&to=techbeta2k26@gmail.com" },
+                  { Icon: Phone, text: "+91 70123 64935", label: "Phone", href: "tel:+917012364935" },
                   { Icon: MapPin, text: "SXCCE, Nagercoil", label: "Location", href: "https://maps.app.goo.gl/fo93cH9bMfrrz1WL7" }
                 ].map((contact, i) => (
                   <motion.a
