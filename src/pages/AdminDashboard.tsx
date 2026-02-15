@@ -281,7 +281,7 @@ const AdminDashboard = () => {
                                 <div className="flex flex-col gap-1 text-sm pt-2 border-t border-slate-100">
                                     <span className="text-slate-400 font-bold uppercase text-[10px]">Events</span>
                                     <div className="flex flex-wrap gap-1">
-                                        {scannedParticipant?.events.map((e, i) => (
+                                        {(scannedParticipant?.events || []).map((e, i) => (
                                             <span key={i} className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-bold">{e}</span>
                                         ))}
                                     </div>
@@ -344,7 +344,7 @@ const AdminDashboard = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-wrap gap-1 mb-2">
-                                                {reg.events.map((e, i) => (
+                                                {(reg.events || []).map((e, i) => (
                                                     <span key={i} className="text-[9px] font-black bg-primary/10 text-foreground px-1.5 py-0.5 rounded">{e}</span>
                                                 ))}
                                             </div>
