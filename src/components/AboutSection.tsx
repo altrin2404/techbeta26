@@ -21,12 +21,12 @@ const AboutSection = () => {
               viewport={{ once: true }}
               className="flex flex-col items-center"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <Info className="text-primary h-6 w-6 group-hover:scale-110 transition-transform" />
-                <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+              <div className="flex flex-wrap justify-center items-center gap-3 mb-4 text-center">
+                <Info className="text-primary h-6 w-6 group-hover:scale-110 transition-transform flex-shrink-0" />
+                <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl px-2">
                   About TECHBETA 2K26
                 </h2>
-                {isOpen ? <ChevronUp className="text-primary h-6 w-6" /> : <ChevronDown className="text-primary h-6 w-6 animate-bounce" />}
+                {isOpen ? <ChevronUp className="text-primary h-6 w-6 flex-shrink-0" /> : <ChevronDown className="text-primary h-6 w-6 animate-bounce flex-shrink-0" />}
               </div>
               <div className="mx-auto h-1 w-20 rounded-full bg-primary/30 group-hover:bg-primary/60 transition-colors" />
               <p className="mt-4 text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40">
