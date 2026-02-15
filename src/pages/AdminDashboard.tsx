@@ -27,22 +27,10 @@ import {
 } from "@/components/ui/dialog";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { subscribeToRegistrations, type Registration } from "@/lib/registrationService";
+import { subscribeToRegistrations, updateRegistrationStatus, deleteRegistration, type Registration } from "@/lib/registrationService";
 
 
-interface Participant {
-    id: string;
-    name: string;
-    college: string;
-    department: string;
-    email: string;
-    phone: string;
-    events: string[];
-    transactionId: string;
-    upiName?: string;
-    status: string;
-    registrationDate: string;
-}
+
 
 const AdminDashboard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -90,7 +78,6 @@ const AdminDashboard = () => {
         );
         setRegistrations(updatedData);
 
-        const { updateRegistrationStatus } = await import("@/lib/registrationService");
         const result = await updateRegistrationStatus(id, newStatus);
 
         if (result.success) {
@@ -108,7 +95,6 @@ const AdminDashboard = () => {
         const updatedData = registrations.filter(reg => reg.id !== id);
         setRegistrations(updatedData);
 
-        const { deleteRegistration } = await import("@/lib/registrationService");
         const result = await deleteRegistration(id);
 
         if (result.success) {
