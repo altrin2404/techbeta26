@@ -180,6 +180,69 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
         }, 1500);
     }
 
+    const loadScript = (src: string) => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => {
+                resolve(true);
+            };
+            script.onerror = () => {
+                resolve(false);
+            };
+            document.body.appendChild(script);
+        });
+    };
+
+    const displayRazorpay = async () => {
+        const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
+
+        if (!res) {
+            toast.error("Razorpay SDK failed to load. Are you online?");
+            return;
+        }
+
+        // Create a new order via API in a real app, here we just use client-side options for demo/simplicity or if API is not available yet.
+        // In production, create order on server. Here we assume amount is fixed ₹1.
+
+        const options = {
+            key: "rzp_live_SGVbI9rDnkoihY", // Enter the Key ID generated from the Dashboard
+            amount: "100", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            currency: "INR",
+            name: "TECHBETA 2K26",
+            description: "Registration Fee",
+            image: "/brigitz-logo.png",
+            handler: function (response: any) {
+                // console.log(response.razorpay_payment_id);
+                // console.log(response.razorpay_order_id);
+                // console.log(response.razorpay_signature);
+
+                form.setValue('transactionId', response.razorpay_payment_id);
+                form.setValue('upiName', 'Razorpay Online'); // Default or extract if possible (not standard)
+
+                toast.success("Payment Successful!");
+
+                // Construct submission data
+                const values = form.getValues();
+                onSubmit(values); // Automatically submit after payment success
+            },
+            prefill: {
+                name: form.getValues('name'),
+                email: form.getValues('email'),
+                contact: form.getValues('phone')
+            },
+            notes: {
+                address: "SXCCE Campus"
+            },
+            theme: {
+                color: "#0EA5E9"
+            }
+        };
+
+        const paymentObject = new (window as any).Razorpay(options);
+        paymentObject.open();
+    };
+
     return (
         <>
             <Dialog open={open} onOpenChange={(val) => {
@@ -205,7 +268,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                 )}
                             </DialogTitle>
                             <DialogDescription className="text-center font-medium text-muted-foreground">
-                                {step === 1 ? "Step 1: Participant Details" : "Step 2: Scan QR & Pay (Registration: ₹1)"}
+                                {step === 1 ? "Step 1: Participant Details" : "Step 2: Pay Registration Fee: ₹1"}
                             </DialogDescription>
                         </DialogHeader>
 
@@ -344,80 +407,17 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                             exit={{ opacity: 0, x: -20 }}
                                             className="space-y-6"
                                         >
-                                            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 mb-2">
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-3 text-center">Steps to Follow</h4>
-                                                <div className="space-y-2">
-                                                    {[
-                                                        "Scan the QR code with any UPI App",
-                                                        "Pay the registration fee of ₹1.00",
-                                                        "Copy the 12-digit Ref No. / Transaction ID",
-                                                        "Enter it below & click Complete Registration"
-                                                    ].map((step, i) => (
-                                                        <div key={i} className="flex gap-3 items-start">
-                                                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                                                                {i + 1}
-                                                            </span>
-                                                            <p className="text-xs font-medium text-foreground/80 leading-5">{step}</p>
-                                                        </div>
-                                                    ))}
+                                            <div className="text-center space-y-4 py-4">
+                                                <div className="mx-auto w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-4 border border-primary/10">
+                                                    <img src="/brigitz-logo.png" alt="Logo" className="h-16 w-auto object-contain" />
                                                 </div>
-                                            </div>
-
-                                            <div className="flex flex-col items-center bg-white p-4 rounded-2xl border border-black/5 shadow-inner">
-                                                <div className="h-48 w-48 bg-white rounded-lg flex items-center justify-center p-2 border border-black/5 shadow-sm overflow-hidden">
-                                                    <img
-                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('upi://pay?pa=9385675451-3@ybl&pn=TECHBETA2K26&am=1&cu=INR')}`}
-                                                        alt="Payment QR Code"
-                                                        className="max-h-full max-w-full object-contain"
-                                                    />
-                                                </div>
-                                                <div className="mt-4 text-center">
-                                                    <p className="text-lg font-black text-slate-800">₹ 1.00</p>
-                                                    <p className="text-xs text-slate-500 font-medium italic">Scan via UPI</p>
-
-                                                    <div className="flex items-center gap-4 mt-3 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
-                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-4" />
-                                                        <div className="w-[1px] h-3 bg-slate-200" />
-                                                        <img src="/phonepe.png" alt="PhonePe" className="h-10 w-auto object-contain" />
-                                                        <div className="w-[1px] h-3 bg-slate-200" />
-                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-3" />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-4">
-                                                <FormField
-                                                    control={form.control}
-                                                    name="transactionId"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Transaction ID / Ref ID *</FormLabel>
-                                                            <FormControl>
-                                                                <Input placeholder="Enter 12-digit Ref No." {...field} className="bg-background/50 border-black/5" />
-                                                            </FormControl>
-                                                            <FormMessage className="text-[10px]" />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <FormField
-                                                    control={form.control}
-                                                    name="upiName"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-foreground/60">UPI Name (Optional)</FormLabel>
-                                                            <FormControl>
-                                                                <Input placeholder="Name on your Payment App" {...field} className="bg-background/50 border-black/5" />
-                                                            </FormControl>
-                                                            <FormMessage className="text-[10px]" />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <p className="text-[9px] text-muted-foreground italic text-center px-4">
-                                                    Tip: You can find the Ref No. in GPay, PhonePe, or Paytm transaction history.
+                                                <h3 className="text-xl font-bold">Registration Fee: <span className="text-primary">₹1.00</span></h3>
+                                                <p className="text-sm text-muted-foreground px-6">
+                                                    Click the button below to initiate the secure payment via Razorpay.
                                                 </p>
                                             </div>
 
-                                            <div className="flex gap-3">
+                                            <div className="flex gap-3 pt-4">
                                                 <Button
                                                     type="button"
                                                     variant="outline"
@@ -427,12 +427,17 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                     <ArrowLeft className="mr-2 h-4 w-4" /> Back
                                                 </Button>
                                                 <Button
-                                                    type="submit"
+                                                    type="button"
+                                                    onClick={displayRazorpay}
                                                     disabled={isSubmitting}
                                                     className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
                                                 >
-                                                    {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Complete Registration"}
+                                                    {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Pay Now with Razorpay"}
                                                 </Button>
+                                            </div>
+
+                                            <div className="text-[10px] text-center text-muted-foreground mt-4">
+                                                Secured by Razorpay • 100% Safe Payments
                                             </div>
                                         </motion.div>
                                     )}
@@ -461,7 +466,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                             </p>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Your registration has been submitted and is pending payment verification.
+                            Your payment ID: <span className="font-mono bg-muted px-1 rounded">{form.getValues('transactionId')}</span>
                         </p>
                         <Button onClick={() => setShowSuccess(false)} className="w-full font-bold bg-slate-900 text-white hover:bg-slate-800">
                             Got it!
