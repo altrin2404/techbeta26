@@ -103,7 +103,7 @@ const AdminDashboard = () => {
                     if (emailResult.success) {
                         toast.success("Verification email sent!");
                     } else {
-                        toast.error("Failed to send email. Check console.");
+                        toast.error(`Failed to send email: ${JSON.stringify(emailResult.error)}`);
                     }
                 }
             }

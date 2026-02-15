@@ -4,7 +4,7 @@ import emailjs from '@emailjs/browser';
 const SERVICE_ID = "service_zhauh4p";
 const TEMPLATE_ID = "template_kmm8oux";
 // TODO: Update with your actual Public Key from EmailJS Account > Keys
-const PUBLIC_KEY = "YOUR_PUBLIC_KEY";
+const PUBLIC_KEY = "gluzbrNSgCiShPi7Z";
 
 interface EmailParams {
     to_name: string;
@@ -17,6 +17,9 @@ interface EmailParams {
     message: string;
 }
 
+// Initialize EmailJS
+emailjs.init(PUBLIC_KEY);
+
 export const sendVerificationEmail = async (
     toName: string,
     toEmail: string,
@@ -24,6 +27,7 @@ export const sendVerificationEmail = async (
     qrCodeUrl: string
 ) => {
     try {
+        console.log("Attempting to send email with params:", { toName, toEmail, transactionId });
         const response = await emailjs.send(
             SERVICE_ID,
             TEMPLATE_ID,
@@ -41,8 +45,8 @@ export const sendVerificationEmail = async (
         );
         console.log("Email sent successfully!", response.status, response.text);
         return { success: true };
-    } catch (error) {
-        console.error("Failed to send email:", error);
-        return { success: false, error };
+    } catch (error: any) {
+        console.error("Failed to send email FULL ERROR:", error);
+        return { success: false, error: error?.text || error?.message || "Unknown error" };
     }
 };
