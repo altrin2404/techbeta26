@@ -345,13 +345,13 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                             className="space-y-6"
                                         >
                                             <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 mb-2">
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-3 text-center">Steps to Follow</h4>
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-3 text-center">Secure Payment</h4>
                                                 <div className="space-y-2">
                                                     {[
-                                                        "Scan the QR code with any UPI App",
-                                                        "Pay the registration fee of ₹1.00",
-                                                        "Copy the 12-digit Ref No. / Transaction ID",
-                                                        "Enter it below & click Complete Registration"
+                                                        "Click 'Pay Now' below",
+                                                        "Complete payment on PhonePe Secure Page",
+                                                        "Wait for automatic redirection",
+                                                        "Registration verified instantly!"
                                                     ].map((step, i) => (
                                                         <div key={i} className="flex gap-3 items-start">
                                                             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
@@ -363,58 +363,74 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                 </div>
                                             </div>
 
-                                            <div className="flex flex-col items-center bg-white p-4 rounded-2xl border border-black/5 shadow-inner">
-                                                <div className="h-48 w-48 bg-white rounded-lg flex items-center justify-center p-2 border border-black/5 shadow-sm overflow-hidden">
-                                                    <img
-                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('upi://pay?pa=9385675451-3@ybl&pn=TECHBETA2K26&am=1&cu=INR')}`}
-                                                        alt="Payment QR Code"
-                                                        className="max-h-full max-w-full object-contain"
-                                                    />
+                                            <div className="flex flex-col items-center bg-white p-6 rounded-2xl border border-black/5 shadow-inner">
+                                                <div className="text-center mb-6">
+                                                    <p className="text-3xl font-black text-slate-800">₹ 1.00</p>
+                                                    <p className="text-xs text-slate-500 font-medium italic">Registration Fee</p>
                                                 </div>
-                                                <div className="mt-4 text-center">
-                                                    <p className="text-lg font-black text-slate-800">₹ 1.00</p>
-                                                    <p className="text-xs text-slate-500 font-medium italic">Scan via UPI</p>
 
-                                                    <div className="flex items-center gap-4 mt-3 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
-                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-4" />
-                                                        <div className="w-[1px] h-3 bg-slate-200" />
-                                                        <img src="/phonepe.png" alt="PhonePe" className="h-10 w-auto object-contain" />
-                                                        <div className="w-[1px] h-3 bg-slate-200" />
-                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-3" />
-                                                    </div>
+                                                <Button
+                                                    type="button"
+                                                    disabled={isSubmitting}
+                                                    onClick={async () => {
+                                                        const data = form.getValues();
+                                                        // Generate a temporary transaction ID for tracking
+                                                        // In production, backend should generate this or we use a robust ID
+                                                        const txnId = "TXN" + Date.now();
+
+                                                        // Save ID to verify later
+                                                        localStorage.setItem('pendingRegistrationId', txnId); // Ideally this is the doc ID but we don't have it yet. 
+                                                        // Actually we should create a 'Pending' registration in Firebase FIRST
+                                                        // Then pass that ID.
+
+                                                        // Let's create the registration first as Pending
+                                                        setIsSubmitting(true);
+                                                        try {
+                                                            const { addRegistration } = await import("@/lib/registrationService");
+                                                            const regData = {
+                                                                ...data,
+                                                                transactionId: txnId, // Use this for payment tracking
+                                                                status: 'Pending Verification' as const // Typescript fix
+                                                            };
+                                                            // @ts-ignore
+                                                            const result = await addRegistration(regData); // Ignoring type mismatch for now
+
+                                                            if (result.success) {
+                                                                localStorage.setItem('pendingRegistrationId', result.id); // Save Firestore ID
+
+                                                                const { initiatePayment } = await import("@/lib/paymentService");
+                                                                const paymentRes = await initiatePayment({
+                                                                    name: data.name,
+                                                                    amount: 1,
+                                                                    number: data.phone,
+                                                                    transactionId: txnId
+                                                                });
+
+                                                                if (paymentRes.success) {
+                                                                    window.location.href = paymentRes.url;
+                                                                } else {
+                                                                    toast.error("Payment Initiation Failed");
+                                                                    setIsSubmitting(false);
+                                                                }
+                                                            } else {
+                                                                toast.error("Failed to initialize registration");
+                                                                setIsSubmitting(false);
+                                                            }
+                                                        } catch (e) {
+                                                            console.error(e);
+                                                            toast.error("System Error");
+                                                            setIsSubmitting(false);
+                                                        }
+                                                    }}
+                                                    className="w-full bg-[#5f259f] hover:bg-[#5f259f]/90 text-white font-bold h-14 text-lg shadow-lg shadow-purple-200 transition-all hover:scale-[1.02]"
+                                                >
+                                                    {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : "Pay via PhonePe"}
+                                                </Button>
+
+                                                <div className="flex items-center gap-2 mt-4 opacity-50 grayscale hover:grayscale-0 transition-all">
+                                                    <img src="/phonepe.png" alt="PhonePe" className="h-6 opacity-80" />
+                                                    <span className="text-[10px] font-bold">Secured by PhonePe</span>
                                                 </div>
-                                            </div>
-
-                                            <div className="space-y-4">
-                                                <FormField
-                                                    control={form.control}
-                                                    name="transactionId"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Transaction ID / Ref ID *</FormLabel>
-                                                            <FormControl>
-                                                                <Input placeholder="Enter 12-digit Ref No." {...field} className="bg-background/50 border-black/5" />
-                                                            </FormControl>
-                                                            <FormMessage className="text-[10px]" />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <FormField
-                                                    control={form.control}
-                                                    name="upiName"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-foreground/60">UPI Name (Optional)</FormLabel>
-                                                            <FormControl>
-                                                                <Input placeholder="Name on your Payment App" {...field} className="bg-background/50 border-black/5" />
-                                                            </FormControl>
-                                                            <FormMessage className="text-[10px]" />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <p className="text-[9px] text-muted-foreground italic text-center px-4">
-                                                    Tip: You can find the Ref No. in GPay, PhonePe, or Paytm transaction history.
-                                                </p>
                                             </div>
 
                                             <div className="flex gap-3">
@@ -422,16 +438,10 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                     type="button"
                                                     variant="outline"
                                                     onClick={prevStep}
-                                                    className="flex-1 h-11 font-bold"
+                                                    disabled={isSubmitting}
+                                                    className="w-full h-11 font-bold"
                                                 >
                                                     <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                                                </Button>
-                                                <Button
-                                                    type="submit"
-                                                    disabled={isSubmitting}
-                                                    className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
-                                                >
-                                                    {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Complete Registration"}
                                                 </Button>
                                             </div>
                                         </motion.div>
@@ -441,10 +451,10 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                         </Form>
                     </div>
                 </DialogContent>
-            </Dialog>
+            </Dialog >
 
             {/* Success Popup */}
-            <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
+            < Dialog open={showSuccess} onOpenChange={setShowSuccess} >
                 <DialogContent className="max-w-sm bg-white dark:bg-slate-900 border-2 border-green-500 rounded-3xl p-0 overflow-hidden">
                     <div className="bg-green-500 p-6 flex flex-col items-center justify-center text-white">
                         <CheckCircle className="h-16 w-16 mb-2" />
@@ -468,7 +478,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                         </Button>
                     </div>
                 </DialogContent>
-            </Dialog>
+            </Dialog >
         </>
     );
 };
