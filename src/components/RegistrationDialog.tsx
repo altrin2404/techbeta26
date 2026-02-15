@@ -165,7 +165,8 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                 fireConfetti();
 
                 toast.success("Registration Submitted!", {
-                    description: "Payment verification is in progress. Welcome to TECHBETA 2K26!",
+                    description: "Payment verification is in progress. NOTE: Check your SPAM folder for the verification email.",
+                    duration: 6000,
                 });
             } else {
                 toast.error("Registration Failed", {
