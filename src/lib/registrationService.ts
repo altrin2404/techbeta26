@@ -55,6 +55,17 @@ export const subscribeToRegistrations = (callback: (data: Registration[]) => voi
     });
 };
 
+export const subscribeToRegistration = (id: string, callback: (data: Registration | null) => void) => {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    return onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+            callback({ id: docSnap.id, ...docSnap.data() } as Registration);
+        } else {
+            callback(null);
+        }
+    });
+};
+
 export const updateRegistrationStatus = async (id: string, status: string) => {
     try {
         const docRef = doc(db, COLLECTION_NAME, id);

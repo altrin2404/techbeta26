@@ -23,8 +23,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode, CheckCircle } from "lucide-react";
-import type { Registration } from "@/lib/registrationService";
+import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode, CheckCircle, RefreshCcw } from "lucide-react";
+import { subscribeToRegistration, addRegistration, type Registration, updateRegistrationStatus } from "@/lib/registrationService";
 
 
 const formSchema = z.object({
@@ -45,6 +45,9 @@ const eventOptions = [
     "Tech Quiz"
 ];
 
+// Fallback QR if public/qr.png is missing (this is a placeholder, user should ensure public/qr.png exists)
+const FALLBACK_QR = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('upi://pay?pa=9385675451-3@ybl&pn=TECHBETA2K26&am=1&cu=INR')}`;
+
 interface RegistrationDialogProps {
     children: React.ReactNode;
 }
@@ -54,6 +57,8 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [showSuccess, setShowSuccess] = React.useState(false);
     const [step, setStep] = React.useState(1);
+    const [registrationId, setRegistrationId] = React.useState<string | null>(null);
+    const [qrStatus, setQrStatus] = React.useState<'pending' | 'verified'>('pending');
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -72,112 +77,117 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
     const nextStep = async () => {
         const fieldsToValidate = ["name", "email", "phone", "department", "college", "events"] as const;
         const isValid = await form.trigger(fieldsToValidate);
-        if (isValid) setStep(2);
+
+        if (isValid) {
+            setIsSubmitting(true);
+            const values = form.getValues();
+
+            // Create pending registration immediately
+            try {
+                const result = await addRegistration({
+                    ...values,
+                    transactionId: "PENDING_PAYMENT", // Placeholder
+                    upiName: "",
+                } as any);
+
+                if (result.success && result.id) {
+                    setRegistrationId(result.id);
+                    setStep(2);
+                } else {
+                    toast.error("Failed to initialize registration. Please try again.");
+                }
+            } catch (error) {
+                console.error("Init registration error:", error);
+                toast.error("An error experienced. Please try again.");
+            } finally {
+                setIsSubmitting(false);
+            }
+        }
+    };
+
+    // Listen for status changes
+    React.useEffect(() => {
+        if (!registrationId || step !== 2) return;
+
+        const unsubscribe = subscribeToRegistration(registrationId, (data) => {
+            if (data && data.status === 'Verified') {
+                handleSuccess(data);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [registrationId, step]);
+
+    const handleSuccess = (data: Registration) => {
+        setQrStatus('verified');
+        fireConfetti();
+        setShowSuccess(true);
+        setOpen(false);
+        setStep(1);
+        setRegistrationId(null);
+        form.reset();
+    };
+
+    const handleSimulatePayment = async () => {
+        if (registrationId) {
+            toast.loading("Simulating payment verification...");
+            await updateRegistrationStatus(registrationId, 'Verified');
+            // Listener will catch the update
+        }
     };
 
     const prevStep = () => setStep(1);
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
-        setIsSubmitting(true);
-
-        const submitToGoogleForms = async (data: z.infer<typeof formSchema>) => {
-            const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse";
-            const formBody = new URLSearchParams();
-            formBody.append("entry.replace_with_name_id", data.name);
-            formBody.append("entry.replace_with_email_id", data.email);
-            formBody.append("entry.replace_with_phone_id", data.phone);
-            formBody.append("entry.replace_with_dept_id", data.department);
-            formBody.append("entry.replace_with_college_id", data.college);
-            formBody.append("entry.replace_with_events_id", data.events.join(", "));
-            formBody.append("entry.replace_with_transaction_id", data.transactionId);
-            formBody.append("entry.replace_with_upi_name", data.upiName || "");
-
-            try {
-                await fetch(GOOGLE_FORM_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: formBody,
-                });
-            } catch (error) {
-                console.error("Google Forms submission error:", error);
-            }
+    // Confetti logic moved outside onSubmit for reuse
+    const fireConfetti = () => {
+        const count = 150;
+        const defaults = {
+            origin: { y: 0.7 }
         };
 
-        const fireConfetti = () => {
-            const count = 150;
-            const defaults = {
-                origin: { y: 0.7 }
+        const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
+
+        for (let i = 0; i < count; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'fixed pointer-events-none z-[100]';
+            const size = Math.random() * 8 + 4;
+            confetti.style.width = `${size}px`;
+            confetti.style.height = `${size}px`;
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.borderRadius = '50%';
+            confetti.style.left = '50%';
+            confetti.style.top = '70%';
+            document.body.appendChild(confetti);
+
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = Math.random() * 15 + 10;
+            const vx = Math.cos(angle) * velocity;
+            let vy = Math.sin(angle) * velocity - 10;
+            let x = 0;
+            let y = 0;
+
+            const animate = () => {
+                x += vx;
+                y += vy;
+                vy += 0.5; // gravity
+                confetti.style.transform = `translate(${x}px, ${y}px)`;
+                confetti.style.opacity = (1 - (Math.abs(y) / 1000)).toString();
+
+                if (y < 800) {
+                    requestAnimationFrame(animate);
+                } else {
+                    confetti.remove();
+                }
             };
+            requestAnimationFrame(animate);
+        }
+    };
 
-            const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
-
-            for (let i = 0; i < count; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'fixed pointer-events-none z-[100]';
-                const size = Math.random() * 8 + 4;
-                confetti.style.width = `${size}px`;
-                confetti.style.height = `${size}px`;
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.borderRadius = '50%';
-                confetti.style.left = '50%';
-                confetti.style.top = '70%';
-                document.body.appendChild(confetti);
-
-                const angle = Math.random() * Math.PI * 2;
-                const velocity = Math.random() * 15 + 10;
-                const vx = Math.cos(angle) * velocity;
-                let vy = Math.sin(angle) * velocity - 10;
-                let x = 0;
-                let y = 0;
-
-                const animate = () => {
-                    x += vx;
-                    y += vy;
-                    vy += 0.5; // gravity
-                    confetti.style.transform = `translate(${x}px, ${y}px)`;
-                    confetti.style.opacity = (1 - (Math.abs(y) / 1000)).toString();
-
-                    if (y < 800) {
-                        requestAnimationFrame(animate);
-                    } else {
-                        confetti.remove();
-                    }
-                };
-                requestAnimationFrame(animate);
-            }
-        };
-
-        setTimeout(async () => {
-            await submitToGoogleForms(values);
-
-            // Save to Firebase instead of localStorage
-            const { addRegistration } = await import("@/lib/registrationService");
-            const result = await addRegistration(values as Omit<Registration, 'id' | 'registrationDate' | 'status'>);
-
-            if (result.success) {
-                window.dispatchEvent(new Event("registration-updated"));
-
-                setIsSubmitting(false);
-                setOpen(false);
-                setStep(1);
-                form.reset();
-
-                fireConfetti();
-
-                setShowSuccess(true);
-                // Keeping toast for feedback but primary is now popup
-                // toast.success("Registration Submitted!", {
-                //     description: "Payment verification is in progress. NOTE: Check your SPAM folder for the verification email.",
-                //     duration: 6000,
-                // });
-            } else {
-                toast.error("Registration Failed", {
-                    description: "Please try again or contact support.",
-                });
-                setIsSubmitting(false);
-            }
-        }, 1500);
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        // This is now purely for the "Simulate" or legacy manual flow if we kept it?
+        // Actually, with Zero-Click, the user doesn't "submit" the form at step 2.
+        // The system "submits" itself upon verification.
+        // We can keep this empty or remove the form submit handler from step 2 button.
     }
 
     return (
@@ -210,7 +220,8 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                         </DialogHeader>
 
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            {/* We don't use onSubmit for the whole form anymore, handled in buttons */}
+                            <div className="space-y-4">
                                 <AnimatePresence mode="wait">
                                     {step === 1 ? (
                                         <motion.div
@@ -331,8 +342,10 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                             <Button
                                                 type="button"
                                                 onClick={nextStep}
+                                                disabled={isSubmitting}
                                                 className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
                                             >
+                                                {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
                                                 Proceed to Payment <ChevronRight className="ml-2 h-4 w-4" />
                                             </Button>
                                         </motion.div>
@@ -345,13 +358,12 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                             className="space-y-6"
                                         >
                                             <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 mb-2">
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-3 text-center">Steps to Follow</h4>
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-3 text-center">Zero-Click Registration</h4>
                                                 <div className="space-y-2">
                                                     {[
-                                                        "Scan the QR code with any UPI App",
-                                                        "Pay the registration fee of ₹1.00",
-                                                        "Copy the 12-digit Ref No. / Transaction ID",
-                                                        "Enter it below & click Complete Registration"
+                                                        "Scan the QR code below",
+                                                        "Pay ₹1.00",
+                                                        "Wait for automatic confirmation...",
                                                     ].map((step, i) => (
                                                         <div key={i} className="flex gap-3 items-start">
                                                             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
@@ -364,80 +376,49 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                             </div>
 
                                             <div className="flex flex-col items-center bg-white p-4 rounded-2xl border border-black/5 shadow-inner">
-                                                <div className="h-48 w-48 bg-white rounded-lg flex items-center justify-center p-2 border border-black/5 shadow-sm overflow-hidden">
+                                                <div className="h-48 w-48 bg-white rounded-lg flex items-center justify-center p-2 border border-black/5 shadow-sm overflow-hidden relative">
                                                     <img
-                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('upi://pay?pa=9385675451-3@ybl&pn=TECHBETA2K26&am=1&cu=INR')}`}
+                                                        src="/qr.png"
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = FALLBACK_QR;
+                                                        }}
                                                         alt="Payment QR Code"
                                                         className="max-h-full max-w-full object-contain"
                                                     />
+                                                    {/* Blur overlay if waiting for payment could be cool, but clear QR is better */}
                                                 </div>
                                                 <div className="mt-4 text-center">
                                                     <p className="text-lg font-black text-slate-800">₹ 1.00</p>
-                                                    <p className="text-xs text-slate-500 font-medium italic">Scan via UPI</p>
-
-                                                    <div className="flex items-center gap-4 mt-3 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
-                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-4" />
-                                                        <div className="w-[1px] h-3 bg-slate-200" />
-                                                        <img src="/phonepe.png" alt="PhonePe" className="h-10 w-auto object-contain" />
-                                                        <div className="w-[1px] h-3 bg-slate-200" />
-                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-3" />
+                                                    <div className="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium animate-pulse">
+                                                        <RefreshCcw className="h-3 w-3 animate-spin" />
+                                                        Waiting for payment...
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-4">
-                                                <FormField
-                                                    control={form.control}
-                                                    name="transactionId"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Transaction ID / Ref ID *</FormLabel>
-                                                            <FormControl>
-                                                                <Input placeholder="Enter 12-digit Ref No." {...field} className="bg-background/50 border-black/5" />
-                                                            </FormControl>
-                                                            <FormMessage className="text-[10px]" />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <FormField
-                                                    control={form.control}
-                                                    name="upiName"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-foreground/60">UPI Name (Optional)</FormLabel>
-                                                            <FormControl>
-                                                                <Input placeholder="Name on your Payment App" {...field} className="bg-background/50 border-black/5" />
-                                                            </FormControl>
-                                                            <FormMessage className="text-[10px]" />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <p className="text-[9px] text-muted-foreground italic text-center px-4">
-                                                    Tip: You can find the Ref No. in GPay, PhonePe, or Paytm transaction history.
-                                                </p>
-                                            </div>
+                                            <div className="flex flex-col gap-3">
+                                                <Button
+                                                    type="button"
+                                                    onClick={handleSimulatePayment}
+                                                    variant="secondary"
+                                                    className="w-full font-bold text-xs"
+                                                >
+                                                    ⚡ Simulate Payment Detect (Dev Only)
+                                                </Button>
 
-                                            <div className="flex gap-3">
                                                 <Button
                                                     type="button"
                                                     variant="outline"
                                                     onClick={prevStep}
-                                                    className="flex-1 h-11 font-bold"
+                                                    className="w-full font-bold"
                                                 >
-                                                    <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                                                </Button>
-                                                <Button
-                                                    type="submit"
-                                                    disabled={isSubmitting}
-                                                    className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
-                                                >
-                                                    {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Complete Registration"}
+                                                    <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
                                                 </Button>
                                             </div>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-                            </form>
+                            </div>
                         </Form>
                     </div>
                 </DialogContent>
