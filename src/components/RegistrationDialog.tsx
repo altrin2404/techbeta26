@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode } from "lucide-react";
+import type { Registration } from "@/lib/registrationService";
+
 
 const formSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -148,27 +150,29 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
         setTimeout(async () => {
             await submitToGoogleForms(values);
 
-            const existingData = JSON.parse(localStorage.getItem("registrations") || "[]");
-            const newData = {
-                ...values,
-                id: Date.now(),
-                registrationDate: new Date().toISOString(),
-                status: "Pending Verification"
-            };
-            localStorage.setItem("registrations", JSON.stringify([...existingData, newData]));
+            // Save to Firebase instead of localStorage
+            const { addRegistration } = await import("@/lib/registrationService");
+            const result = await addRegistration(values as Omit<Registration, 'id' | 'registrationDate' | 'status'>);
 
-            window.dispatchEvent(new Event("registration-updated"));
+            if (result.success) {
+                window.dispatchEvent(new Event("registration-updated"));
 
-            setIsSubmitting(false);
-            setOpen(false);
-            setStep(1);
-            form.reset();
+                setIsSubmitting(false);
+                setOpen(false);
+                setStep(1);
+                form.reset();
 
-            fireConfetti();
+                fireConfetti();
 
-            toast.success("Registration Submitted!", {
-                description: "Payment verification is in progress. Welcome to TECHBETA 2K26!",
-            });
+                toast.success("Registration Submitted!", {
+                    description: "Payment verification is in progress. Welcome to TECHBETA 2K26!",
+                });
+            } else {
+                toast.error("Registration Failed", {
+                    description: "Please try again or contact support.",
+                });
+                setIsSubmitting(false);
+            }
         }, 1500);
     }
 
