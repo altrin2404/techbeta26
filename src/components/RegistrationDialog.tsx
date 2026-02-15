@@ -130,9 +130,20 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
 
     const handleSimulatePayment = async () => {
         if (registrationId) {
-            toast.loading("Simulating payment verification...");
-            await updateRegistrationStatus(registrationId, 'Verified');
-            // Listener will catch the update
+            const toastId = toast.loading("Simulating payment verification...");
+            try {
+                const result = await updateRegistrationStatus(registrationId, 'Verified');
+                if (result.success) {
+                    toast.success("Payment Verified! Completing registration...", { id: toastId });
+                    // Listener will catch the update and close dialog
+                } else {
+                    toast.error("Failed to verify payment. Please try again.", { id: toastId });
+                    console.error("Simulation failed:", result.error);
+                }
+            } catch (error) {
+                toast.error("An error occurred.", { id: toastId });
+                console.error("Simulation error:", error);
+            }
         }
     };
 
