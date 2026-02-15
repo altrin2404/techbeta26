@@ -31,7 +31,7 @@ import { subscribeToRegistrations, type Registration } from "@/lib/registrationS
 
 
 interface Participant {
-    id: number;
+    id: string;
     name: string;
     college: string;
     department: string;
@@ -83,20 +83,39 @@ const AdminDashboard = () => {
         sessionStorage.removeItem("adminAuth");
     };
 
-    const updateStatus = (id: string, newStatus: string) => {
+    const updateStatus = async (id: string, newStatus: string) => {
+        // Optimistic update
         const updatedData = registrations.map(reg =>
             reg.id === id ? { ...reg, status: newStatus } : reg
         );
         setRegistrations(updatedData);
-        // Note: In a full implementation, you would update Firebase here
-        toast.success(`Status updated to ${newStatus}`);
+
+        const { updateRegistrationStatus } = await import("@/lib/registrationService");
+        const result = await updateRegistrationStatus(id, newStatus);
+
+        if (result.success) {
+            toast.success(`Status updated to ${newStatus}`);
+        } else {
+            toast.error("Failed to update status");
+            // Revert optimistic update if needed, but subscription will handle it eventually
+        }
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this registration?")) return;
+
+        // Optimistic update
         const updatedData = registrations.filter(reg => reg.id !== id);
         setRegistrations(updatedData);
-        // Note: In a full implementation, you would delete from Firebase here
-        toast.success("Registration deleted");
+
+        const { deleteRegistration } = await import("@/lib/registrationService");
+        const result = await deleteRegistration(id);
+
+        if (result.success) {
+            toast.success("Registration deleted");
+        } else {
+            toast.error("Failed to delete registration");
+        }
     };
 
     const downloadCSV = () => {

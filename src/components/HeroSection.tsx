@@ -8,18 +8,19 @@ const HeroSection = () => {
   const [registrationCount, setRegistrationCount] = useState(0);
 
   useEffect(() => {
-    const updateCount = () => {
-      const data = JSON.parse(localStorage.getItem("registrations") || "[]");
-      setRegistrationCount(data.length);
+    let unsubscribe: () => void;
+
+    const setupSubscription = async () => {
+      const { subscribeToRegistrations } = await import("@/lib/registrationService");
+      unsubscribe = subscribeToRegistrations((data) => {
+        setRegistrationCount(data.length);
+      });
     };
 
-    updateCount();
-    window.addEventListener("registration-updated", updateCount);
-    window.addEventListener("storage", updateCount);
+    setupSubscription();
 
     return () => {
-      window.removeEventListener("registration-updated", updateCount);
-      window.removeEventListener("storage", updateCount);
+      if (unsubscribe) unsubscribe();
     };
   }, []);
 

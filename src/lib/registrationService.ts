@@ -2,15 +2,18 @@ import { db } from "./firebase";
 import {
     collection,
     addDoc,
-    getDocs,
+    updateDoc,
+    deleteDoc,
+    doc,
+    onSnapshot,
     query,
     orderBy,
-    onSnapshot,
+    serverTimestamp,
     Timestamp
 } from "firebase/firestore";
 
 export interface Registration {
-    id?: string;
+    id: string;
     name: string;
     college: string;
     department: string;
@@ -19,59 +22,56 @@ export interface Registration {
     events: string[];
     transactionId: string;
     upiName?: string;
-    status: string;
+    status: 'Pending Verification' | 'Verified';
     registrationDate: string;
+    timestamp?: any;
 }
 
-const REGISTRATIONS_COLLECTION = "registrations";
+const COLLECTION_NAME = "registrations";
 
-// Add a new registration
-export const addRegistration = async (data: Omit<Registration, 'id' | 'registrationDate' | 'status'>) => {
+export const addRegistration = async (data: Omit<Registration, "id" | "status" | "registrationDate" | "timestamp">) => {
     try {
-        const docRef = await addDoc(collection(db, REGISTRATIONS_COLLECTION), {
+        const docRef = await addDoc(collection(db, COLLECTION_NAME), {
             ...data,
-            registrationDate: Timestamp.now(),
-            status: "Pending Verification"
+            status: "Pending Verification",
+            registrationDate: new Date().toISOString(),
+            timestamp: serverTimestamp()
         });
         return { success: true, id: docRef.id };
     } catch (error) {
-        console.error("Error adding registration:", error);
+        console.error("Error adding registration: ", error);
         return { success: false, error };
     }
 };
 
-// Get all registrations
-export const getRegistrations = async (): Promise<Registration[]> => {
-    try {
-        const q = query(
-            collection(db, REGISTRATIONS_COLLECTION),
-            orderBy("registrationDate", "desc")
-        );
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            registrationDate: doc.data().registrationDate?.toDate().toISOString() || new Date().toISOString()
-        })) as Registration[];
-    } catch (error) {
-        console.error("Error getting registrations:", error);
-        return [];
-    }
-};
-
-// Listen to real-time updates
-export const subscribeToRegistrations = (callback: (registrations: Registration[]) => void) => {
-    const q = query(
-        collection(db, REGISTRATIONS_COLLECTION),
-        orderBy("registrationDate", "desc")
-    );
-
+export const subscribeToRegistrations = (callback: (data: Registration[]) => void) => {
+    const q = query(collection(db, COLLECTION_NAME), orderBy("timestamp", "desc"));
     return onSnapshot(q, (snapshot) => {
         const registrations = snapshot.docs.map(doc => ({
             id: doc.id,
-            ...doc.data(),
-            registrationDate: doc.data().registrationDate?.toDate().toISOString() || new Date().toISOString()
+            ...doc.data()
         })) as Registration[];
         callback(registrations);
     });
+};
+
+export const updateRegistrationStatus = async (id: string, status: string) => {
+    try {
+        const docRef = doc(db, COLLECTION_NAME, id);
+        await updateDoc(docRef, { status });
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating status: ", error);
+        return { success: false, error };
+    }
+};
+
+export const deleteRegistration = async (id: string) => {
+    try {
+        await deleteDoc(doc(db, COLLECTION_NAME, id));
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting registration: ", error);
+        return { success: false, error };
+    }
 };
