@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { subscribeToRegistrations, updateRegistrationStatus, deleteRegistration, type Registration } from "@/lib/registrationService";
 import { sendVerificationEmail } from "@/lib/emailService";
 import QRScannerDialog from "@/components/QRScannerDialog";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const AdminDashboard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -272,11 +273,11 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-slate-400 font-bold uppercase text-[10px]">Email</span>
-                                    <span className="font-medium text-slate-800 truncate max-w-[150px]">{scannedParticipant?.email}</span>
+                                    <span className="font-medium text-slate-800 truncate max-w-[150px]">{scannedParticipant?.email || "N/A"}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-slate-400 font-bold uppercase text-[10px]">Phone</span>
-                                    <span className="font-mono font-bold text-slate-800">{scannedParticipant?.phone}</span>
+                                    <span className="font-mono font-bold text-slate-800">{scannedParticipant?.phone || "N/A"}</span>
                                 </div>
                                 <div className="flex flex-col gap-1 text-sm pt-2 border-t border-slate-100">
                                     <span className="text-slate-400 font-bold uppercase text-[10px]">Events</span>
@@ -399,4 +400,10 @@ const AdminDashboard = () => {
     );
 };
 
-export default AdminDashboard;
+const AdminDashboardWithBoundary = () => (
+    <ErrorBoundary>
+        <AdminDashboard />
+    </ErrorBoundary>
+);
+
+export default AdminDashboardWithBoundary;
