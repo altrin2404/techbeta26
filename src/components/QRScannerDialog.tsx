@@ -68,8 +68,12 @@ const QRScannerDialog = ({ isOpen, onClose, onScan }: QRScannerDialogProps) => {
                         (decodedText) => {
                             console.log("QR Code scanned:", decodedText);
                             if (isMounted) {
+                                // Pause scanning immediately to prevent multiple reads
+                                if (scannerRef.current?.isScanning) {
+                                    scannerRef.current.pause();
+                                }
                                 onScan(decodedText);
-                                onClose();
+                                // Do NOT call onClose() here; let the parent handle the open state based on onScan
                             }
                         },
                         (errorMessage) => {
@@ -104,25 +108,21 @@ const QRScannerDialog = ({ isOpen, onClose, onScan }: QRScannerDialogProps) => {
         };
 
         if (isOpen && isSecure) {
-            // cleanup previous instance if it exists to be safe
-            if (scannerRef.current && scannerRef.current.isScanning) {
-                scannerRef.current.stop().then(() => initScanner()).catch(() => initScanner());
-            } else {
-                initScanner();
-            }
-        } else {
-            // Cleanup if dialog closes
-            if (scannerRef.current && scannerRef.current.isScanning) {
-                scannerRef.current.stop().catch(console.error);
-                setIsScanning(false);
-            }
+            initScanner();
         }
 
         return () => {
             isMounted = false;
-            // Cleanup handled by ref check or scanning status check
-            if (scannerRef.current && scannerRef.current.isScanning) {
-                scannerRef.current.stop().catch(console.error);
+            if (scannerRef.current) {
+                try {
+                    if (scannerRef.current.isScanning) {
+                        scannerRef.current.stop().catch(err => console.warn("Error stopping scanner during cleanup:", err));
+                    }
+                    // Clear the instance on unmount to prevent stale state usage
+                    scannerRef.current.clear();
+                } catch (e) {
+                    console.warn("Cleanup error:", e);
+                }
             }
         };
     }, [isOpen, onClose, onScan, facingMode]);
