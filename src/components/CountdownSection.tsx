@@ -90,7 +90,7 @@ const CountdownSection = () => {
                         className="relative mx-auto w-full max-w-[320px] lg:mr-0"
                     >
                         <div className="group relative rounded-3xl border border-black/5 bg-card p-8 backdrop-blur-md transition-all duration-500 hover:border-primary/30 shadow-lg">
-                            <div className="absolute -top-4 left-1/2 h-8 w-24 -translate-x-1/2 rounded-full border border-border bg-background" />
+
 
                             <div className="text-center">
                                 <p className="font-display text-sm font-black tracking-widest text-secondary uppercase mb-2">
