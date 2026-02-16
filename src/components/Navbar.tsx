@@ -18,7 +18,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-black/5 dark:border-white/10 bg-background/60 backdrop-blur-xl shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-black/5 dark:border-white/10 bg-background/60 backdrop-blur-xl shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <a href="#" className="font-display text-xl font-bold text-primary text-glow-cyan transition-all duration-300 hover:scale-105">
           TECHBETA 2K26
@@ -44,7 +44,7 @@ const Navbar = () => {
         </div>
 
         {/* Mobile toggle */}
-        <button className="text-foreground md:hidden" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu">
+        <button className="text-foreground md:hidden flex items-center justify-center h-11 w-11 rounded-lg hover:bg-muted/50 active:bg-muted transition-colors" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu">
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
@@ -58,13 +58,13 @@ const Navbar = () => {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden border-t border-border bg-background/95 backdrop-blur-xl md:hidden"
           >
-            <div className="flex flex-col gap-4 p-4">
+            <div className="flex flex-col gap-1 p-4 safe-bottom">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="text-sm font-bold text-foreground/70 transition-colors hover:text-primary tracking-wide"
+                  className="text-sm font-bold text-foreground/70 transition-colors hover:text-primary tracking-wide min-h-[44px] flex items-center px-2 rounded-lg hover:bg-muted/50 active:bg-muted"
                 >
                   {link.label}
                 </a>

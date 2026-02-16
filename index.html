@@ -3,10 +3,26 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0EA5E9" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://apis.google.com blob:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://lumberjack-cx.razorpay.com ws://localhost:*; frame-src https://api.razorpay.com/ https://*.firebaseapp.com https://maps.google.com https://www.google.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+  <meta http-equiv="Permissions-Policy" content="otp-credentials=(self 'https://checkout.razorpay.com')">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
   <!-- TODO: Set the document title to the name of your application -->
   <title>TECHBETA 2K26 | BRIGITZ | SXCCE</title>
   <link rel="icon" type="image/png" href="/brigitz-logo.png" />
+  <link rel="manifest" href="/manifest.json" />
   <meta name="description"
     content="TECHBETA 2K26 - National Level Technical Symposium by BRIGITZ at St Xavier's Catholic College of Engineering, Nagercoil." />
   <meta name="keywords" content="TECHBETA 2K26, BRIGITZ, SXCCE, Technical Symposium, Nagercoil, Engineering Events" />

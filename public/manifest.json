@@ -1,0 +1,22 @@
+{
+    "theme_color": "#0EA5E9",
+    "background_color": "#ffffff",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "name": "TECHBETA 2K26 | BRIGITZ",
+    "short_name": "TECHBETA",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/brigitz-logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/brigitz-logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

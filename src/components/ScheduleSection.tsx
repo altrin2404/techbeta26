@@ -5,30 +5,30 @@ import { Button } from "@/components/ui/button";
 
 const schedule = [
     {
-        time: "09:00 AM",
-        event: "Inauguration",
-        description: "@Rock Auditorium",
+        time: "",
+        event: "",
+        description: "",
         icon: PlayCircle,
         color: "bg-blue-500",
     },
     {
-        time: "09:30 AM",
-        event: "Start of Events",
-        description: "Competitions begin at various venues",
+        time: "",
+        event: "",
+        description: "",
         icon: UserCheck,
         color: "bg-purple-500",
     },
     {
-        time: "01:00 PM",
-        event: "Lunch Break",
-        description: "Complimentary lunch provided for all registered participants.",
+        time: "",
+        event: "",
+        description: "",
         icon: Coffee,
         color: "bg-orange-500",
     },
     {
-        time: "02:00 PM",
-        event: "Valedictory",
-        description: "Prize distribution and closing ceremony.",
+        time: "",
+        event: "",
+        description: "",
         icon: Clock,
         color: "bg-green-500",
     },
@@ -56,12 +56,12 @@ const ScheduleSection = () => {
                             viewport={{ once: true }}
                             className="flex flex-col items-center"
                         >
-                            <div className="flex items-center gap-3 mb-4">
-                                <Calendar className="text-secondary h-6 w-6 group-hover:scale-110 transition-transform" />
-                                <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+                            <div className="flex flex-wrap justify-center items-center gap-3 mb-4">
+                                <Calendar className="text-secondary h-6 w-6 group-hover:scale-110 transition-transform flex-shrink-0" />
+                                <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl md:text-4xl px-2">
                                     Event Timeline
                                 </h2>
-                                {isOpen ? <ChevronUp className="text-primary h-6 w-6" /> : <ChevronDown className="text-primary h-6 w-6 animate-bounce" />}
+                                {isOpen ? <ChevronUp className="text-primary h-6 w-6 flex-shrink-0" /> : <ChevronDown className="text-primary h-6 w-6 animate-bounce flex-shrink-0" />}
                             </div>
                             <div className="mx-auto h-1 w-20 rounded-full bg-secondary/30 group-hover:bg-secondary/60 transition-colors" />
                             <p className="mt-4 text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40">

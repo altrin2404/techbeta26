@@ -53,12 +53,9 @@ const AboutSection = () => {
                 <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/10 blur-[60px] transition-all duration-700 group-hover:bg-primary/20" />
                 <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-secondary/10 blur-[60px] transition-all duration-700 group-hover:bg-secondary/20" />
 
-                <p className="relative z-10 text-base leading-relaxed text-foreground/80 font-medium sm:text-lg">
-                  <span className="font-bold text-foreground">TECHBETA 2K26</span> is a national-level technical symposium organized by the <span className="font-bold text-primary">Department of Information Technology</span> at St Xaviers Catholic College of Engineering (Autonomous), Nagercoil. This premier event brings together students, innovators, and tech enthusiasts from across the country to compete, collaborate, and celebrate technology.
-                </p>
-                <p className="relative z-10 mt-6 text-base leading-relaxed text-foreground/80 font-medium sm:text-lg">
-                  Offering a platform to showcase your skills through <span className="font-bold text-primary">Ideathon</span>, <span className="font-bold text-primary">Web/Logo Designing</span>, <span className="font-bold text-primary">Debugging</span>, and <span className="font-bold text-primary">Tech Quiz</span>. TECHBETA 2K26 is where you learn from industry experts and network with like-minded individuals. Join us for an unforgettable day of innovation and inspiration!
-                </p>
+                <div className="relative z-10 text-base leading-relaxed text-foreground/80 font-medium sm:text-lg min-h-[10rem]">
+                  {/* Content to be added later */}
+                </div>
               </motion.div>
             </motion.div>
           )}

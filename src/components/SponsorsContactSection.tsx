@@ -21,12 +21,12 @@ const SponsorsContactSection = () => {
               viewport={{ once: true }}
               className="flex flex-col items-center"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <Mail className="text-primary h-6 w-6 group-hover:scale-110 transition-transform" />
-                <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+              <div className="flex flex-wrap justify-center items-center gap-3 mb-4">
+                <Mail className="text-primary h-6 w-6 group-hover:scale-110 transition-transform flex-shrink-0" />
+                <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl md:text-4xl px-2">
                   Contact Us
                 </h2>
-                {isOpen ? <ChevronUp className="text-primary h-6 w-6" /> : <ChevronDown className="text-primary h-6 w-6 animate-bounce" />}
+                {isOpen ? <ChevronUp className="text-primary h-6 w-6 flex-shrink-0" /> : <ChevronDown className="text-primary h-6 w-6 animate-bounce flex-shrink-0" />}
               </div>
               <div className="mx-auto h-1 w-20 rounded-full bg-primary/30 group-hover:bg-primary/60 transition-colors" />
               <p className="mt-4 text-[10px] font-black uppercase tracking-[0.4em] text-foreground/40">
@@ -45,7 +45,7 @@ const SponsorsContactSection = () => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="mt-12 grid gap-6 sm:grid-cols-3 pb-8">
+              <div className="mt-12 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-3 pb-8">
                 {[
                   { Icon: Mail, text: "techbeta2k26@gmail.com", label: "Email", href: "https://mail.google.com/mail/?view=cm&fs=1&to=techbeta2k26@gmail.com" },
                   { Icon: Phone, text: "+91 70123 64935", label: "Phone", href: "tel:+917012364935" },

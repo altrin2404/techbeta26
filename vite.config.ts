@@ -19,13 +19,18 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        admin: path.resolve(__dirname, 'admin.html'),
+      },
       output: {
-        // manualChunks: {
-        //   'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-        //   'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-slot', 'framer-motion', 'lucide-react'],
-        //   'vendor-firebase': ['firebase/app', 'firebase/database'],
-        // },
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['framer-motion', 'lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-slot'],
+          'vendor-utils': ['date-fns', 'clsx', 'tailwind-merge'],
+        },
       },
     },
+    chunkSizeWarningLimit: 1000,
   },
 }));

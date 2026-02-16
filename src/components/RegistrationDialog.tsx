@@ -238,10 +238,10 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                 <DialogTrigger asChild>
                     {children}
                 </DialogTrigger>
-                <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto sm:max-w-lg glass-card border-black/5 p-0 bg-background/95 backdrop-blur-xl">
+                <DialogContent className="max-w-md max-h-[90dvh] overflow-y-auto sm:max-w-lg glass-card border-black/5 p-0 bg-background/95 backdrop-blur-xl">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
 
-                    <div className="p-6 pt-8">
+                    <div className="p-4 pt-6 sm:p-6 sm:pt-8 safe-bottom">
                         <DialogHeader className="mb-6">
                             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
                                 {step === 1 ? <Rocket className="h-8 w-8 text-primary" /> : <CreditCard className="h-8 w-8 text-primary" />}
@@ -254,7 +254,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                 )}
                             </DialogTitle>
                             <DialogDescription className="text-center font-medium text-muted-foreground">
-                                {step === 1 ? "Step 1: Participant Details" : "Step 2: Pay Registration Fee: ₹1"}
+                                {step === 1 ? "Step 1: Participant Details" : <>Step 2: Pay Registration Fee: <span className="text-emerald-500 font-bold">₹1</span></>}
                             </DialogDescription>
                         </DialogHeader>
 
@@ -277,7 +277,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                         <FormItem>
                                                             <FormLabel className="text-xs font-bold uppercase tracking-widest">Full Name</FormLabel>
                                                             <FormControl>
-                                                                <Input placeholder="xyz" {...field} className="bg-background/50 border-black/5" />
+                                                                <Input placeholder="xyz" {...field} className="bg-background/50 border-black/5 min-h-[44px]" />
                                                             </FormControl>
                                                             <FormMessage className="text-[10px]" />
                                                         </FormItem>
@@ -290,7 +290,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                         <FormItem>
                                                             <FormLabel className="text-xs font-bold uppercase tracking-widest">Email Address</FormLabel>
                                                             <FormControl>
-                                                                <Input placeholder="john@example.com" {...field} className="bg-background/50 border-black/5" />
+                                                                <Input placeholder="john@example.com" {...field} className="bg-background/50 border-black/5 min-h-[44px]" />
                                                             </FormControl>
                                                             <FormMessage className="text-[10px]" />
                                                         </FormItem>
@@ -306,7 +306,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                         <FormItem>
                                                             <FormLabel className="text-xs font-bold uppercase tracking-widest">Mobile Number</FormLabel>
                                                             <FormControl>
-                                                                <Input placeholder="10-digit number" {...field} className="bg-background/50 border-black/5" />
+                                                                <Input placeholder="10-digit number" {...field} className="bg-background/50 border-black/5 min-h-[44px]" />
                                                             </FormControl>
                                                             <FormMessage className="text-[10px]" />
                                                         </FormItem>
@@ -319,7 +319,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                         <FormItem>
                                                             <FormLabel className="text-xs font-bold uppercase tracking-widest">Department</FormLabel>
                                                             <FormControl>
-                                                                <Input placeholder="e.g. IT, CSE" {...field} className="bg-background/50 border-black/5" />
+                                                                <Input placeholder="e.g. IT, CSE" {...field} className="bg-background/50 border-black/5 min-h-[44px]" />
                                                             </FormControl>
                                                             <FormMessage className="text-[10px]" />
                                                         </FormItem>
@@ -334,7 +334,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                     <FormItem>
                                                         <FormLabel className="text-xs font-bold uppercase tracking-widest">College Name</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Enter your college" {...field} className="bg-background/50 border-black/5" />
+                                                            <Input placeholder="Enter your college" {...field} className="bg-background/50 border-black/5 min-h-[44px]" />
                                                         </FormControl>
                                                         <FormMessage className="text-[10px]" />
                                                     </FormItem>
@@ -380,7 +380,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                             <Button
                                                 type="button"
                                                 onClick={nextStep}
-                                                className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
+                                                className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 min-h-[44px]"
                                             >
                                                 Proceed to Payment <ChevronRight className="ml-2 h-4 w-4" />
                                             </Button>
@@ -397,7 +397,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                 <div className="mx-auto w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-4 border border-primary/10">
                                                     <img src="/brigitz-logo.png" alt="Logo" className="h-16 w-auto object-contain" />
                                                 </div>
-                                                <h3 className="text-xl font-bold">Registration Fee: <span className="text-primary">₹1.00</span></h3>
+                                                <h3 className="text-xl font-bold">Registration Fee: <span className="inline-block bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-1 rounded-lg text-2xl font-black shadow-lg shadow-slate-800/40">₹1.00</span></h3>
                                                 <p className="text-sm text-muted-foreground px-6">
                                                     Click the button below to initiate the secure payment via Razorpay.
                                                 </p>

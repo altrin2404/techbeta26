@@ -64,14 +64,14 @@ const CountdownSection = () => {
                                 Countdown to Event
                             </span>
                         </div>
-                        <h2 className="font-display text-4xl font-bold text-foreground mb-8">
+                        <h2 className="font-display text-2xl sm:text-4xl font-bold text-foreground mb-6 sm:mb-8">
                             The Clock is <span className="text-primary">Ticking</span>
                         </h2>
 
-                        <div className="grid grid-cols-4 gap-4">
+                        <div className="grid grid-cols-4 gap-2 sm:gap-4">
                             {timeUnits.map((unit) => (
                                 <div key={unit.label} className="flex flex-col items-center lg:items-start">
-                                    <div className="relative flex h-16 w-full items-center justify-center rounded-xl border border-border bg-card shadow-sm text-2xl font-black text-primary backdrop-blur-sm sm:h-20 sm:text-4xl">
+                                    <div className="relative flex h-14 w-full items-center justify-center rounded-lg sm:rounded-xl border border-border bg-card shadow-sm text-xl font-black text-primary backdrop-blur-sm sm:h-20 sm:text-4xl">
                                         {unit.value.toString().padStart(2, "0")}
                                     </div>
                                     <span className="mt-2 text-[10px] font-extrabold uppercase tracking-widest text-foreground/70">

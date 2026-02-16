@@ -15,7 +15,8 @@ import {
     XCircle,
     Clock,
     QrCode,
-    ScanLine
+    ScanLine,
+    Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,11 +31,17 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { subscribeToRegistrations, updateRegistrationStatus, deleteRegistration, type Registration } from "@/lib/registrationService";
 import { sendVerificationEmail } from "@/lib/emailService";
+import { auth } from "@/lib/firebase";
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 import QRScannerDialog from "@/components/QRScannerDialog";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
+const ADMIN_EMAIL_DOMAIN = "techbeta2k26.firebaseapp.com";
+
 const AdminDashboard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
+    const [isLoginLoading, setIsLoginLoading] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -43,34 +50,62 @@ const AdminDashboard = () => {
     const [isScannerOpen, setIsScannerOpen] = useState(false);
 
     useEffect(() => {
-        const authStatus = sessionStorage.getItem("adminAuth");
-        if (authStatus === "true") {
-            setIsAuthenticated(true);
-        }
+        let unsubscribeFirestore: (() => void) | null = null;
 
-        // Subscribe to Firebase real-time updates
-        const unsubscribe = subscribeToRegistrations((data) => {
-            setRegistrations(data);
-            setIsLoading(false);
+        // Listen to Firebase auth state
+        const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+            setIsAuthenticated(!!user);
+            setIsAuthLoading(false);
+
+            // Only subscribe to Firestore when authenticated
+            if (user) {
+                unsubscribeFirestore = subscribeToRegistrations((data) => {
+                    setRegistrations(data);
+                    setIsLoading(false);
+                });
+            } else {
+                // Clean up Firestore subscription on logout
+                if (unsubscribeFirestore) {
+                    unsubscribeFirestore();
+                    unsubscribeFirestore = null;
+                }
+                setRegistrations([]);
+                setIsLoading(true);
+            }
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribeAuth();
+            if (unsubscribeFirestore) unsubscribeFirestore();
+        };
     }, []);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (username === "admin" && password === "techbeta26@admin") {
-            setIsAuthenticated(true);
-            sessionStorage.setItem("adminAuth", "true");
+        setIsLoginLoading(true);
+        try {
+            const email = `${username}@${ADMIN_EMAIL_DOMAIN}`;
+            await signInWithEmailAndPassword(auth, email, password);
             toast.success("Login Successful");
-        } else {
-            toast.error("Invalid Credentials");
+        } catch (error: any) {
+            console.error("Login error:", error);
+            const code = error?.code || "unknown";
+            if (code === "auth/user-not-found") {
+                toast.error("User not found. Check your ID.");
+            } else if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+                toast.error("Wrong password. Try again.");
+            } else if (code === "auth/operation-not-allowed") {
+                toast.error("Email/Password sign-in is not enabled in Firebase Console.");
+            } else {
+                toast.error(`Login failed: ${code}`);
+            }
+        } finally {
+            setIsLoginLoading(false);
         }
     };
 
-    const handleLogout = () => {
-        setIsAuthenticated(false);
-        sessionStorage.removeItem("adminAuth");
+    const handleLogout = async () => {
+        await signOut(auth);
     };
 
     const updateStatus = async (id: string, newStatus: string) => {
@@ -186,6 +221,14 @@ const AdminDashboard = () => {
         reg.transactionId.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    if (isAuthLoading) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 text-purple-600 animate-spin" />
+            </div>
+        );
+    }
+
     if (!isAuthenticated) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -198,7 +241,10 @@ const AdminDashboard = () => {
                         <form onSubmit={handleLogin} className="space-y-4">
                             <Input placeholder="ID" value={username} onChange={(e) => setUsername(e.target.value)} required />
                             <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                            <Button type="submit" className="w-full h-11 bg-purple-600">Launch</Button>
+                            <Button type="submit" className="w-full h-11 bg-purple-600" disabled={isLoginLoading}>
+                                {isLoginLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                {isLoginLoading ? "Launching..." : "Launch"}
+                            </Button>
                         </form>
                         <Link to="/" className="mt-6 text-sm text-slate-400 text-center block">← Back to Website</Link>
                     </div>
