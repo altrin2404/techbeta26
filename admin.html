@@ -6,11 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin - TechBeta 2K26</title>
     <link rel="icon" type="image/png" href="/brigitz-logo.png" />
+    <link rel="manifest" href="/admin-manifest.json" />
+    <meta name="theme-color" content="#7c3aed" />
 </head>
 
 <body>
     <div id="root"></div>
     <script type="module" src="/src/admin-main.tsx"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Admin SW registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('Admin SW registration failed:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 
 </html>
