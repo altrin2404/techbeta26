@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode, CheckCircle } from "lucide-react";
+import { useRazorpay } from "@/hooks/useRazorpay";
 import type { Registration } from "@/lib/registrationService";
 
 
@@ -105,7 +106,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
         };
 
         const fireConfetti = () => {
-            const count = 150;
+            const count = 80;
             const defaults = {
                 origin: { y: 0.7 }
             };
@@ -180,51 +181,36 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
         }, 1500);
     }
 
-    const loadScript = (src: string) => {
-        return new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = () => {
-                resolve(true);
-            };
-            script.onerror = () => {
-                resolve(false);
-            };
-            document.body.appendChild(script);
-        });
-    };
+    const { isLoaded: isRazorpayLoaded, error: razorpayError } = useRazorpay();
+
+    // Effect to handle Razorpay load error
+    React.useEffect(() => {
+        if (razorpayError) {
+            toast.error("Failed to load payment gateway. Please check your internet connection.");
+        }
+    }, [razorpayError]);
 
     const displayRazorpay = async () => {
-        const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
-
-        if (!res) {
-            toast.error("Razorpay SDK failed to load. Are you online?");
+        if (!isRazorpayLoaded) {
+            toast.error("Payment gateway is still loading. Please wait a moment...");
             return;
         }
 
-        // Create a new order via API in a real app, here we just use client-side options for demo/simplicity or if API is not available yet.
-        // In production, create order on server. Here we assume amount is fixed ₹1.
-
         const options = {
-            key: "rzp_live_SGVbI9rDnkoihY", // Enter the Key ID generated from the Dashboard
-            amount: "100", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            key: "rzp_live_SGVbI9rDnkoihY",
+            amount: "100",
             currency: "INR",
             name: "TECHBETA 2K26",
             description: "Registration Fee",
             image: "/brigitz-logo.png",
             handler: function (response: any) {
-                // console.log(response.razorpay_payment_id);
-                // console.log(response.razorpay_order_id);
-                // console.log(response.razorpay_signature);
-
                 form.setValue('transactionId', response.razorpay_payment_id);
-                form.setValue('upiName', 'Razorpay Online'); // Default or extract if possible (not standard)
+                form.setValue('upiName', 'Razorpay Online');
 
                 toast.success("Payment Successful!");
 
-                // Construct submission data
                 const values = form.getValues();
-                onSubmit(values); // Automatically submit after payment success
+                onSubmit(values);
             },
             prefill: {
                 name: form.getValues('name'),
@@ -429,10 +415,10 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                 <Button
                                                     type="button"
                                                     onClick={displayRazorpay}
-                                                    disabled={isSubmitting}
+                                                    disabled={isSubmitting || !isRazorpayLoaded}
                                                     className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
                                                 >
-                                                    {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Pay Now with Razorpay"}
+                                                    {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : (!isRazorpayLoaded ? "Loading Payment..." : "Pay Now with Razorpay")}
                                                 </Button>
                                             </div>
 

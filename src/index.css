@@ -163,3 +163,23 @@
     }
   }
 }
+
+/* Razorpay Mobile Optimization & Fixes */
+.razorpay-checkout-frame {
+  z-index: 2147483647 !important; /* Max z-index to stay on top of everything */
+  pointer-events: auto !important;
+}
+
+/* Optimize Glassmorphism for Mobile to reduce lag */
+@media (max-width: 768px) {
+  .glass-card {
+    backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .glass-card {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
