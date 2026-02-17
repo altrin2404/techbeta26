@@ -12,19 +12,29 @@ import {
     Timestamp
 } from "firebase/firestore";
 
-export interface Registration {
-    id: string;
+export interface TeamMember {
     name: string;
-    college: string;
-    department: string;
     email: string;
     phone: string;
+    college: string;
+    department: string;
+    events: string[];
+}
+
+export interface Registration {
+    id: string; // Document ID
+    name: string; // Team Lead Name
+    college: string; // Team Lead College (kept for backward compatibility/indexing)
+    department: string; // Team Lead Dept (kept for backward compatibility/indexing)
+    email: string; // Team Lead Email
+    phone: string; // Team Lead Phone
+    members?: TeamMember[]; // Array of team members
     events: string[];
     transactionId: string;
     upiName?: string;
-    status: 'Pending Verification' | 'Verified';
-    registrationDate: string;
-    timestamp?: any;
+    status: 'Pending Verification' | 'Verified' | 'Rejected';
+    registrationDate: string; // ISO String
+    timestamp: any; // Firestore server timestamp
 }
 
 const COLLECTION_NAME = "registrations";

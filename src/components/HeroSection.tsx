@@ -13,7 +13,8 @@ const HeroSection = () => {
     const setupSubscription = async () => {
       const { subscribeToRegistrations } = await import("@/lib/registrationService");
       unsubscribe = subscribeToRegistrations((data) => {
-        setRegistrationCount(data.length);
+        const totalParticipants = data.reduce((acc, curr) => acc + (curr.members ? curr.members.length : 1), 0);
+        setRegistrationCount(totalParticipants);
       });
     };
 
