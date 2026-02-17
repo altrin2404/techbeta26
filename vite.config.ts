@@ -26,8 +26,8 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['framer-motion', 'lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-slot'],
-          'vendor-utils': ['date-fns', 'clsx', 'tailwind-merge'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-slot', 'lucide-react', 'clsx', 'tailwind-merge'],
+          'vendor-motion': ['framer-motion'],
         },
       },
     },

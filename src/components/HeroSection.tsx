@@ -73,7 +73,7 @@ const HeroSection = () => {
             }}
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
-            className="relative group cursor-pointer"
+            className="relative group cursor-pointer will-change-transform"
           >
             <img
               src="/brigitz-logo.png"
