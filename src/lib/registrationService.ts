@@ -18,6 +18,7 @@ export interface TeamMember {
     phone: string;
     college: string;
     department: string;
+    year: string;
     events: string[];
 }
 

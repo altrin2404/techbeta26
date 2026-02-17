@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Code, Cpu, FileText, Gamepad2, Lightbulb, Presentation, Info, CheckCircle2, ChevronDown, ChevronUp, Palette, Music, Mic2, Trophy, Disc } from "lucide-react";
 import {
@@ -81,7 +81,7 @@ type EventItem = {
     detailedRules: string[];
 };
 
-const EventCard = ({ event, index }: { event: EventItem; index: number }) => (
+const EventCard = React.memo(({ event, index }: { event: EventItem; index: number }) => (
     <motion.div
         key={event.name || `event-${index}`}
         initial={{ opacity: 0, y: 40 }}
@@ -155,7 +155,7 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => (
             </div>
         </div>
     </motion.div>
-);
+));
 
 const EventsSection = () => {
     const [isOpen, setIsOpen] = useState(false);

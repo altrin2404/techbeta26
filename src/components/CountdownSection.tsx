@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Calendar as CalendarIcon, Clock, ChevronRight } from "lucide-react";
 import RegistrationDialog from "./RegistrationDialog";
@@ -14,7 +14,7 @@ interface TimeLeft {
 const CountdownSection = () => {
     const targetDate = new Date("2026-03-13T09:00:00").getTime();
 
-    const calculateTimeLeft = (): TimeLeft => {
+    const calculateTimeLeft = useCallback((): TimeLeft => {
         const now = new Date().getTime();
         const difference = targetDate - now;
 
@@ -28,7 +28,7 @@ const CountdownSection = () => {
             minutes: Math.floor((difference / 1000 / 60) % 60),
             seconds: Math.floor((difference / 1000) % 60),
         };
-    };
+    }, [targetDate]);
 
     const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft());
 
@@ -38,7 +38,7 @@ const CountdownSection = () => {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, []);
+    }, [calculateTimeLeft]);
 
     const timeUnits = [
         { label: "Days", value: timeLeft.days },

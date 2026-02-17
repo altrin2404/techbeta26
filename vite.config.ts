@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    target: "esnext",
+    minify: "esbuild",
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
@@ -26,8 +28,17 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-slot', 'lucide-react', 'clsx', 'tailwind-merge'],
+          'vendor-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-label',
+            '@radix-ui/react-checkbox',
+            'lucide-react',
+            'clsx',
+            'tailwind-merge'
+          ],
           'vendor-motion': ['framer-motion'],
+          'firebase': ['firebase/app', 'firebase/firestore', 'firebase/auth'],
         },
       },
     },

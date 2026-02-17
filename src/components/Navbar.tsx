@@ -12,7 +12,7 @@ const navLinks = [
   { label: "FAQs", href: "#faqs" },
 ];
 
-import { ThemeToggle } from "./ThemeToggle";
+
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +35,7 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
-          <ThemeToggle />
+
           <RegistrationDialog>
             <Button size="sm" className="font-display text-xs font-semibold tracking-wider box-glow-cyan">
               Register Now
@@ -70,8 +70,8 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-foreground/70">Theme</span>
-                <ThemeToggle />
+
+
               </div>
               <RegistrationDialog>
                 <Button size="sm" className="font-display text-xs font-semibold tracking-wider box-glow-cyan w-full">

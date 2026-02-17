@@ -16,7 +16,12 @@ import {
     Clock,
     QrCode,
     ScanLine,
-    Loader2
+    Loader2,
+    ChevronLeft,
+    ChevronRight,
+    FileText,
+    ChevronDown,
+    Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +32,13 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import * as XLSX from "xlsx";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { subscribeToRegistrations, updateRegistrationStatus, deleteRegistration, type Registration } from "@/lib/registrationService";
@@ -186,12 +198,20 @@ const AdminDashboard = () => {
         }
     };
 
-    const downloadCSV = () => {
-        const headers = ["Team ID", "Team Lead", "Member Name", "Member Email", "Member Phone", "Member College", "Member Dept", "Member Events", "Transaction ID", "UPI Name", "Status", "Date", "Original QR Link", "QR Image Formula (Sheets)"];
+    const exportAllParticipantsCSV = () => {
+        const headers = [
+            "Name",
+            "Dept",
+            "Year",
+            "College",
+            "Phone",
+            "Email",
+            "Events",
+            "Status",
+            "Qr image"
+        ];
 
         const csvRows: string[][] = [];
-
-        let rowCount = 2;
 
         registrations.forEach(reg => {
             const members = reg.members || [{
@@ -200,40 +220,153 @@ const AdminDashboard = () => {
                 phone: reg.phone,
                 college: reg.college,
                 department: reg.department,
+                year: (reg as any).year || "N/A", // Fallback for legacy
                 events: reg.events
             }];
 
             members.forEach((m, i) => {
-                const qrData = JSON.stringify({ id: reg.id, index: i, name: m.name, events: m.events });
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
+                const memberEvents = Array.isArray(m.events) ? m.events.join("; ") : (m.events || "");
+                const year = (m as any).year || "N/A";
 
                 csvRows.push([
-                    reg.id,
-                    reg.name, // Team Lead Name
                     m.name,
-                    m.email,
-                    m.phone,
-                    m.college,
                     m.department,
-                    (m.events || []).join("; "),
-                    reg.transactionId,
-                    reg.upiName || "N/A",
+                    year,
+                    m.college,
+                    m.phone,
+                    m.email,
+                    memberEvents,
                     reg.status,
-                    new Date(reg.registrationDate).toLocaleDateString(),
-                    qrUrl,
-                    `=IMAGE(M${rowCount})`
+                    `=IMAGE("https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(JSON.stringify({ id: reg.id, index: i, name: m.name, events: m.events }))}")`
                 ]);
-                rowCount++;
             });
         });
 
-        const csvContent = [headers.join(","), ...csvRows.map(row => row.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join(","))].join("\n");
-        const blob = new Blob([csvContent], { type: "text/csv" });
+        const csvContent = [
+            headers.join(","),
+            ...csvRows.map(row => row.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "techbeta26_registrations_per_member.csv";
+        a.download = `techbeta26_all_participants_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
+        window.URL.revokeObjectURL(url);
+    };
+
+    const exportMasterExcel = () => {
+        const wb = XLSX.utils.book_new();
+        const allEvents = new Set<string>();
+
+        // 1. Collect all unique events
+        registrations.forEach(reg => {
+            const members = reg.members || [{ events: reg.events }];
+            members.forEach(m => {
+                const events = Array.isArray(m.events) ? m.events : [m.events];
+                events.forEach((e: string) => {
+                    if (e) allEvents.add(e);
+                });
+            });
+        });
+
+        const sortedEvents = Array.from(allEvents).sort();
+
+        // 2. Create a sheet for each event
+        sortedEvents.forEach(eventName => {
+            const eventRows: any[] = [];
+            let teamCounter = 1;
+
+            registrations.forEach(reg => {
+                const members = reg.members || [{
+                    name: reg.name,
+                    email: reg.email,
+                    phone: reg.phone,
+                    college: reg.college,
+                    department: reg.department,
+                    year: (reg as any).year || "",
+                    events: reg.events
+                }];
+
+                // Check if any member is in this event to assign a Team Number for this event?
+                // User said: "Team number stats from 1 and contunes , Team members..."
+                // Assuming Team Number is unique per Team in THIS list, or Global Team ID?
+                // Use counter for sequential numbering in the sheet.
+
+                // Filter members for this event
+                const participatingMembers = members.filter(m => {
+                    const memberEvents = Array.isArray(m.events) ? m.events : [m.events];
+                    return memberEvents.includes(eventName);
+                });
+
+                if (participatingMembers.length > 0) {
+                    // Add rows for these members
+                    participatingMembers.forEach((m, memberIndex) => { // Need actual index from members array?
+                        // Find original index in 'members' array for QR generation
+                        const originalIndex = members.indexOf(m);
+
+                        eventRows.push({
+                            "Team Number": teamCounter,
+                            "Team Member(s)": m.name,
+                            "Dept": m.department,
+                            "Yr of Study": m.year || "N/A",
+                            "Clg": m.college,
+                            "Phone No": m.phone,
+                            "Email": m.email,
+                            "Status": reg.status === "Verified" ? "Verified" : "Pending",
+                            "QR": `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(JSON.stringify({ id: reg.id, index: originalIndex, name: m.name, events: m.events }))}`
+                        });
+                    });
+                    teamCounter++;
+                }
+            });
+
+            if (eventRows.length > 0) {
+                // Define header order strictly
+                const headerOrder = [
+                    "Team Number", "Team Member(s)", "Dept", "Yr of Study", "Clg", "Phone No", "Email", "Status", "QR"
+                ];
+
+                const ws = XLSX.utils.json_to_sheet(eventRows, { header: headerOrder });
+
+                // Post-process to convert QR URL to IMAGE formula
+                // QR is the 9th column -> Index 8 -> Column 'I'
+                const range = XLSX.utils.decode_range(ws['!ref'] || "A1:I1");
+                const qrColIndex = 8; // 0-indexed, 9th column
+
+                for (let R = range.s.r + 1; R <= range.e.r; ++R) { // Skip header row
+                    const cellAddress = XLSX.utils.encode_cell({ r: R, c: qrColIndex });
+                    const cell = ws[cellAddress];
+
+                    if (cell && cell.v) {
+                        // cell.v contains the URL. Convert to formula.
+                        cell.f = `IMAGE("${cell.v}")`;
+                        delete cell.v;
+                        cell.t = 's'; // Set as formula/string result (or omit for auto-detect, but 'n' was definitely wrong)
+                    }
+                }
+
+                // Adjust column widths
+                const wscols = [
+                    { wch: 15 }, // Team Number
+                    { wch: 25 }, // Team Member
+                    { wch: 15 }, // Dept
+                    { wch: 10 }, // Yr of Study
+                    { wch: 25 }, // Clg
+                    { wch: 15 }, // Phone No
+                    { wch: 25 }, // Email
+                    { wch: 15 }, // Status
+                    { wch: 15 }, // QR (Image) - Width doesn't affect row height, user might need to adjust row height
+                ];
+                ws['!cols'] = wscols;
+
+                const safeSheetName = eventName.replace(/[\\/?*[\]]/g, "").substring(0, 31);
+                XLSX.utils.book_append_sheet(wb, ws, safeSheetName || "Event");
+            }
+        });
+
+        XLSX.writeFile(wb, `techbeta26_master_events_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
     const [scannedParticipant, setScannedParticipant] = useState<Registration | null>(null);
@@ -357,7 +490,23 @@ const AdminDashboard = () => {
                     <Button onClick={() => setIsScannerOpen(true)} className="bg-purple-600 hover:bg-purple-700 font-bold">
                         <ScanLine className="h-4 w-4 mr-2" /> Scan Ticket
                     </Button>
-                    <Button onClick={downloadCSV} variant="outline" className="font-bold"><Download className="h-4 w-4 mr-2" /> Export CSV</Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="font-bold gap-2">
+                                <Download className="h-4 w-4" /> Export Data <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                            <DropdownMenuItem onClick={exportAllParticipantsCSV} className="cursor-pointer font-medium">
+                                <FileText className="mr-2 h-4 w-4 text-blue-500" />
+                                All Participants (CSV)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={exportMasterExcel} className="cursor-pointer font-medium">
+                                <Layers className="mr-2 h-4 w-4 text-green-500" />
+                                Master Sheet (XLSX)
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 <QRScannerDialog
@@ -382,7 +531,7 @@ const AdminDashboard = () => {
                         </div>
                         <div className="p-6 space-y-4">
                             <div className="text-center">
-                                <h3 className="text-xl font-bold text-slate-900">{scannedParticipant?.name} <span className="text-xs font-normal text-slate-500">(Lead)</span></h3>
+                                <h3 className="text-xl font-bold text-slate-900">{scannedParticipant?.name}</h3>
                                 <p className="text-sm font-medium text-slate-500 uppercase tracking-widest">{scannedParticipant?.college}</p>
                             </div>
 
@@ -411,12 +560,28 @@ const AdminDashboard = () => {
                                                         <span className="text-slate-400">{m.phone}</span>
                                                     </div>
                                                     <div className="flex justify-between text-[10px] text-slate-500">
-                                                        <span>{m.department}</span>
+                                                        <span>{m.department} • {m.year || "Year N/A"}</span>
                                                         <span>{m.college}</span>
                                                     </div>
                                                     {/* Added display for member's events */}
-                                                    <div className="mt-1 text-[9px] text-primary/80 font-semibold">
-                                                        Events: {(m.events || []).join(', ')}
+                                                    <div className="mt-1 flex flex-wrap gap-1">
+                                                        {(typeof m.events === 'string' ? [m.events] : (m.events || [])).map((e: string, idx: number) => {
+                                                            const colors = [
+                                                                "bg-blue-100 text-blue-700 border-blue-200",
+                                                                "bg-purple-100 text-purple-700 border-purple-200",
+                                                                "bg-pink-100 text-pink-700 border-pink-200",
+                                                                "bg-orange-100 text-orange-700 border-orange-200",
+                                                                "bg-teal-100 text-teal-700 border-teal-200",
+                                                                "bg-indigo-100 text-indigo-700 border-indigo-200",
+                                                            ];
+                                                            // Deterministic color based on event name length + first char code
+                                                            const colorIndex = (e.length + e.charCodeAt(0)) % colors.length;
+                                                            return (
+                                                                <span key={idx} className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${colors[colorIndex]}`}>
+                                                                    {e}
+                                                                </span>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </li>
                                             ))}
@@ -468,97 +633,140 @@ const AdminDashboard = () => {
                     </DialogContent>
                 </Dialog>
 
-                <div className="bg-white rounded-2xl border overflow-hidden">
+                {/* Participants Table */}
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center">
+                        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <Users className="text-primary" />
+                            Registered Teams
+                        </h2>
+                        <div className="flex gap-2 w-full md:w-auto">
+                            <div className="relative flex-1 md:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input
+                                    placeholder="Search participants..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-9 bg-slate-50 border-slate-200 text-slate-900 focus:ring-primary"
+                                />
+                            </div>
+                            <Button variant="outline" size="icon" className="border-slate-200 text-slate-600 hover:bg-slate-50">
+                                <Filter className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50 border-b">
-                                <tr className="text-[10px] font-black uppercase text-slate-500">
-                                    <th className="px-6 py-4">Team Lead / Member</th>
-                                    <th className="px-6 py-4">Details</th>
-                                    <th className="px-6 py-4">Events</th>
-                                    <th className="px-6 py-4">Payment</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4 text-right">Actions</th>
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-slate-50/50">
+                                <tr className="border-b border-slate-100 hover:bg-transparent">
+                                    <th className="text-slate-500 font-semibold px-6 py-4 whitespace-nowrap text-xs uppercase tracking-wider">Team ID</th>
+                                    <th className="text-slate-500 font-semibold px-6 py-4 whitespace-nowrap text-xs uppercase tracking-wider">Members</th>
+                                    <th className="text-slate-500 font-semibold px-6 py-4 whitespace-nowrap text-xs uppercase tracking-wider">College</th>
+                                    <th className="text-slate-500 font-semibold px-6 py-4 whitespace-nowrap hidden md:table-cell text-xs uppercase tracking-wider">Events</th>
+                                    <th className="text-slate-500 font-semibold px-6 py-4 whitespace-nowrap hidden md:table-cell text-xs uppercase tracking-wider">Payment</th>
+                                    <th className="text-slate-500 font-semibold px-6 py-4 whitespace-nowrap text-xs uppercase tracking-wider">Status</th>
+                                    <th className="text-slate-500 font-semibold text-right px-6 py-4 whitespace-nowrap text-xs uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y">
-                                {filteredRegistrations.map((reg) => (
-                                    <tr key={reg.id} className="hover:bg-slate-50/50">
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-foreground flex items-center gap-2">
-                                                {reg.name}
-                                                {reg.members && reg.members.length > 1 && (
-                                                    <span className="text-[9px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full font-black">
-                                                        +{reg.members.length - 1}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="text-[10px] font-bold text-primary uppercase">{reg.college}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm font-bold text-foreground">{reg.phone}</div>
-                                            <div className="text-[10px] text-muted-foreground">{reg.email}</div>
-                                            {reg.members && reg.members.length > 1 && <div className="text-[9px] text-slate-400 font-bold mt-1">Total: {reg.members.length} Members</div>}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-wrap gap-1 mb-2">
-                                                {(reg.events || []).map((e, i) => (
-                                                    <span key={i} className="text-[9px] font-black bg-primary/10 text-foreground px-1.5 py-0.5 rounded">{e}</span>
-                                                ))}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-[10px] font-bold text-foreground font-mono">ID: {reg.transactionId}</div>
-                                            {reg.upiName && <div className="text-[10px] text-primary font-black uppercase">UPI: {reg.upiName}</div>}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-full ${reg.status === 'Verified' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-                                                }`}>
-                                                {reg.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" onClick={() => setScannedParticipant(reg)} className="text-primary h-8 w-8 hover:bg-primary/5">
-                                                <ScanLine size={16} />
-                                            </Button>
-
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="text-slate-400 h-8 w-8 hover:bg-slate-100">
-                                                        <QrCode size={16} />
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent className="max-w-xs bg-white dark:bg-slate-900 border-black/5 dark:border-white/10 rounded-3xl text-center">
-                                                    <DialogHeader>
-                                                        <DialogTitle className="text-center font-display text-xl bold">Participant QR</DialogTitle>
-                                                    </DialogHeader>
-                                                    <div className="py-4 flex flex-col items-center">
-                                                        <div className="bg-white p-3 rounded-2xl border border-black/5 shadow-sm mb-4">
-                                                            <img
-                                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(JSON.stringify({ id: reg.id, name: reg.name, events: reg.events }))}`}
-                                                                alt="Unique Participant QR"
-                                                                className="h-40 w-40"
-                                                            />
-                                                        </div>
-                                                        <p className="font-bold text-slate-800 dark:text-slate-200">{reg.name}</p>
-                                                        <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-1 lowercase">ID: {reg.id}</p>
-                                                    </div>
-                                                </DialogContent>
-                                            </Dialog>
-
-                                            {reg.status === "Pending Verification" && (
-                                                <Button onClick={() => updateStatus(reg.id, "Verified")} variant="ghost" size="icon" className="text-green-500 h-8 w-8 hover:bg-green-50"><CheckCircle size={16} /></Button>
-                                            )}
-                                            <Button onClick={() => handleDelete(reg.id)} variant="ghost" size="icon" className="text-slate-300 hover:text-red-500 h-8 w-8"><Trash2 size={16} /></Button>
+                            <tbody className="divide-y divide-slate-100">
+                                {filteredRegistrations.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} className="h-24 text-center text-slate-500">
+                                            No participants found
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    filteredRegistrations.map((reg) => (
+                                        <tr key={reg.id} className="hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => setScannedParticipant(reg)}>
+                                            <td className="px-6 py-4 font-mono text-sm text-slate-600">
+                                                #{reg.id.slice(0, 6)}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-slate-900 flex items-center gap-2">
+                                                    {reg.name}
+                                                    {reg.members && reg.members.length > 1 && (
+                                                        <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-black">
+                                                            +{reg.members.length - 1}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="text-xs text-slate-500">{reg.phone}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-slate-700 truncate max-w-[150px]" title={reg.college}>{reg.college}</div>
+                                                <div className="text-[10px] text-slate-400 font-medium">{reg.department}</div>
+                                            </td>
+                                            <td className="px-6 py-4 hidden md:table-cell">
+                                                <div className="flex flex-wrap gap-1">
+                                                    {(Array.isArray(reg.events) ? reg.events : [reg.events]).slice(0, 2).map((e: string, i: number) => (
+                                                        <span key={i} className="text-[10px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">{e}</span>
+                                                    ))}
+                                                    {(Array.isArray(reg.events) ? reg.events : [reg.events]).length > 2 && (
+                                                        <span className="text-[10px] text-slate-400 px-1.5 py-0.5">...</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 hidden md:table-cell">
+                                                <div className="text-[10px] font-mono text-slate-500">{reg.transactionId || 'N/A'}</div>
+                                                {reg.upiName && <div className="text-[9px] text-primary font-bold uppercase">{reg.upiName}</div>}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${reg.status === 'Verified' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                    {reg.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                                <Button variant="ghost" size="icon" onClick={() => setScannedParticipant(reg)} className="h-8 w-8 hover:bg-slate-100 text-primary">
+                                                    <ScanLine size={14} />
+                                                </Button>
+
+                                                <Dialog>
+                                                    <DialogTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-slate-100 text-slate-500">
+                                                            <QrCode size={14} />
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="max-w-sm bg-white border-slate-200 text-slate-900 p-0 overflow-hidden shadow-2xl rounded-2xl">
+                                                        <div className="p-4 bg-slate-50 border-b border-slate-100">
+                                                            <DialogTitle className="text-center font-display text-slate-800">Team QR Codes</DialogTitle>
+                                                        </div>
+                                                        <div className="p-6 overflow-x-auto flex gap-4 snap-x snap-mandatory bg-white">
+                                                            {(reg.members || [{ name: reg.name, events: reg.events }]).map((m, i) => (
+                                                                <div key={i} className="flex-none w-full snap-center flex flex-col items-center">
+                                                                    <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm mb-4">
+                                                                        <img
+                                                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(JSON.stringify({ id: reg.id, index: i, name: m.name, events: m.events }))}`}
+                                                                            alt="QR"
+                                                                            className="w-48 h-48"
+                                                                        />
+                                                                    </div>
+                                                                    <p className="font-bold text-lg">{m.name}</p>
+                                                                    <p className="text-xs text-primary uppercase font-bold">Member {i + 1}</p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </DialogContent>
+                                                </Dialog>
+
+                                                {reg.status !== "Verified" && (
+                                                    <Button onClick={() => updateStatus(reg.id, "Verified")} variant="ghost" size="icon" className="h-8 w-8 hover:bg-green-500/20 text-green-500">
+                                                        <CheckCircle size={14} />
+                                                    </Button>
+                                                )}
+                                                <Button onClick={() => handleDelete(reg.id)} variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-500/20 text-slate-500 hover:text-red-500">
+                                                    <Trash2 size={14} />
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </main>
-        </div>
+                </div >
+            </main >
+        </div >
     );
 };
 

@@ -34,23 +34,28 @@ const memberSchema = z.object({
     phone: z.string().regex(/^[0-9]{10}$/, "Invalid phone"),
     college: z.string().min(2, "College is required"),
     department: z.string().min(2, "Department is required"),
+    year: z.string().min(1, "Year is required"),
     events: z.array(z.string()).min(1, "Select at least one event"),
 });
 
 const formSchema = z.object({
-    // college: z.string().min(2, "College name is required"), // Removed from root
-    // department: z.string().min(2, "Department is required"), // Removed from root
-    // events: z.array(z.string()).min(1, "Select at least one event"), // Removed from root
     transactionId: z.string().min(6, "Valid Transaction ID is required"),
     upiName: z.string().optional(),
     members: z.array(memberSchema).min(1).max(4),
 });
 
-const eventOptions = [
+const technicalEvents = [
     "Ideathon",
     "Web/Logo Designing",
     "Debugging",
     "Tech Quiz"
+];
+
+const nonTechnicalEvents = [
+    "Gaming",
+    "Photography",
+    "Treasure Hunt",
+    "Surprise Event"
 ];
 
 interface RegistrationDialogProps {
@@ -66,12 +71,9 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            // college: "", // Removed from root
-            // department: "", // Removed from root
-            // events: [], // Removed from root
             transactionId: "",
             upiName: "",
-            members: [{ name: "", email: "", phone: "", college: "", department: "", events: [] }],
+            members: [{ name: "", email: "", phone: "", college: "", department: "", year: "", events: [] }],
         },
     });
 
@@ -90,39 +92,31 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
 
     const prevStep = () => setStep(1);
 
-    // Wait, code says 1 rupee display, but razorpay amount "100" (which is paise = 1 INR).
-    // User requirement: "razorpay sould collect the amount as per the team members count".
-    // So if 1 member = 100 paise (1 INR). If 4 members = 400 paise (4 INR).
-
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
 
         const leadMember = values.members[0];
-
-        // Aggregate all unique events from all members
         const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
 
-        // Flatten data for Google Forms - just concatenating for now
+        // Flatten data for Google Forms
         const allNames = values.members.map(m => m.name).join(", ");
         const allEmails = values.members.map(m => m.email).join(", ");
         const allPhones = values.members.map(m => m.phone).join(", ");
         const allColleges = values.members.map(m => m.college).join(", ");
         const allDepts = values.members.map(m => m.department).join(", ");
+        const allYears = values.members.map(m => m.year).join(", ");
 
         const submitToGoogleForms = async () => {
             try {
                 const formData = new FormData();
-                // Map your Google Form entry IDs here
-                // Example: entry.123456=Name, entry.654321=Email, etc.
-                // For now assuming we just send lead details or concatenated string
-                // You'll need to update these IDs based on your actual Google Form
                 formData.append("entry.2005620554", allNames);
                 formData.append("entry.1045781291", allEmails);
                 formData.append("entry.1166974658", allPhones);
-                formData.append("entry.1065046570", allColleges); // Using concatenated colleges
-                formData.append("entry.839337160", allDepts); // Using concatenated depts
+                formData.append("entry.1065046570", allColleges);
+                formData.append("entry.839337160", allDepts);
                 formData.append("entry.1174092410", allEvents.join(", "));
                 formData.append("entry.1206806733", values.transactionId);
+                // Note: Google Form might not have a field for Year yet, omitting for now or appending to Dept if critical
 
                 await fetch("https://docs.google.com/forms/d/e/1FAIpQLSe12B5j3CqwXqV-gwWb1Q_yQ8N65s3V273x0-4x64585148/formResponse", {
                     method: "POST",
@@ -131,7 +125,6 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                 });
             } catch (error) {
                 console.error("Google Forms Error:", error);
-                // Don't block main flow
             }
         };
 
@@ -139,38 +132,52 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
             const count = 80;
             const defaults = { origin: { y: 0.7 } };
             const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
-            // ... simple confetti logic would go here if space allowed, shortening for now
+
+            function fire(particleRatio: number, opts: any) {
+                (window as any).confetti({
+                    ...defaults,
+                    ...opts,
+                    particleCount: Math.floor(count * particleRatio),
+                    colors: colors,
+                    zIndex: 9999
+                });
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
         };
 
         setTimeout(async () => {
             await submitToGoogleForms();
 
-            // Save to Firebase
             const { addRegistration } = await import("@/lib/registrationService");
 
-            // Construct registration object compatible with interface
             const registrationData: Omit<Registration, 'id' | 'registrationDate' | 'status' | 'timestamp'> = {
-                name: leadMember.name, // Lead details for backward compatibility
+                name: leadMember.name,
                 email: leadMember.email,
                 phone: leadMember.phone,
-                college: leadMember.college, // Lead's college for backward compatibility
-                department: leadMember.department, // Lead's dept
+                college: leadMember.college,
+                department: leadMember.department,
                 events: allEvents,
                 transactionId: values.transactionId,
                 upiName: values.upiName,
-                members: values.members as any, // Cast to any to bypass strict check, validated by Zod
+                members: values.members.map(m => ({
+                    ...m,
+                    year: m.year
+                })) as any,
             };
 
             const result = await addRegistration(registrationData);
 
             if (result.success) {
                 window.dispatchEvent(new Event("registration-updated"));
-
                 setIsSubmitting(false);
                 setOpen(false);
                 setStep(1);
                 form.reset();
-
                 fireConfetti();
                 setShowSuccess(true);
             } else {
@@ -241,7 +248,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[700px] overflow-hidden p-0 gap-0 rounded-3xl border-none shadow-2xl bg-[#0f172a] text-white">
+            <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[700px] w-[95vw] max-h-[85vh] overflow-y-auto p-0 gap-0 rounded-3xl border-none shadow-2xl bg-[#0f172a] text-white">
                 <div className="bg-slate-900 border-b border-white/5 p-4 flex items-center justify-between sticky top-0 z-50">
                     <div className="flex items-center gap-2">
                         <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
@@ -266,6 +273,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                 <div className="max-h-[80vh] overflow-y-auto bg-slate-50 text-slate-900">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-6">
+                            {/* ... keep DialogHeader ... */}
                             <DialogHeader className="mb-4">
                                 <DialogTitle className="text-2xl font-black text-slate-900 flex items-center gap-2">
                                     {step === 1 ? (
@@ -299,7 +307,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                 <div key={field.id} className="p-4 rounded-xl bg-slate-50 border border-slate-100 relative group">
                                                     <div className="flex items-center justify-between mb-3">
                                                         <h4 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
-                                                            <Users size={14} /> Member {index + 1} {index === 0 && "(Team Lead)"}
+                                                            <Users size={14} /> Member {index + 1}
                                                         </h4>
                                                         {index > 0 && (
                                                             <Button
@@ -367,51 +375,114 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                             />
                                                             <FormField
                                                                 control={form.control}
-                                                                name={`members.${index}.college`}
+                                                                name={`members.${index}.year`}
                                                                 render={({ field }) => (
                                                                     <FormItem>
                                                                         <FormControl>
-                                                                            <Input placeholder="College" {...field} className="bg-white" />
+                                                                            <select
+                                                                                {...field}
+                                                                                className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                                            >
+                                                                                <option value="" disabled>Select Year</option>
+                                                                                <option value="1st Year">1st Year</option>
+                                                                                <option value="2nd Year">2nd Year</option>
+                                                                                <option value="3rd Year">3rd Year</option>
+                                                                                <option value="4th Year">4th Year</option>
+                                                                                <option value="PG">PG</option>
+                                                                            </select>
                                                                         </FormControl>
                                                                         <FormMessage className="text-[10px]" />
                                                                     </FormItem>
                                                                 )}
                                                             />
                                                         </div>
+                                                        <FormField
+                                                            control={form.control}
+                                                            name={`members.${index}.college`}
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormControl>
+                                                                        <Input placeholder="College" {...field} className="bg-white" />
+                                                                    </FormControl>
+                                                                    <FormMessage className="text-[10px]" />
+                                                                </FormItem>
+                                                            )}
+                                                        />
 
                                                         <div className="space-y-2 pt-2 border-t border-slate-100">
-                                                            <FormLabel className="text-xs font-bold uppercase tracking-widest text-slate-500">Events for Member</FormLabel>
-                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                                {eventOptions.map((event) => (
-                                                                    <FormField
-                                                                        key={event}
-                                                                        control={form.control}
-                                                                        name={`members.${index}.events` as any}
-                                                                        render={({ field }) => (
-                                                                            <FormItem className="flex flex-row items-center space-x-2 space-y-0 rounded-md border border-slate-200 bg-white p-2 hover:bg-slate-50 transition-colors">
-                                                                                <FormControl>
-                                                                                    <Checkbox
-                                                                                        checked={(field.value as string[])?.includes(event)}
-                                                                                        onCheckedChange={(checked) => {
-                                                                                            const currentValue = (field.value as string[]) || [];
-                                                                                            return checked
-                                                                                                ? field.onChange([...currentValue, event])
-                                                                                                : field.onChange(
-                                                                                                    currentValue.filter(
-                                                                                                        (value: string) => value !== event
-                                                                                                    )
-                                                                                                )
-                                                                                        }}
-                                                                                        className="border-primary h-4 w-4"
-                                                                                    />
-                                                                                </FormControl>
-                                                                                <FormLabel className="text-[10px] font-bold cursor-pointer text-slate-700 leading-tight">
-                                                                                    {event}
-                                                                                </FormLabel>
-                                                                            </FormItem>
-                                                                        )}
-                                                                    />
-                                                                ))}
+                                                            {/* ... keep event checkboxes ... */}
+                                                            <div className="space-y-4">
+                                                                <div>
+                                                                    <FormLabel className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 block">Technical Events</FormLabel>
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                        {technicalEvents.map((event) => (
+                                                                            <FormField
+                                                                                key={event}
+                                                                                control={form.control}
+                                                                                name={`members.${index}.events` as any}
+                                                                                render={({ field }) => (
+                                                                                    <FormItem className="flex flex-row items-center space-x-2 space-y-0 rounded-md border border-slate-200 bg-white p-2 hover:bg-slate-50 transition-colors">
+                                                                                        <FormControl>
+                                                                                            <Checkbox
+                                                                                                checked={(field.value as string[])?.includes(event)}
+                                                                                                onCheckedChange={(checked) => {
+                                                                                                    const currentValue = (field.value as string[]) || [];
+                                                                                                    return checked
+                                                                                                        ? field.onChange([...currentValue, event])
+                                                                                                        : field.onChange(
+                                                                                                            currentValue.filter(
+                                                                                                                (value: string) => value !== event
+                                                                                                            )
+                                                                                                        )
+                                                                                                }}
+                                                                                                className="border-primary h-4 w-4"
+                                                                                            />
+                                                                                        </FormControl>
+                                                                                        <FormLabel className="text-[10px] font-bold cursor-pointer text-slate-700 leading-tight">
+                                                                                            {event}
+                                                                                        </FormLabel>
+                                                                                    </FormItem>
+                                                                                )}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div>
+                                                                    <FormLabel className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 block">Non-Technical Events</FormLabel>
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                        {nonTechnicalEvents.map((event) => (
+                                                                            <FormField
+                                                                                key={event}
+                                                                                control={form.control}
+                                                                                name={`members.${index}.events` as any}
+                                                                                render={({ field }) => (
+                                                                                    <FormItem className="flex flex-row items-center space-x-2 space-y-0 rounded-md border border-slate-200 bg-white p-2 hover:bg-slate-50 transition-colors">
+                                                                                        <FormControl>
+                                                                                            <Checkbox
+                                                                                                checked={(field.value as string[])?.includes(event)}
+                                                                                                onCheckedChange={(checked) => {
+                                                                                                    const currentValue = (field.value as string[]) || [];
+                                                                                                    return checked
+                                                                                                        ? field.onChange([...currentValue, event])
+                                                                                                        : field.onChange(
+                                                                                                            currentValue.filter(
+                                                                                                                (value: string) => value !== event
+                                                                                                            )
+                                                                                                        )
+                                                                                                }}
+                                                                                                className="border-primary h-4 w-4"
+                                                                                            />
+                                                                                        </FormControl>
+                                                                                        <FormLabel className="text-[10px] font-bold cursor-pointer text-slate-700 leading-tight">
+                                                                                            {event}
+                                                                                        </FormLabel>
+                                                                                    </FormItem>
+                                                                                )}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                             <FormField
                                                                 name={`members.${index}.events` as any}
@@ -427,7 +498,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                             <Button
                                                 type="button"
                                                 variant="outline"
-                                                onClick={() => append({ name: "", email: "", phone: "", college: "", department: "", events: [] })}
+                                                onClick={() => append({ name: "", email: "", phone: "", college: "", department: "", year: "", events: [] })}
                                                 className="w-full border-dashed border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/50 font-bold"
                                             >
                                                 <Plus className="mr-2 h-4 w-4" /> Add Team Member
@@ -450,6 +521,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                         exit={{ opacity: 0, x: -20 }}
                                         className="space-y-6"
                                     >
+                                        {/* ... keep payment step ... */}
                                         <div className="text-center space-y-4 py-4">
                                             <div className="mx-auto w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-4 border border-primary/10">
                                                 <img src="/brigitz-logo.png" alt="Logo" className="h-16 w-auto object-contain" />
