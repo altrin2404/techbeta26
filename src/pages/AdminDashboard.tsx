@@ -526,11 +526,11 @@ const AdminDashboard = () => {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                            <DropdownMenuItem onClick={exportAllParticipantsCSV} className="cursor-pointer font-medium">
+                            <DropdownMenuItem onClick={exportAllParticipantsCSV} className="cursor-pointer font-medium text-slate-700 dark:text-slate-200 hover:text-primary dark:hover:text-primary transition-colors">
                                 <FileText className="mr-2 h-4 w-4 text-blue-500" />
                                 All Participants (CSV)
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={exportMasterExcel} className="cursor-pointer font-medium">
+                            <DropdownMenuItem onClick={exportMasterExcel} className="cursor-pointer font-medium text-slate-700 dark:text-slate-200 hover:text-primary dark:hover:text-primary transition-colors">
                                 <Layers className="mr-2 h-4 w-4 text-green-500" />
                                 Master Sheet (XLSX)
                             </DropdownMenuItem>
