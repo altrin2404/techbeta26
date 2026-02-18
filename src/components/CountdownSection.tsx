@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense, lazy } from "react";
 import { motion } from "framer-motion";
-import { Calendar as CalendarIcon, Clock, ChevronRight } from "lucide-react";
-import RegistrationDialog from "./RegistrationDialog";
+import { Calendar as CalendarIcon, Clock, ChevronRight, Loader2 } from "lucide-react";
+const RegistrationDialog = lazy(() => import("./RegistrationDialog"));
 import { Button } from "@/components/ui/button";
 
 interface TimeLeft {
@@ -116,12 +116,14 @@ const CountdownSection = () => {
                                     </p>
 
                                     <div className="mt-6 w-full">
-                                        <RegistrationDialog>
-                                            <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black tracking-widest uppercase text-xs h-12 shadow-xl shadow-primary/20 group">
-                                                Register Today
-                                                <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                            </Button>
-                                        </RegistrationDialog>
+                                        <Suspense fallback={<Button className="w-full h-12" disabled><Loader2 className="animate-spin" /></Button>}>
+                                            <RegistrationDialog>
+                                                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black tracking-widest uppercase text-xs h-12 shadow-xl shadow-primary/20 group">
+                                                    Register Today
+                                                    <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                                </Button>
+                                            </RegistrationDialog>
+                                        </Suspense>
                                     </div>
                                 </div>
                             </div>

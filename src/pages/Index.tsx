@@ -1,16 +1,25 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import AboutSection from "@/components/AboutSection";
-import EventsSection from "@/components/EventsSection";
-import ScheduleSection from "@/components/ScheduleSection";
-import TeamSection from "@/components/TeamSection";
-import BusRoutesSection from "@/components/BusRoutesSection";
-import SponsorsContactSection from "@/components/SponsorsContactSection";
-import FAQSection from "@/components/FAQSection";
-import VenueSection from "@/components/VenueSection";
-import CountdownSection from "@/components/CountdownSection";
-import DynamicBackground from "@/components/DynamicBackground";
-import Footer from "@/components/Footer";
+import { Suspense, lazy } from "react";
+import { Loader2 } from "lucide-react";
+
+const CountdownSection = lazy(() => import("@/components/CountdownSection"));
+const AboutSection = lazy(() => import("@/components/AboutSection"));
+const EventsSection = lazy(() => import("@/components/EventsSection"));
+const ScheduleSection = lazy(() => import("@/components/ScheduleSection"));
+const TeamSection = lazy(() => import("@/components/TeamSection"));
+const BusRoutesSection = lazy(() => import("@/components/BusRoutesSection"));
+const SponsorsContactSection = lazy(() => import("@/components/SponsorsContactSection"));
+const FAQSection = lazy(() => import("@/components/FAQSection"));
+const VenueSection = lazy(() => import("@/components/VenueSection"));
+const DynamicBackground = lazy(() => import("@/components/DynamicBackground"));
+const Footer = lazy(() => import("@/components/Footer"));
+
+const SectionLoader = () => (
+  <div className="py-20 flex justify-center items-center">
+    <Loader2 className="h-6 w-6 animate-spin text-primary/40" />
+  </div>
+);
 
 const SectionDivider = () => (
   <div className="container mx-auto max-w-4xl px-4">
@@ -23,29 +32,51 @@ const SectionDivider = () => (
 const Index = () => {
   return (
     <div className="min-h-screen bg-transparent relative">
-      <DynamicBackground />
+      <Suspense fallback={null}>
+        <DynamicBackground />
+      </Suspense>
       <Navbar />
       <main>
         <HeroSection />
-        <CountdownSection />
+        <Suspense fallback={<SectionLoader />}>
+          <CountdownSection />
+        </Suspense>
         <SectionDivider />
-        <AboutSection />
+        <Suspense fallback={<SectionLoader />}>
+          <AboutSection />
+        </Suspense>
         <SectionDivider />
-        <EventsSection />
+        <Suspense fallback={<SectionLoader />}>
+          <EventsSection />
+        </Suspense>
         <SectionDivider />
-        <ScheduleSection />
+        <Suspense fallback={<SectionLoader />}>
+          <ScheduleSection />
+        </Suspense>
         <SectionDivider />
-        <TeamSection />
+        <Suspense fallback={<SectionLoader />}>
+          <TeamSection />
+        </Suspense>
         <SectionDivider />
-        <BusRoutesSection />
+        <Suspense fallback={<SectionLoader />}>
+          <BusRoutesSection />
+        </Suspense>
         <SectionDivider />
-        <SponsorsContactSection />
+        <Suspense fallback={<SectionLoader />}>
+          <SponsorsContactSection />
+        </Suspense>
         <SectionDivider />
-        <VenueSection />
+        <Suspense fallback={<SectionLoader />}>
+          <VenueSection />
+        </Suspense>
         <SectionDivider />
-        <FAQSection />
+        <Suspense fallback={<SectionLoader />}>
+          <FAQSection />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 };

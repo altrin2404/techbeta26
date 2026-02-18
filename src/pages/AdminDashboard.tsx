@@ -38,6 +38,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
 import * as XLSX from "xlsx";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -49,6 +56,28 @@ import QRScannerDialog from "@/components/QRScannerDialog";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const ADMIN_EMAIL_DOMAIN = "techbeta2k26.firebaseapp.com";
+
+const QRCodeImage = ({ data }: { data: string }) => {
+    const [loading, setLoading] = useState(true);
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data)}&margin=10`;
+
+    return (
+        <div className="relative w-full h-full flex items-center justify-center">
+            {loading && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/50 backdrop-blur-[1px] animate-in fade-in duration-300">
+                    <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
+                    <span className="text-[10px] text-slate-400 font-medium tracking-tight">Generating QR...</span>
+                </div>
+            )}
+            <img
+                src={qrUrl}
+                alt="QR Code"
+                className={`w-full h-full object-contain transition-all duration-500 will-change-transform ${loading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+                onLoad={() => setLoading(false)}
+            />
+        </div>
+    );
+};
 
 const AdminDashboard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -731,20 +760,41 @@ const AdminDashboard = () => {
                                                         <div className="p-4 bg-slate-50 border-b border-slate-100">
                                                             <DialogTitle className="text-center font-display text-slate-800">Team QR Codes</DialogTitle>
                                                         </div>
-                                                        <div className="p-6 overflow-x-auto flex gap-4 snap-x snap-mandatory bg-white">
-                                                            {(reg.members || [{ name: reg.name, events: reg.events }]).map((m, i) => (
-                                                                <div key={i} className="flex-none w-full snap-center flex flex-col items-center">
-                                                                    <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm mb-4">
-                                                                        <img
-                                                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(JSON.stringify({ id: reg.id, index: i, name: m.name, events: m.events }))}`}
-                                                                            alt="QR"
-                                                                            className="w-48 h-48"
-                                                                        />
-                                                                    </div>
-                                                                    <p className="font-bold text-lg">{m.name}</p>
-                                                                    <p className="text-xs text-primary uppercase font-bold">Member {i + 1}</p>
-                                                                </div>
-                                                            ))}
+                                                        <div className="relative px-12 py-8 bg-white flex flex-col items-center">
+                                                            <Carousel opts={{ loop: true }} className="w-full max-w-[280px]">
+                                                                <CarouselContent>
+                                                                    {(reg.members || [{ name: reg.name, events: reg.events }]).map((m, i) => (
+                                                                        <CarouselItem key={i} className="pl-0 flex flex-col items-center justify-center">
+                                                                            <div className="relative aspect-square w-48 h-48 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm mb-4 flex items-center justify-center overflow-hidden">
+                                                                                {/* High quality QR generation */}
+                                                                                <QRCodeImage
+                                                                                    data={JSON.stringify({ id: reg.id, index: i, name: m.name, events: m.events })}
+                                                                                />
+                                                                            </div>
+                                                                            <div className="text-center">
+                                                                                <p className="font-bold text-lg text-slate-800">{m.name}</p>
+                                                                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
+                                                                                    Member {i + 1} of {(reg.members?.length || 1)}
+                                                                                </div>
+                                                                            </div>
+                                                                        </CarouselItem>
+                                                                    ))}
+                                                                </CarouselContent>
+
+                                                                {(reg.members?.length || 1) > 1 && (
+                                                                    <>
+                                                                        <CarouselPrevious className="absolute -left-10 top-[96px] -translate-y-1/2 h-10 w-10 bg-white text-slate-800 shadow-xl border border-slate-200 hover:bg-slate-50 flex opacity-100 z-30" />
+                                                                        <CarouselNext className="absolute -right-10 top-[96px] -translate-y-1/2 h-10 w-10 bg-white text-slate-800 shadow-xl border border-slate-200 hover:bg-slate-50 flex opacity-100 z-30" />
+
+                                                                        {/* Indicators */}
+                                                                        <div className="flex justify-center gap-1.5 mt-4">
+                                                                            {(reg.members || [1]).map((_, idx) => (
+                                                                                <div key={idx} className="h-1.5 w-1.5 rounded-full bg-slate-200" />
+                                                                            ))}
+                                                                        </div>
+                                                                    </>
+                                                                )}
+                                                            </Carousel>
                                                         </div>
                                                     </DialogContent>
                                                 </Dialog>

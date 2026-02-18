@@ -1,8 +1,8 @@
+import { Suspense, lazy, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import RegistrationDialog from "./RegistrationDialog";
+const RegistrationDialog = lazy(() => import("./RegistrationDialog"));
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Users } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 
 const HeroSection = () => {
   const [registrationCount, setRegistrationCount] = useState(0);
@@ -63,7 +63,7 @@ const HeroSection = () => {
           </motion.div>
 
           <motion.div
-            animate={{
+            animate={window.innerWidth < 768 ? {} : {
               y: [0, -10, 0],
             }}
             transition={{
@@ -78,7 +78,10 @@ const HeroSection = () => {
             <img
               src="/brigitz-logo.png"
               alt="BRIGITZ Logo"
+              width={150}
+              height={150}
               className="max-h-[80px] sm:max-h-[120px] md:max-h-[150px] w-auto object-contain drop-shadow-xl transition-all duration-500"
+              loading="eager"
               onError={(e) => (e.currentTarget.style.display = 'none')}
             />
             <div className="absolute -inset-4 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -129,11 +132,13 @@ const HeroSection = () => {
           transition={{ delay: 1.1 }}
           className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
         >
-          <RegistrationDialog>
-            <Button size="lg" className="font-display text-sm font-bold tracking-wider box-glow-cyan px-8 cursor-pointer min-h-[44px]">
-              Register Now
-            </Button>
-          </RegistrationDialog>
+          <Suspense fallback={<Button size="lg" disabled className="px-8"><Loader2 className="animate-spin" /></Button>}>
+            <RegistrationDialog>
+              <Button size="lg" className="font-display text-sm font-bold tracking-wider box-glow-cyan px-8 cursor-pointer min-h-[44px]">
+                Register Now
+              </Button>
+            </RegistrationDialog>
+          </Suspense>
           <Button asChild variant="outline" size="lg" className="font-display text-sm tracking-wider border-glow-cyan min-h-[44px]">
             <a href="#events">Explore Events</a>
           </Button>

@@ -15,24 +15,24 @@ const DynamicBackground = () => {
 
     if (!mounted) return null;
 
-    const particleCount = isMobile ? 3 : 6;
-    const blurLarge = isMobile ? 'blur-[60px]' : 'blur-[100px]';
+    const particleCount = isMobile ? 0 : 6; // Disable particles on mobile for performance
+    const blurLarge = isMobile ? 'blur-[40px]' : 'blur-[100px]'; // Reduced blur on mobile
 
     return (
         <div className="fixed inset-0 -z-10 bg-background overflow-hidden pointer-events-none">
             {/* Mesh Grid - Subtle for light theme */}
             <div
-                className="absolute inset-0 opacity-[0.05]"
+                className="absolute inset-0 opacity-[0.03]"
                 style={{
                     backgroundImage: `linear-gradient(hsl(199 89% 48% / 0.3) 1px, transparent 1px), 
                            linear-gradient(90deg, hsl(199 89% 48% / 0.3) 1px, transparent 1px)`,
-                    backgroundSize: "60px 60px"
+                    backgroundSize: "80px 80px"
                 }}
             />
 
             {/* Light Mode Optimized Radial Glows */}
             <motion.div
-                animate={{
+                animate={isMobile ? {} : {
                     scale: [1, 1.1, 1],
                     opacity: [0.3, 0.45, 0.3],
                 }}
@@ -41,12 +41,12 @@ const DynamicBackground = () => {
                     repeat: Infinity,
                     ease: "easeInOut"
                 }}
-                style={{ willChange: "transform, opacity" }}
+                style={{ willChange: isMobile ? "auto" : "transform, opacity" }}
                 className={`absolute -top-[10%] -left-[10%] h-[60%] w-[60%] rounded-full bg-primary/10 ${blurLarge}`}
             />
 
             <motion.div
-                animate={{
+                animate={isMobile ? {} : {
                     scale: [1, 1.15, 1],
                     opacity: [0.2, 0.35, 0.2],
                 }}
@@ -56,12 +56,12 @@ const DynamicBackground = () => {
                     ease: "easeInOut",
                     delay: 2
                 }}
-                style={{ willChange: "transform, opacity" }}
+                style={{ willChange: isMobile ? "auto" : "transform, opacity" }}
                 className={`absolute bottom-[0%] -right-[10%] h-[50%] w-[50%] rounded-full bg-secondary/10 ${blurLarge}`}
             />
 
-            {/* Particles - Reduced on mobile for performance */}
-            {[...Array(particleCount)].map((_, i) => (
+            {/* Particles - Disabled on mobile for performance */}
+            {!isMobile && [...Array(particleCount)].map((_, i) => (
                 <motion.div
                     key={i}
                     initial={{
@@ -90,9 +90,9 @@ const DynamicBackground = () => {
                 />
             ))}
 
-            {/* Subtle Scanning Line */}
+            {/* Subtle Scanning Line - Simplified on mobile */}
             <motion.div
-                animate={{
+                animate={isMobile ? { opacity: 0 } : {
                     top: ["-5%", "105%"],
                 }}
                 transition={{
@@ -100,8 +100,8 @@ const DynamicBackground = () => {
                     repeat: Infinity,
                     ease: "linear",
                 }}
-                style={{ willChange: "top" }}
-                className={`absolute left-0 right-0 h-[400px] bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none ${isMobile ? 'opacity-20' : 'opacity-30'}`}
+                style={{ willChange: isMobile ? "auto" : "top" }}
+                className={`absolute left-0 right-0 h-[400px] bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none ${isMobile ? 'opacity-0' : 'opacity-30'}`}
             />
         </div>
     );

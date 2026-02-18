@@ -38,10 +38,13 @@ export default defineConfig(({ mode }) => ({
             'tailwind-merge'
           ],
           'vendor-motion': ['framer-motion'],
+          'vendor-forms': ['react-hook-form', '@hookform/resolvers/zod', 'zod'],
+          'vendor-xlsx': ['xlsx'],
           'firebase': ['firebase/app', 'firebase/firestore', 'firebase/auth'],
         },
       },
     },
-    chunkSizeWarningLimit: 1000,
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 1500,
   },
 }));
