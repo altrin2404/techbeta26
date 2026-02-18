@@ -20,6 +20,7 @@ export interface TeamMember {
     department: string;
     year: string;
     events: string[];
+    attendance?: { [eventName: string]: { attended: boolean; timestamp: string } };
 }
 
 export interface Registration {
@@ -83,6 +84,34 @@ export const deleteRegistration = async (id: string) => {
         return { success: true };
     } catch (error) {
         console.error("Error deleting registration: ", error);
+        return { success: false, error };
+    }
+};
+
+export const markMemberAttendance = async (registrationId: string, memberIndex: number, eventName: string, attended: boolean = true) => {
+    try {
+        const docRef = doc(db, COLLECTION_NAME, registrationId);
+        // We need to get the current data to update the specific member in the array
+        // However, for efficiency in a live scan, we might want to use a more targeted update if possible
+        // But Firestore doesn't easily support updating a specific index in an array without rewriting the array
+        // or using some tricks. Since team sizes are small (2-5), rewriting the array is acceptable.
+
+        // This is a helper that would be called after fetching the latest registration data in the component
+        // or we fetch it here.
+        return { success: false, error: "Use updateRegistrationMembers helper" };
+    } catch (error) {
+        console.error("Error marking attendance: ", error);
+        return { success: false, error };
+    }
+};
+
+export const updateRegistrationMembers = async (registrationId: string, members: TeamMember[]) => {
+    try {
+        const docRef = doc(db, COLLECTION_NAME, registrationId);
+        await updateDoc(docRef, { members });
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating members: ", error);
         return { success: false, error };
     }
 };
