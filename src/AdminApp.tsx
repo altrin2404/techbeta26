@@ -7,7 +7,10 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import AdminDashboard from "./pages/AdminDashboard";
 
 const AdminApp = () => (
-    <BrowserRouter>
+    <BrowserRouter future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+    }}>
         <TooltipProvider>
             <Toaster />
             <Sonner />

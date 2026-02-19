@@ -3,7 +3,7 @@ import {
     LogOut, ShieldCheck, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { toast } from "sonner";
 import {
     subscribeToRegistrations,
@@ -124,61 +124,164 @@ const AdminDashboard = () => {
         else toast.error("Failed to delete");
     };
 
-    const exportAllParticipantsCSV = () => {
-        const headers = ["Name", "Dept", "Year", "College", "Phone", "Email", "Events", "Status"];
-        const csvRows: string[][] = [];
-        registrations.forEach(reg => {
+    const exportAllParticipantsExcel = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("All Participants");
+
+        worksheet.columns = [
+            { header: "QR Code", key: "qr", width: 15 },
+            { header: "Name", key: "name", width: 20 },
+            { header: "Dept", key: "department", width: 15 },
+            { header: "Year", key: "year", width: 10 },
+            { header: "College", key: "college", width: 25 },
+            { header: "Phone", key: "phone", width: 15 },
+            { header: "Email", key: "email", width: 30 },
+            { header: "Events", key: "events", width: 40 },
+            { header: "Status", key: "status", width: 15 }
+        ];
+
+        // Style header
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+        toast.loading("Generating report with QR images...");
+
+        for (const reg of registrations) {
             const members = reg.members || [{
                 name: reg.name, department: reg.department, year: (reg as any).year, college: reg.college, phone: reg.phone, email: reg.email, events: reg.events
             }];
-            members.forEach((m: any) => {
-                csvRows.push([
-                    m.name, m.department, m.year || "N/A", m.college, m.phone, m.email,
-                    Array.isArray(m.events) ? m.events.join("; ") : (m.events || ""), reg.status
-                ]);
-            });
-        });
-        const csvContent = [headers.join(","), ...csvRows.map(row => row.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join(","))].join("\n");
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+            for (let i = 0; i < members.length; i++) {
+                const m = members[i];
+                const row = worksheet.addRow({
+                    name: m.name,
+                    department: m.department,
+                    year: m.year || "N/A",
+                    college: m.college,
+                    phone: m.phone,
+                    email: m.email,
+                    events: Array.isArray(m.events) ? m.events.join("; ") : (m.events || ""),
+                    status: reg.status
+                });
+
+                row.height = 80;
+                row.alignment = { vertical: 'middle' };
+
+                try {
+                    const qrData = JSON.stringify({ id: reg.id, index: i, name: m.name, events: m.events });
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}&margin=0`;
+
+                    const response = await fetch(qrUrl);
+                    const arrayBuffer = await response.arrayBuffer();
+
+                    const imageId = workbook.addImage({
+                        buffer: arrayBuffer,
+                        extension: 'png',
+                    });
+
+                    worksheet.addImage(imageId, {
+                        tl: { col: 0.1, row: row.number - 0.95 },
+                        ext: { width: 100, height: 100 }
+                    });
+                } catch (error) {
+                    console.error("QR embedding failed:", error);
+                }
+            }
+        }
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `techbeta_registrations.csv`;
+        a.download = `techbeta_all_participants.xlsx`;
         a.click();
+        toast.dismiss();
+        toast.success("Excel report exported!");
     };
 
-    const exportMasterExcel = () => {
-        const wb = XLSX.utils.book_new();
+    const exportMasterExcel = async () => {
+        const workbook = new ExcelJS.Workbook();
         const allEvents = Array.from(new Set(registrations.flatMap(reg =>
             reg.members ? reg.members.flatMap(m => m.events) : reg.events
         ))).sort();
 
-        allEvents.forEach(eventName => {
-            const eventRows: any[] = [];
+        toast.loading("Generating master sheets with QR...");
+
+        for (const eventName of allEvents) {
+            const worksheet = workbook.addWorksheet(eventName.substring(0, 31).replace(/[\\/?*[\]]/g, ""));
+            worksheet.columns = [
+                { header: "QR Code", key: "qr", width: 15 },
+                { header: "Team", key: "team", width: 10 },
+                { header: "Name", key: "name", width: 20 },
+                { header: "Dept", key: "department", width: 15 },
+                { header: "College", key: "college", width: 25 },
+                { header: "Phone", key: "phone", width: 15 },
+                { header: "Email", key: "email", width: 30 },
+                { header: "Attendance", key: "attendance", width: 20 }
+            ];
+
+            worksheet.getRow(1).font = { bold: true };
+            worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
             let teamCounter = 1;
-            registrations.forEach(reg => {
+            for (const reg of registrations) {
                 const members = reg.members || [{
                     name: reg.name, email: reg.email, phone: reg.phone, college: reg.college, department: reg.department, events: reg.events, attendance: (reg as any).attendance
                 }];
                 const participating = members.filter((m: any) => (Array.isArray(m.events) ? m.events : [m.events]).includes(eventName));
+
                 if (participating.length > 0) {
-                    participating.forEach((m: any) => {
+                    for (const m of participating) {
+                        const originalIndex = reg.members ? reg.members.findIndex(member => member.name === m.name) : 0;
                         const attendanceInfo = m.attendance?.[eventName];
-                        eventRows.push({
-                            "Team": teamCounter, "Name": m.name, "Dept": m.department, "College": m.college,
-                            "Phone": m.phone, "Email": m.email,
-                            "Attendance": attendanceInfo?.attended ? `Present (${new Date(attendanceInfo.timestamp).toLocaleTimeString()})` : "Absent"
+                        const row = worksheet.addRow({
+                            team: teamCounter,
+                            name: m.name,
+                            department: m.department,
+                            college: m.college,
+                            phone: m.phone,
+                            email: m.email,
+                            attendance: attendanceInfo?.attended ? `Present (${new Date(attendanceInfo.timestamp).toLocaleTimeString()})` : "Absent"
                         });
-                    });
+
+                        row.height = 80;
+                        row.alignment = { vertical: 'middle' };
+
+                        try {
+                            const qrData = JSON.stringify({ id: reg.id, index: originalIndex, name: m.name, events: m.events });
+                            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}&margin=0`;
+
+                            const response = await fetch(qrUrl);
+                            const arrayBuffer = await response.arrayBuffer();
+
+                            const imageId = workbook.addImage({
+                                buffer: arrayBuffer,
+                                extension: 'png',
+                            });
+
+                            worksheet.addImage(imageId, {
+                                tl: { col: 0.1, row: row.number - 0.95 },
+                                ext: { width: 100, height: 100 }
+                            });
+                        } catch (error) {
+                            console.error("QR embedding failed:", error);
+                        }
+                    }
                     teamCounter++;
                 }
-            });
-            if (eventRows.length > 0) {
-                const ws = XLSX.utils.json_to_sheet(eventRows);
-                XLSX.utils.book_append_sheet(wb, ws, eventName.substring(0, 31).replace(/[\\/?*[\]]/g, ""));
             }
-        });
-        XLSX.writeFile(wb, `techbeta_attendance_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `techbeta_master_sheets.xlsx`;
+        a.click();
+        toast.dismiss();
+        toast.success("Master sheets exported!");
     };
 
     const handleScan = async (decodedText: string) => {
@@ -284,7 +387,7 @@ const AdminDashboard = () => {
                             setSearchQuery={setSearchQuery}
                             isScannerOpen={isScannerOpen}
                             setIsScannerOpen={setIsScannerOpen}
-                            exportAllParticipantsCSV={exportAllParticipantsCSV}
+                            exportAllParticipantsExcel={exportAllParticipantsExcel}
                             exportMasterExcel={exportMasterExcel}
                             handleScan={handleScan}
                             updateStatus={updateStatus}

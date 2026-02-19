@@ -1,7 +1,7 @@
 import { useState, memo, useMemo, useCallback } from "react";
 import {
     Users, Layers, Clock, Search, ScanLine, Download, ChevronDown,
-    FileText, CheckCircle, Trash2, QrCode, Filter
+    FileText, CheckCircle, Trash2, QrCode, Filter, ArrowLeft, ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ import { Loader2 } from "lucide-react";
 // Sub-component for QR Code to avoid re-renders
 const QRCodeImage = memo(({ data }: { data: string }) => {
     const [loading, setLoading] = useState(true);
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data)}&margin=10`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data)}&margin=0`;
 
     return (
         <div className="relative w-full h-full flex items-center justify-center">
@@ -49,7 +49,7 @@ interface AdminMainDashboardProps {
     setSearchQuery: (query: string) => void;
     isScannerOpen: boolean;
     setIsScannerOpen: (isOpen: boolean) => void;
-    exportAllParticipantsCSV: () => void;
+    exportAllParticipantsExcel: () => void;
     exportMasterExcel: () => void;
     handleScan: (decodedText: string) => Promise<void>;
     updateStatus: (id: string, newStatus: string) => Promise<void>;
@@ -60,6 +60,84 @@ interface AdminMainDashboardProps {
     setScannedMemberIndex: (index: number) => void;
 }
 
+const QRDisplayDialog = ({
+    registration,
+    onClose
+}: {
+    registration: Registration | null;
+    onClose: () => void;
+}) => {
+    if (!registration) return null;
+
+    const members = registration.members || [{
+        name: registration.name,
+        events: registration.events
+    }];
+
+    return (
+        <Dialog open={!!registration} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-md bg-white rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl outline-none">
+                <DialogTitle className="sr-only">QR Codes for {registration.name}</DialogTitle>
+                <div className="flex flex-col items-center w-full px-4 py-10 relative">
+                    {/* Status Badge */}
+                    <div className="mb-8 w-full flex justify-center">
+                        <span className={`text-[10px] font-black tracking-widest px-4 py-1.5 rounded-full border shadow-sm ${registration.status === 'Verified'
+                            ? 'bg-green-50 text-green-600 border-green-100'
+                            : 'bg-orange-50 text-orange-600 border-orange-100'
+                            }`}>
+                            {registration.status.toUpperCase()}
+                        </span>
+                    </div>
+
+                    <div className="w-full max-w-[340px] sm:max-w-xs mx-auto">
+                        <Carousel opts={{ loop: true }} className="w-full">
+                            <CarouselContent className="ml-0">
+                                {members.map((m, i) => (
+                                    <CarouselItem key={i} className="pl-0 flex flex-col items-center justify-center">
+                                        <div className="bg-white p-4 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-50 mb-6 flex items-center justify-center mx-auto transition-transform duration-500 hover:scale-[1.02]">
+                                            <div className="w-48 h-48 sm:w-64 sm:h-64 flex items-center justify-center">
+                                                <QRCodeImage
+                                                    data={JSON.stringify({
+                                                        id: registration.id,
+                                                        index: i,
+                                                        name: m.name,
+                                                        events: m.events
+                                                    })}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="text-center space-y-1">
+                                            <h4 className="font-black text-xl text-slate-800 tracking-tight">{m.name}</h4>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                Member {i + 1} of {members.length}
+                                            </p>
+                                        </div>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+
+                            {members.length > 1 && (
+                                <div className="flex justify-center gap-4 mt-8">
+                                    <CarouselPrevious className="static h-10 w-10 translate-y-0 border-slate-100 bg-white text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-all shadow-sm" />
+                                    <CarouselNext className="static h-10 w-10 translate-y-0 border-slate-100 bg-white text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-all shadow-sm" />
+                                </div>
+                            )}
+                        </Carousel>
+                    </div>
+
+                    <Button
+                        variant="ghost"
+                        onClick={onClose}
+                        className="mt-8 text-slate-400 font-bold hover:text-slate-600 hover:bg-transparent"
+                    >
+                        Close
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 const AdminMainDashboard = ({
     registrations,
     filteredRegistrations,
@@ -67,7 +145,7 @@ const AdminMainDashboard = ({
     setSearchQuery,
     isScannerOpen,
     setIsScannerOpen,
-    exportAllParticipantsCSV,
+    exportAllParticipantsExcel,
     exportMasterExcel,
     handleScan,
     updateStatus,
@@ -77,6 +155,8 @@ const AdminMainDashboard = ({
     scannedMemberIndex,
     setScannedMemberIndex
 }: AdminMainDashboardProps) => {
+
+    const [qrDialogRegistration, setQrDialogRegistration] = useState<Registration | null>(null);
 
     const stats = useMemo(() => {
         const totalMembers = registrations.reduce((acc, curr) => acc + (curr.members ? curr.members.length : 1), 0);
@@ -135,9 +215,9 @@ const AdminMainDashboard = ({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 bg-white border-slate-200">
-                        <DropdownMenuItem onClick={exportAllParticipantsCSV} className="cursor-pointer font-medium text-slate-700">
+                        <DropdownMenuItem onClick={exportAllParticipantsExcel} className="cursor-pointer font-medium text-slate-700">
                             <FileText className="mr-2 h-4 w-4 text-blue-500" />
-                            All Participants (CSV)
+                            All Participants (XLSX)
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={exportMasterExcel} className="cursor-pointer font-medium text-slate-700">
                             <Layers className="mr-2 h-4 w-4 text-green-500" />
@@ -361,43 +441,14 @@ const AdminMainDashboard = ({
                                                 <ScanLine size={14} />
                                             </Button>
 
-                                            <Dialog>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-purple-600 hover:bg-purple-50">
-                                                            <QrCode size={14} />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-56">
-                                                        <DropdownMenuItem className="p-0 border-none bg-white">
-                                                            <div className="relative px-4 py-4 bg-white flex flex-col items-center">
-                                                                <Carousel opts={{ loop: true }} className="w-full max-w-[200px]">
-                                                                    <CarouselContent>
-                                                                        {(reg.members || [{ name: reg.name, events: reg.events }]).map((m, i) => (
-                                                                            <CarouselItem key={i} className="pl-0 flex flex-col items-center justify-center">
-                                                                                <div className="relative aspect-square w-32 h-32 bg-slate-50 rounded-xl border border-slate-100 shadow-sm mb-2 flex items-center justify-center overflow-hidden">
-                                                                                    <QRCodeImage
-                                                                                        data={JSON.stringify({ id: reg.id, index: i, name: m.name, events: m.events })}
-                                                                                    />
-                                                                                </div>
-                                                                                <div className="text-center">
-                                                                                    <p className="font-bold text-sm text-slate-800 leading-tight truncate w-32">{m.name}</p>
-                                                                                </div>
-                                                                            </CarouselItem>
-                                                                        ))}
-                                                                    </CarouselContent>
-                                                                    {(reg.members?.length || 1) > 1 && (
-                                                                        <>
-                                                                            <CarouselPrevious className="h-6 w-6 -left-6" />
-                                                                            <CarouselNext className="h-6 w-6 -right-6" />
-                                                                        </>
-                                                                    )}
-                                                                </Carousel>
-                                                            </div>
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </Dialog>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-slate-400 hover:text-purple-600 hover:bg-purple-50"
+                                                onClick={() => setQrDialogRegistration(reg)}
+                                            >
+                                                <QrCode size={14} />
+                                            </Button>
 
                                             {reg.status !== "Verified" && (
                                                 <Button onClick={() => updateStatus(reg.id, "Verified")} variant="ghost" size="icon" className="h-8 w-8 text-green-500 hover:bg-green-50">
@@ -415,6 +466,11 @@ const AdminMainDashboard = ({
                     </table>
                 </div>
             </div>
+
+            <QRDisplayDialog
+                registration={qrDialogRegistration}
+                onClose={() => setQrDialogRegistration(null)}
+            />
         </div>
     );
 };
