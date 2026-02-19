@@ -1,4 +1,4 @@
-const CACHE_NAME = "techbeta-admin-v1";
+const CACHE_NAME = "techbeta-admin-v2";
 const ASSETS_TO_CACHE = [
     "/admin",
     "/brigitz-logo.png",

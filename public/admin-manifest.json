@@ -2,7 +2,7 @@
     "theme_color": "#7c3aed",
     "background_color": "#ffffff",
     "display": "standalone",
-    "scope": "/admin",
+    "scope": "/",
     "start_url": "/admin",
     "name": "TechBeta Admin",
     "short_name": "Admin",
