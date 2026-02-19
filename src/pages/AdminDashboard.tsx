@@ -210,13 +210,13 @@ const AdminDashboard = () => {
                             const { updateRegistrationMembers } = await import("@/lib/registrationService");
                             await updateRegistrationMembers(participant.id, updatedMembers);
                             toast.success(`Attendance marked: ${member.name}`);
-                            setRecentScans(prev => [{ name: member.name, event: activeEvent, status: 'success', time: new Date().toLocaleTimeString(), message: 'Present' }, ...prev].slice(0, 5));
+                            setRecentScans(prev => [{ name: member.name, event: activeEvent, status: 'success' as const, time: new Date().toLocaleTimeString(), message: 'Present' }, ...prev].slice(0, 5));
                         } else {
                             toast.info("Already marked present");
                         }
                     } else {
                         toast.error("Not registered for this event");
-                        setRecentScans(prev => [{ name: member.name, event: activeEvent, status: 'error', time: new Date().toLocaleTimeString(), message: 'Not Registered' }, ...prev].slice(0, 5));
+                        setRecentScans(prev => [{ name: member.name, event: activeEvent, status: 'error' as const, time: new Date().toLocaleTimeString(), message: 'Not Registered' }, ...prev].slice(0, 5));
                     }
                 }
             }

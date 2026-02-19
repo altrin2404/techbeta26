@@ -11,6 +11,11 @@ interface AdminAttendanceModeProps {
     exportMasterExcel: () => void;
     setAdminMode: (mode: 'none' | 'dashboard' | 'attendance') => void;
     recentScans: { name: string, event: string, status: 'success' | 'error', time: string, message: string }[];
+    handleScan: (decodedText: string) => Promise<void>;
+    scannedParticipant: Registration | null;
+    setScannedParticipant: (participant: Registration | null) => void;
+    scannedMemberIndex: number;
+    setScannedMemberIndex: (index: number) => void;
 }
 
 const AdminAttendanceMode = ({
@@ -20,7 +25,12 @@ const AdminAttendanceMode = ({
     setIsScannerOpen,
     exportMasterExcel,
     setAdminMode,
-    recentScans
+    recentScans,
+    handleScan,
+    scannedParticipant,
+    setScannedParticipant,
+    scannedMemberIndex,
+    setScannedMemberIndex
 }: AdminAttendanceModeProps) => {
 
     // Extract unique events for the dropdown
