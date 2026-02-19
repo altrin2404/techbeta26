@@ -15,6 +15,7 @@ import { sendVerificationEmail } from "@/lib/emailService";
 import { auth } from "@/lib/firebase";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import QRScannerDialog from "@/components/QRScannerDialog";
 
 // Lazy Loaded Components for Performance
 const AdminLogin = lazy(() => import("@/components/admin/AdminLogin"));
@@ -295,6 +296,12 @@ const AdminDashboard = () => {
                         />
                     )}
                 </Suspense>
+
+                <QRScannerDialog
+                    isOpen={isScannerOpen}
+                    onClose={() => setIsScannerOpen(false)}
+                    onScan={handleScan}
+                />
             </main>
         </div>
     );

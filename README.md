@@ -13,7 +13,7 @@ This project features a real-time registration system, dynamic UI with animation
 -   **Animations**: [Framer Motion](https://www.framer.com/motion/)
 -   **Database**: [Firebase Cloud Firestore](https://firebase.google.com/)
 -   **Icons**: [Lucide React](https://lucide.dev/)
--   **Deployment**: [Netlify](https://www.netlify.com/)
+-   **Deployment**: [Vercel](https://vercel.com/)
 
 ## 🔑 Credentials
 

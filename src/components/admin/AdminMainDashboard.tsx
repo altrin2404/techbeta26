@@ -15,7 +15,6 @@ import {
     Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious,
 } from "@/components/ui/carousel";
 import { type Registration } from "@/lib/registrationService";
-import QRScannerDialog from "@/components/QRScannerDialog";
 import { Loader2 } from "lucide-react";
 
 // Sub-component for QR Code to avoid re-renders
@@ -147,12 +146,6 @@ const AdminMainDashboard = ({
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-
-            <QRScannerDialog
-                isOpen={isScannerOpen}
-                onClose={() => setIsScannerOpen(false)}
-                onScan={handleScan}
-            />
 
             {/* Scanned/Selected Participant Details Dialog */}
             <Dialog open={!!scannedParticipant} onOpenChange={(open) => {
@@ -357,8 +350,8 @@ const AdminMainDashboard = ({
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-full border ${reg.status === 'Verified'
-                                                    ? 'bg-green-50 text-green-700 border-green-100'
-                                                    : 'bg-orange-50 text-orange-700 border-orange-100'
+                                                ? 'bg-green-50 text-green-700 border-green-100'
+                                                : 'bg-orange-50 text-orange-700 border-orange-100'
                                                 }`}>
                                                 {reg.status}
                                             </span>
