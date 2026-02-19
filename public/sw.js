@@ -1,6 +1,6 @@
 const CACHE_NAME = "techbeta-admin-v1";
 const ASSETS_TO_CACHE = [
-    "/admin.html",
+    "/admin",
     "/brigitz-logo.png",
     "/manifest.json",
     "/admin-manifest.json"

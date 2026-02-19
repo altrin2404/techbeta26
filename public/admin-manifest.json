@@ -3,7 +3,7 @@
     "background_color": "#ffffff",
     "display": "standalone",
     "scope": "/admin",
-    "start_url": "/admin.html",
+    "start_url": "/admin",
     "name": "TechBeta Admin",
     "short_name": "Admin",
     "orientation": "portrait",
