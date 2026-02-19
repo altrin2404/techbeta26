@@ -239,7 +239,7 @@ const AdminDashboard = () => {
         );
     }
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated || adminMode === 'none') {
         return (
             <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-purple-600" /></div>}>
                 <AdminLogin onLogin={handleLogin} isLoading={isLoginLoading} />
