@@ -58,6 +58,7 @@ interface AdminMainDashboardProps {
     setScannedParticipant: (participant: Registration | null) => void;
     scannedMemberIndex: number;
     setScannedMemberIndex: (index: number) => void;
+    onRemoveAttendance: (participantId: string, memberIndex: number, eventName: string) => Promise<void>;
 }
 
 const QRDisplayDialog = ({
@@ -153,7 +154,8 @@ const AdminMainDashboard = ({
     scannedParticipant,
     setScannedParticipant,
     scannedMemberIndex,
-    setScannedMemberIndex
+    setScannedMemberIndex,
+    onRemoveAttendance
 }: AdminMainDashboardProps) => {
 
     const [qrDialogRegistration, setQrDialogRegistration] = useState<Registration | null>(null);
@@ -289,7 +291,18 @@ const AdminMainDashboard = ({
                                                         const isAttended = m.attendance?.[e]?.attended;
 
                                                         return (
-                                                            <span key={idx} className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${colors[colorIndex]} flex items-center gap-1`}>
+                                                            <span
+                                                                key={idx}
+                                                                className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${colors[colorIndex]} flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity`}
+                                                                onClick={(evt) => {
+                                                                    if (isAttended) {
+                                                                        evt.stopPropagation();
+                                                                        if (confirm(`Remove attendance for ${m.name} in ${e}?`)) {
+                                                                            onRemoveAttendance(scannedParticipant.id, i, e);
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            >
                                                                 {e}
                                                                 {isAttended && <CheckCircle size={8} className="text-green-600" />}
                                                             </span>

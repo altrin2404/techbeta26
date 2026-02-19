@@ -284,6 +284,64 @@ const AdminDashboard = () => {
         toast.success("Master sheets exported!");
     };
 
+    const handleMarkAttendance = async (participantId: string, memberIndex: number, eventName: string) => {
+        try {
+            const participant = registrations.find(r => r.id === participantId);
+            if (!participant || !participant.members) return;
+
+            const updatedMembers = [...participant.members];
+            if (!updatedMembers[memberIndex].attendance?.[eventName]?.attended) {
+                updatedMembers[memberIndex] = {
+                    ...updatedMembers[memberIndex],
+                    attendance: {
+                        ...updatedMembers[memberIndex].attendance,
+                        [eventName]: { attended: true, timestamp: new Date().toISOString() }
+                    }
+                };
+                const { updateRegistrationMembers } = await import("@/lib/registrationService");
+                await updateRegistrationMembers(participant.id, updatedMembers);
+                toast.success(`Attendance marked: ${updatedMembers[memberIndex].name}`);
+                setRecentScans(prev => [{
+                    name: updatedMembers[memberIndex].name,
+                    event: eventName,
+                    status: 'success' as const,
+                    time: new Date().toLocaleTimeString(),
+                    message: 'Present'
+                }, ...prev].slice(0, 5));
+                setScannedParticipant(null);
+                setScannedMemberIndex(-1);
+            }
+        } catch (error) {
+            console.error("Failed to mark attendance:", error);
+            toast.error("Failed to mark attendance");
+        }
+    };
+
+    const handleRemoveAttendance = async (participantId: string, memberIndex: number, eventName: string) => {
+        try {
+            const participant = registrations.find(r => r.id === participantId);
+            if (!participant || !participant.members) return;
+
+            const updatedMembers = [...participant.members];
+            if (updatedMembers[memberIndex].attendance?.[eventName]) {
+                const newAttendance = { ...updatedMembers[memberIndex].attendance };
+                delete newAttendance[eventName];
+
+                updatedMembers[memberIndex] = {
+                    ...updatedMembers[memberIndex],
+                    attendance: newAttendance
+                };
+
+                const { updateRegistrationMembers } = await import("@/lib/registrationService");
+                await updateRegistrationMembers(participant.id, updatedMembers);
+                toast.success(`Attendance removed: ${updatedMembers[memberIndex].name}`);
+            }
+        } catch (error) {
+            console.error("Failed to remove attendance:", error);
+            toast.error("Failed to remove attendance");
+        }
+    };
+
     const handleScan = async (decodedText: string) => {
         try {
             const data = JSON.parse(decodedText);
@@ -299,27 +357,24 @@ const AdminDashboard = () => {
                 return;
             }
 
-            if (adminMode === 'attendance' && activeEvent && data.index !== undefined) {
-                const member = participant.members ? participant.members[data.index] : participant.members?.[0];
-                if (member) {
-                    const memberEvents = Array.isArray(member.events) ? member.events : [member.events];
-                    if (memberEvents.includes(activeEvent)) {
-                        const updatedMembers = [...(participant.members || [])];
-                        if (!updatedMembers[data.index].attendance?.[activeEvent]?.attended) {
-                            updatedMembers[data.index] = {
-                                ...updatedMembers[data.index],
-                                attendance: { ...updatedMembers[data.index].attendance, [activeEvent]: { attended: true, timestamp: new Date().toISOString() } }
-                            };
-                            const { updateRegistrationMembers } = await import("@/lib/registrationService");
-                            await updateRegistrationMembers(participant.id, updatedMembers);
-                            toast.success(`Attendance marked: ${member.name}`);
-                            setRecentScans(prev => [{ name: member.name, event: activeEvent, status: 'success' as const, time: new Date().toLocaleTimeString(), message: 'Present' }, ...prev].slice(0, 5));
-                        } else {
+            if (adminMode === 'attendance') {
+                setIsScannerOpen(false); // Close scanner on successful read
+                if (activeEvent) {
+                    const member = participant.members ? participant.members[data.index] : null;
+                    if (member) {
+                        const memberEvents = Array.isArray(member.events) ? member.events : [member.events];
+                        if (!memberEvents.includes(activeEvent)) {
+                            toast.error(`${member.name} is not registered for ${activeEvent}`);
+                            setRecentScans(prev => [{
+                                name: member.name,
+                                event: activeEvent,
+                                status: 'error' as const,
+                                time: new Date().toLocaleTimeString(),
+                                message: 'Not Registered'
+                            }, ...prev].slice(0, 5));
+                        } else if (member.attendance?.[activeEvent]?.attended) {
                             toast.info("Already marked present");
                         }
-                    } else {
-                        toast.error("Not registered for this event");
-                        setRecentScans(prev => [{ name: member.name, event: activeEvent, status: 'error' as const, time: new Date().toLocaleTimeString(), message: 'Not Registered' }, ...prev].slice(0, 5));
                     }
                 }
             }
@@ -378,6 +433,8 @@ const AdminDashboard = () => {
                             setScannedParticipant={setScannedParticipant}
                             scannedMemberIndex={scannedMemberIndex}
                             setScannedMemberIndex={setScannedMemberIndex}
+                            onMarkAttendance={handleMarkAttendance}
+                            onRemoveAttendance={handleRemoveAttendance}
                         />
                     ) : (
                         <AdminMainDashboard
@@ -396,6 +453,7 @@ const AdminDashboard = () => {
                             setScannedParticipant={setScannedParticipant}
                             scannedMemberIndex={scannedMemberIndex}
                             setScannedMemberIndex={setScannedMemberIndex}
+                            onRemoveAttendance={handleRemoveAttendance}
                         />
                     )}
                 </Suspense>
