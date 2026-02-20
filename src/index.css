@@ -206,11 +206,17 @@
   .blur-\[120px\],
   .blur-\[100px\],
   .blur-\[60px\] {
-    filter: blur(30px) !important;
+    filter: blur(20px) !important;
+  }
+
+  /* Disable expensive effects on very low power devices */
+  [class*="blur-"] {
+    animation: none !important;
   }
 
   /* Force GPU acceleration on mobile for fixed/absolute elements */
-  .fixed, .absolute {
+  .fixed,
+  .absolute {
     transform: translateZ(0);
   }
 }

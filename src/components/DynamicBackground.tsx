@@ -28,11 +28,11 @@ const DynamicBackground = () => {
 
             {/* Radial Glows — CSS animated */}
             <div
-                className={`absolute -top-[10%] -left-[10%] h-[60%] w-[60%] rounded-full bg-primary/10 ${isMobile ? 'blur-[40px]' : 'blur-[100px] dynamic-bg-orb-1'}`}
+                className={`absolute -top-[10%] -left-[10%] h-[60%] w-[60%] rounded-full bg-primary/10 ${isMobile ? 'blur-[20px]' : 'blur-[60px] dynamic-bg-orb-1'}`}
             />
 
             <div
-                className={`absolute bottom-[0%] -right-[10%] h-[50%] w-[50%] rounded-full bg-secondary/10 ${isMobile ? 'blur-[40px]' : 'blur-[100px] dynamic-bg-orb-2'}`}
+                className={`absolute bottom-[0%] -right-[10%] h-[50%] w-[50%] rounded-full bg-secondary/10 ${isMobile ? 'blur-[20px]' : 'blur-[60px] dynamic-bg-orb-2'}`}
             />
 
             {/* Particles — CSS animated, desktop only */}
