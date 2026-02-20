@@ -204,9 +204,25 @@
 
   /* Reduce blur effects on mobile for GPU performance */
   .blur-\[120px\],
-  .blur-\[100px\] {
-    filter: blur(60px) !important;
+  .blur-\[100px\],
+  .blur-\[60px\] {
+    filter: blur(30px) !important;
   }
+
+  /* Force GPU acceleration on mobile for fixed/absolute elements */
+  .fixed, .absolute {
+    transform: translateZ(0);
+  }
+}
+
+/* Rendering Containment */
+section {
+  contain: layout style;
+}
+
+/* Reset will-change after use (best practice) */
+[style*="will-change"] {
+  will-change: auto;
 }
 
 /* Respect user's reduced-motion preferences */

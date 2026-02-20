@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const DynamicBackground = () => {
@@ -15,12 +14,9 @@ const DynamicBackground = () => {
 
     if (!mounted) return null;
 
-    const particleCount = isMobile ? 0 : 6; // Disable particles on mobile for performance
-    const blurLarge = isMobile ? 'blur-[40px]' : 'blur-[100px]'; // Reduced blur on mobile
-
     return (
         <div className="fixed inset-0 -z-10 bg-background overflow-hidden pointer-events-none">
-            {/* Mesh Grid - Subtle for light theme */}
+            {/* Mesh Grid */}
             <div
                 className="absolute inset-0 opacity-[0.03]"
                 style={{
@@ -30,79 +26,75 @@ const DynamicBackground = () => {
                 }}
             />
 
-            {/* Light Mode Optimized Radial Glows */}
-            <motion.div
-                animate={isMobile ? {} : {
-                    scale: [1, 1.1, 1],
-                    opacity: [0.3, 0.45, 0.3],
-                }}
-                transition={{
-                    duration: 15,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-                style={{ willChange: isMobile ? "auto" : "transform, opacity" }}
-                className={`absolute -top-[10%] -left-[10%] h-[60%] w-[60%] rounded-full bg-primary/10 ${blurLarge}`}
+            {/* Radial Glows — CSS animated */}
+            <div
+                className={`absolute -top-[10%] -left-[10%] h-[60%] w-[60%] rounded-full bg-primary/10 ${isMobile ? 'blur-[40px]' : 'blur-[100px] dynamic-bg-orb-1'}`}
             />
 
-            <motion.div
-                animate={isMobile ? {} : {
-                    scale: [1, 1.15, 1],
-                    opacity: [0.2, 0.35, 0.2],
-                }}
-                transition={{
-                    duration: 18,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 2
-                }}
-                style={{ willChange: isMobile ? "auto" : "transform, opacity" }}
-                className={`absolute bottom-[0%] -right-[10%] h-[50%] w-[50%] rounded-full bg-secondary/10 ${blurLarge}`}
+            <div
+                className={`absolute bottom-[0%] -right-[10%] h-[50%] w-[50%] rounded-full bg-secondary/10 ${isMobile ? 'blur-[40px]' : 'blur-[100px] dynamic-bg-orb-2'}`}
             />
 
-            {/* Particles - Disabled on mobile for performance */}
-            {!isMobile && [...Array(particleCount)].map((_, i) => (
-                <motion.div
+            {/* Particles — CSS animated, desktop only */}
+            {!isMobile && [...Array(6)].map((_, i) => (
+                <div
                     key={i}
-                    initial={{
-                        x: Math.random() * 100 + "%",
-                        y: Math.random() * 100 + "%",
-                        opacity: 0,
+                    className="absolute h-1 w-1 rounded-full bg-primary/40 shadow-[0_0_10px_rgba(3,169,244,0.3)] dynamic-bg-particle"
+                    style={{
+                        left: `${(i * 17 + 10) % 100}%`,
+                        top: `${(i * 23 + 5) % 100}%`,
+                        animationDelay: `${i * -8}s`,
+                        animationDuration: `${40 + i * 10}s`,
                     }}
-                    animate={{
-                        x: [
-                            (Math.random() * 100) + "%",
-                            (Math.random() * 100) + "%"
-                        ],
-                        y: [
-                            (Math.random() * 100) + "%",
-                            (Math.random() * 100) + "%"
-                        ],
-                        opacity: [0.1, 0.3, 0.1],
-                    }}
-                    transition={{
-                        duration: 40 + Math.random() * 40,
-                        repeat: Infinity,
-                        ease: "linear",
-                    }}
-                    style={{ willChange: "transform" }}
-                    className="absolute h-1 w-1 rounded-full bg-primary/40 shadow-[0_0_10px_rgba(3,169,244,0.3)]"
                 />
             ))}
 
-            {/* Subtle Scanning Line - Simplified on mobile */}
-            <motion.div
-                animate={isMobile ? { opacity: 0 } : {
-                    top: ["-5%", "105%"],
-                }}
-                transition={{
-                    duration: 25,
-                    repeat: Infinity,
-                    ease: "linear",
-                }}
-                style={{ willChange: isMobile ? "auto" : "top" }}
-                className={`absolute left-0 right-0 h-[400px] bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none ${isMobile ? 'opacity-0' : 'opacity-30'}`}
-            />
+            {/* Scanning Line — CSS animated, desktop only */}
+            {!isMobile && (
+                <div
+                    className="absolute left-0 right-0 h-[400px] bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none opacity-30 dynamic-bg-scanline"
+                />
+            )}
+
+            {/* CSS Animations */}
+            <style>{`
+                .dynamic-bg-orb-1 {
+                    animation: orb1Pulse 15s ease-in-out infinite;
+                    will-change: transform, opacity;
+                }
+                .dynamic-bg-orb-2 {
+                    animation: orb2Pulse 18s ease-in-out 2s infinite;
+                    will-change: transform, opacity;
+                }
+                .dynamic-bg-particle {
+                    animation: particleDrift linear infinite;
+                    will-change: transform;
+                    opacity: 0.2;
+                }
+                .dynamic-bg-scanline {
+                    animation: scanlineMove 25s linear infinite;
+                    will-change: top;
+                }
+                @keyframes orb1Pulse {
+                    0%, 100% { transform: scale(1); opacity: 0.3; }
+                    50% { transform: scale(1.1); opacity: 0.45; }
+                }
+                @keyframes orb2Pulse {
+                    0%, 100% { transform: scale(1); opacity: 0.2; }
+                    50% { transform: scale(1.15); opacity: 0.35; }
+                }
+                @keyframes particleDrift {
+                    0% { transform: translate(0, 0); opacity: 0.1; }
+                    25% { opacity: 0.3; }
+                    50% { transform: translate(30vw, -20vh); opacity: 0.1; }
+                    75% { opacity: 0.3; }
+                    100% { transform: translate(0, 0); opacity: 0.1; }
+                }
+                @keyframes scanlineMove {
+                    0% { top: -5%; }
+                    100% { top: 105%; }
+                }
+            `}</style>
         </div>
     );
 };

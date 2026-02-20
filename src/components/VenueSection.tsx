@@ -51,16 +51,18 @@ const VenueSection = () => {
                         <div
                             className="glass-card rounded-3xl overflow-hidden border border-black/5 dark:border-white/10 p-2 shadow-lg h-[280px] sm:h-[350px] lg:h-[400px]"
                         >
-                            <iframe
-                                src="https://maps.google.com/maps?q=8.197754,77.382992&z=17&output=embed"
-                                width="100%"
-                                height="100%"
-                                style={{ border: 0 }}
-                                allowFullScreen
-                                loading="eager" // Changed to eager for background loading
-                                referrerPolicy="no-referrer-when-downgrade"
-                                className="rounded-2xl grayscale dark:invert dark:opacity-80 transition-all duration-500 hover:grayscale-0 dark:hover:invert-0 dark:hover:opacity-100"
-                            ></iframe>
+                            {isOpen && (
+                                <iframe
+                                    src="https://maps.google.com/maps?q=8.197754,77.382992&z=17&output=embed"
+                                    width="100%"
+                                    height="100%"
+                                    style={{ border: 0 }}
+                                    allowFullScreen
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                    className="rounded-2xl grayscale dark:invert dark:opacity-80 transition-all duration-500 hover:grayscale-0 dark:hover:invert-0 dark:hover:opacity-100"
+                                ></iframe>
+                            )}
                         </div>
 
                         {/* Location Details Card */}

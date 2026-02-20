@@ -46,5 +46,7 @@ export default defineConfig(({ mode }) => ({
     },
     cssCodeSplit: true,
     chunkSizeWarningLimit: 1500,
+    sourcemap: false,
+    reportCompressedSize: false,
   },
 }));

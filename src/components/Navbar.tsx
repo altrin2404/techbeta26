@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { useState, Suspense, lazy } from "react";
+import { Menu, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import RegistrationDialog from "./RegistrationDialog";
+
+const RegistrationDialog = lazy(() => import("./RegistrationDialog"));
 
 const navLinks = [
   { label: "About", href: "#about" },
@@ -37,11 +38,13 @@ const Navbar = () => {
             </a>
           ))}
 
-          <RegistrationDialog>
-            <Button size="sm" className="font-display text-xs font-semibold tracking-wider box-glow-cyan bg-primary hover:bg-primary/90 text-white border-none">
-              Register Now
-            </Button>
-          </RegistrationDialog>
+          <Suspense fallback={<Button size="sm" disabled className="bg-primary/20"><Loader2 className="h-4 w-4 animate-spin" /></Button>}>
+            <RegistrationDialog>
+              <Button size="sm" className="font-display text-xs font-semibold tracking-wider box-glow-cyan bg-primary hover:bg-primary/90 text-white border-none">
+                Register Now
+              </Button>
+            </RegistrationDialog>
+          </Suspense>
         </div>
 
         {/* Mobile toggle */}
@@ -71,11 +74,13 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="pt-2">
-                <RegistrationDialog>
-                  <Button size="sm" className="font-display text-xs font-semibold tracking-wider box-glow-cyan w-full bg-primary hover:bg-primary/90 text-white border-none">
-                    Register Now
-                  </Button>
-                </RegistrationDialog>
+                <Suspense fallback={<Button size="sm" disabled className="w-full bg-primary/20"><Loader2 className="h-4 w-4 animate-spin" /></Button>}>
+                  <RegistrationDialog>
+                    <Button size="sm" className="font-display text-xs font-semibold tracking-wider box-glow-cyan w-full bg-primary hover:bg-primary/90 text-white border-none">
+                      Register Now
+                    </Button>
+                  </RegistrationDialog>
+                </Suspense>
               </div>
             </div>
           </motion.div>

@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, Loader2 } from "lucide-react";
 
 const HeroSection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   return (
     <section id="hero" className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 pt-32">
       {/* Background grid effect */}
@@ -43,7 +52,7 @@ const HeroSection = () => {
           </motion.div>
 
           <motion.div
-            animate={window.innerWidth < 768 ? {} : {
+            animate={isMobile ? {} : {
               y: [0, -10, 0],
             }}
             transition={{
