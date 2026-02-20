@@ -46,9 +46,11 @@ const Index = () => {
           <AboutSection />
         </Suspense>
         <SectionDivider />
-        <Suspense fallback={<SectionLoader />}>
-          <EventsSection />
-        </Suspense>
+        <div id="events">
+          <Suspense fallback={<SectionLoader />}>
+            <EventsSection />
+          </Suspense>
+        </div>
         <SectionDivider />
         <Suspense fallback={<SectionLoader />}>
           <ScheduleSection />

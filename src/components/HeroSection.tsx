@@ -130,6 +130,7 @@ const HeroSection = () => {
           </Suspense>
           <Button variant="outline" size="lg" className="font-display text-sm tracking-wider border-glow-cyan min-h-[44px]"
             onClick={() => {
+              window.location.hash = 'events';
               document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
               window.dispatchEvent(new Event('open-events'));
             }}

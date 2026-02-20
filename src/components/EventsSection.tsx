@@ -163,11 +163,17 @@ const EventsSection = () => {
     useEffect(() => {
         const handleOpenEvents = () => setIsOpen(true);
         window.addEventListener('open-events', handleOpenEvents);
+
+        // Also check if we landed here with #events hash
+        if (window.location.hash === '#events') {
+            setIsOpen(true);
+        }
+
         return () => window.removeEventListener('open-events', handleOpenEvents);
     }, []);
 
     return (
-        <section id="events" className="relative py-12 px-4 shadow-inner">
+        <section className="relative py-12 px-4 shadow-inner">
             <div className="container mx-auto max-w-6xl">
                 {/* Main Section Toggle */}
                 <div className="text-center mb-8">
