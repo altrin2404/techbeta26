@@ -118,7 +118,7 @@ const AdminDashboard = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this registration?")) return;
+        if (!window.confirm("Are you sure you want to delete this registration?")) return;
         const result = await deleteRegistration(id);
         if (result.success) toast.success("Deleted successfully");
         else toast.error("Failed to delete");
@@ -144,7 +144,7 @@ const AdminDashboard = () => {
         worksheet.getRow(1).font = { bold: true };
         worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
 
-        toast.loading("Generating report with QR images...");
+        toast.loading("Generating All Participants report...");
 
         for (const reg of registrations) {
             const members = reg.members || [{
@@ -206,7 +206,7 @@ const AdminDashboard = () => {
             reg.members ? reg.members.flatMap(m => m.events) : reg.events
         ))).sort();
 
-        toast.loading(`Generating ${includeAttendance ? 'attendance' : 'master'} sheets with QR...`);
+        toast.loading(`Generating ${includeAttendance ? 'Attendance Sheets' : 'Master Sheets'}...`);
 
         for (const eventName of allEvents) {
             const worksheet = workbook.addWorksheet(eventName.substring(0, 31).replace(/[\\/?*[\]]/g, ""));

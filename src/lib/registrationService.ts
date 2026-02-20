@@ -41,10 +41,46 @@ export interface Registration {
 
 const COLLECTION_NAME = "registrations";
 
+// Sanitize user input: trim, remove HTML tags, limit length
+const sanitizeInput = (value: string, maxLength: number = 200): string => {
+    if (!value || typeof value !== 'string') return '';
+    return value
+        .replace(/<[^>]*>/g, '')   // Remove HTML tags
+        .replace(/[<>]/g, '')       // Remove leftover angle brackets
+        .trim()
+        .substring(0, maxLength);
+};
+
+const sanitizeMembers = (members: TeamMember[]): TeamMember[] => {
+    return members.map(m => ({
+        ...m,
+        name: sanitizeInput(m.name, 100),
+        email: sanitizeInput(m.email, 100),
+        phone: sanitizeInput(m.phone, 15),
+        college: sanitizeInput(m.college, 150),
+        department: sanitizeInput(m.department, 100),
+        year: sanitizeInput(m.year, 20),
+        events: (m.events || []).map(e => sanitizeInput(e, 50)),
+    }));
+};
+
 export const addRegistration = async (data: Omit<Registration, "id" | "status" | "registrationDate" | "timestamp">) => {
     try {
-        const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+        const sanitizedData = {
             ...data,
+            name: sanitizeInput(data.name, 100),
+            email: sanitizeInput(data.email, 100),
+            phone: sanitizeInput(data.phone, 15),
+            college: sanitizeInput(data.college, 150),
+            department: sanitizeInput(data.department, 100),
+            transactionId: sanitizeInput(data.transactionId, 50),
+            upiName: data.upiName ? sanitizeInput(data.upiName, 100) : undefined,
+            events: (data.events || []).map(e => sanitizeInput(e, 50)),
+            members: data.members ? sanitizeMembers(data.members) : undefined,
+        };
+
+        const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+            ...sanitizedData,
             status: "Pending Verification",
             registrationDate: new Date().toISOString(),
             timestamp: serverTimestamp()

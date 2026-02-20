@@ -67,6 +67,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [showSuccess, setShowSuccess] = React.useState(false);
     const [step, setStep] = React.useState(1);
+    const [savedPaymentId, setSavedPaymentId] = React.useState("");
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -93,7 +94,17 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
     const prevStep = () => setStep(1);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        // Rate limiting: block submissions within 30 seconds
+        const lastSubmit = localStorage.getItem('lastRegistrationSubmit');
+        const now = Date.now();
+        if (lastSubmit && now - parseInt(lastSubmit) < 30000) {
+            const remainingSec = Math.ceil((30000 - (now - parseInt(lastSubmit))) / 1000);
+            toast.error(`Please wait ${remainingSec} seconds before submitting again.`);
+            return;
+        }
+
         setIsSubmitting(true);
+        localStorage.setItem('lastRegistrationSubmit', now.toString());
 
         const leadMember = values.members[0];
         const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
@@ -175,6 +186,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
             if (result.success) {
                 window.dispatchEvent(new Event("registration-updated"));
                 setIsSubmitting(false);
+                setSavedPaymentId(values.transactionId);
                 setOpen(false);
                 setStep(1);
                 form.reset();
@@ -207,7 +219,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
         const amountToPay = fields.length * 100; // 100 paise = 1 INR per member
 
         const options = {
-            key: "rzp_live_SGVbI9rDnkoihY",
+            key: import.meta.env.VITE_RAZORPAY_KEY,
             amount: amountToPay.toString(),
             currency: "INR",
             name: "TECHBETA 2K26",
@@ -241,32 +253,34 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
     };
 
     return (
-        <Dialog open={open} onOpenChange={(val) => {
-            setOpen(val);
-            if (!val) setStep(1);
-        }}>
-            <DialogTrigger asChild>
-                {children}
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[700px] w-[95vw] sm:w-full max-h-[90vh] sm:max-h-[85vh] overflow-hidden p-0 gap-0 rounded-2xl sm:rounded-3xl border-none shadow-2xl bg-[#0f172a] text-white flex flex-col">
-                <div className="bg-slate-900 border-b border-white/5 p-4 flex items-center justify-between sticky top-0 z-50">
-                    <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                            <QrCode size={16} />
+        <>
+            <Dialog open={open} onOpenChange={(val) => {
+                setOpen(val);
+                if (!val) setStep(1);
+            }}>
+                <DialogTrigger asChild>
+                    {children}
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[700px] w-[95vw] sm:w-full max-h-[90vh] sm:max-h-[85vh] overflow-hidden p-0 gap-0 rounded-2xl sm:rounded-3xl border-none shadow-2xl bg-[#0f172a] text-white flex flex-col">
+                    <div className="bg-slate-900 border-b border-white/5 p-4 flex items-center justify-between sticky top-0 z-50">
+                        <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                                <QrCode size={16} />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-sm font-bold tracking-wide uppercase text-white">Event Registration</DialogTitle>
+                                <DialogDescription className="text-[10px] text-slate-400 font-medium">Join TECHBETA 2K26</DialogDescription>
+                            </div>
                         </div>
-                        <div>
-                            <DialogTitle className="text-sm font-bold tracking-wide uppercase text-white">Event Registration</DialogTitle>
-                            <DialogDescription className="text-[10px] text-slate-400 font-medium">Join TECHBETA 2K26</DialogDescription>
+                        <div className="flex items-center gap-2">
+                            <div className="flex items-center space-x-1">
+                                <div className={`h-1.5 w-8 rounded-full transition-colors ${step >= 1 ? 'bg-primary' : 'bg-slate-800'}`} />
+                                <div className={`h-1.5 w-8 rounded-full transition-colors ${step >= 2 ? 'bg-primary' : 'bg-slate-800'}`} />
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="text-slate-400 hover:text-white hover:bg-white/10 rounded-full h-8 w-8">
+                                <X size={16} />
+                            </Button>
                         </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center space-x-1">
-                            <div className={`h-1.5 w-8 rounded-full transition-colors ${step >= 1 ? 'bg-primary' : 'bg-slate-800'}`} />
-                            <div className={`h-1.5 w-8 rounded-full transition-colors ${step >= 2 ? 'bg-primary' : 'bg-slate-800'}`} />
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="text-slate-400 hover:text-white hover:bg-white/10 rounded-full h-8 w-8">
-                            <X size={16} />
-                        </Button>
                     </div>
                     <div className="flex-1 overflow-y-auto bg-slate-50 text-slate-900 custom-scrollbar">
                         <Form {...form}>
@@ -562,34 +576,33 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                             </form>
                         </Form>
                     </div>
-            </DialogContent>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
-                <DialogContent className="max-w-sm bg-white dark:bg-slate-900 border-2 border-green-500 rounded-3xl p-0 overflow-hidden">
+                <DialogContent className="max-w-sm bg-white border-2 border-green-500 rounded-3xl p-0 overflow-hidden">
                     <div className="bg-green-500 p-6 flex flex-col items-center justify-center text-white">
                         <CheckCircle className="h-16 w-16 mb-2" />
                         <DialogTitle className="text-2xl font-black uppercase tracking-tight text-center">Registration Successful!</DialogTitle>
                     </div>
                     <div className="p-6 text-center space-y-4">
-                        <p className="font-medium text-slate-600 dark:text-slate-300">
-                            Welcome to <span className="font-bold text-primary">TECHBETA 2K26</span>
+                        <p className="text-lg font-black text-slate-800">
+                            Welcome to <span className="font-black">TECHBETA 2K26</span>
                         </p>
                         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left">
                             <p className="text-[10px] font-black uppercase text-orange-500 tracking-widest mb-1">Important</p>
-                            <p className="text-sm font-bold text-orange-900 leading-tight">
-                                Registration Completed! You will receive a verification email on your registered email address. If not found, please check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span>.
-                            </p>
+                            <ol className="list-decimal list-inside space-y-2 text-sm font-bold text-orange-900 leading-tight">
+                                <li>You will receive a verification email on your registered email address. If not found, check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span>.</li>
+                                <li>After our team verifies your registration, you will receive your <span className="underline decoration-2 decoration-orange-500">QR Code</span> via email.</li>
+                            </ol>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                            Your payment ID: <span className="font-mono bg-muted px-1 rounded">{form.getValues('transactionId')}</span>
-                        </p>
-                        <Button onClick={() => setShowSuccess(false)} className="w-full font-bold bg-slate-900 text-white hover:bg-slate-800">
+                        <Button onClick={() => setShowSuccess(false)} className="w-full font-bold bg-green-500 text-white hover:bg-green-600">
                             Got it!
                         </Button>
                     </div>
                 </DialogContent>
             </Dialog>
-        </Dialog >
+        </>
     );
 };
 

@@ -1,10 +1,9 @@
 
 import emailjs from '@emailjs/browser';
 
-const SERVICE_ID = "service_zhauh4p";
-const TEMPLATE_ID = "template_unfu8bk";
-// TODO: Update with your actual Public Key from EmailJS Account > Keys
-const PUBLIC_KEY = "eT0YTxHkG0KjnuAOZ";
+const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
 interface EmailParams {
     to_name: string;

@@ -26,3 +26,4 @@ dist-ssr
 compile_output.txt
 
 server/serviceAccountKey.json
+.env
