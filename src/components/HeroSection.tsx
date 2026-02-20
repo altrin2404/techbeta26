@@ -5,26 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, Loader2 } from "lucide-react";
 
 const HeroSection = () => {
-  const [registrationCount, setRegistrationCount] = useState(0);
-
-  useEffect(() => {
-    let unsubscribe: () => void;
-
-    const setupSubscription = async () => {
-      const { subscribeToRegistrations } = await import("@/lib/registrationService");
-      unsubscribe = subscribeToRegistrations((data) => {
-        const totalParticipants = data.reduce((acc, curr) => acc + (curr.members ? curr.members.length : 1), 0);
-        setRegistrationCount(totalParticipants);
-      });
-    };
-
-    setupSubscription();
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, []);
-
   return (
     <section id="hero" className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 pt-32">
       {/* Background grid effect */}
@@ -142,27 +122,6 @@ const HeroSection = () => {
           <Button asChild variant="outline" size="lg" className="font-display text-sm tracking-wider border-glow-cyan min-h-[44px]">
             <a href="#events">Explore Events</a>
           </Button>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.3 }}
-          className="mt-8 flex items-center justify-center gap-3"
-        >
-          <div className="flex -space-x-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-slate-200 flex items-center justify-center overflow-hidden">
-                <div className="h-full w-full bg-gradient-to-br from-primary/20 to-secondary/20" />
-              </div>
-            ))}
-            <div className="h-8 w-8 rounded-full border-2 border-background bg-primary flex items-center justify-center text-[10px] font-black text-primary-foreground">
-              +
-            </div>
-          </div>
-          <p className="text-xs font-bold text-foreground/60 tracking-wider uppercase">
-            <span className="text-primary font-black">{registrationCount}</span> Live Participants Registered
-          </p>
         </motion.div>
       </div>
 
