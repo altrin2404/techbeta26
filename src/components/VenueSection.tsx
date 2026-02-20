@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 
 const VenueSection = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isMapLoaded, setIsMapLoaded] = useState(false);
 
     return (
         <section id="venue" className="relative py-12 px-4 shadow-sm">
@@ -51,22 +52,26 @@ const VenueSection = () => {
                         <div
                             className="glass-card rounded-3xl overflow-hidden border border-black/5 dark:border-white/10 p-2 shadow-lg h-[280px] sm:h-[350px] lg:h-[400px]"
                         >
-                            {isOpen && (
-                                <div className="w-full h-full relative">
-                                    <div className="absolute inset-0 flex items-center justify-center bg-muted/20 animate-pulse">
+                            <div className="w-full h-full relative">
+                                {/* Loading placeholder - stays until iframe loads */}
+                                {!isMapLoaded && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-muted/20 animate-pulse z-20">
                                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Loading Map...</p>
                                     </div>
-                                    <iframe
-                                        src="https://maps.google.com/maps?q=8.197754,77.382992&z=17&output=embed"
-                                        width="100%"
-                                        height="100%"
-                                        style={{ border: 0 }}
-                                        allowFullScreen
-                                        referrerPolicy="no-referrer-when-downgrade"
-                                        className="relative z-10 rounded-2xl grayscale dark:invert dark:opacity-80 transition-all duration-500 hover:grayscale-0 dark:hover:invert-0 dark:hover:opacity-100"
-                                    ></iframe>
-                                </div>
-                            )}
+                                )}
+
+                                <iframe
+                                    src="https://maps.google.com/maps?q=8.197754,77.382992&z=17&output=embed"
+                                    width="100%"
+                                    height="100%"
+                                    style={{ border: 0 }}
+                                    allowFullScreen
+                                    onLoad={() => setIsMapLoaded(true)}
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                    className={`relative z-10 rounded-2xl transition-all duration-700 ${isMapLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                                        }`}
+                                ></iframe>
+                            </div>
                         </div>
 
                         {/* Location Details Card */}
