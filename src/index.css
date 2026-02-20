@@ -214,10 +214,10 @@
     animation: none !important;
   }
 
-  /* Force GPU acceleration on mobile for fixed/absolute elements */
+  /* Force GPU acceleration on mobile for fixed/absolute elements without breaking transforms */
   .fixed,
   .absolute {
-    transform: translateZ(0);
+    will-change: transform;
   }
 }
 
