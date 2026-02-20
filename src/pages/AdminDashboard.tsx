@@ -200,26 +200,31 @@ const AdminDashboard = () => {
         toast.success("Excel report exported!");
     };
 
-    const exportMasterExcel = async () => {
+    const exportMasterExcel = async (includeAttendance: boolean = false) => {
         const workbook = new ExcelJS.Workbook();
         const allEvents = Array.from(new Set(registrations.flatMap(reg =>
             reg.members ? reg.members.flatMap(m => m.events) : reg.events
         ))).sort();
 
-        toast.loading("Generating master sheets with QR...");
+        toast.loading(`Generating ${includeAttendance ? 'attendance' : 'master'} sheets with QR...`);
 
         for (const eventName of allEvents) {
             const worksheet = workbook.addWorksheet(eventName.substring(0, 31).replace(/[\\/?*[\]]/g, ""));
-            worksheet.columns = [
+            const columns = [
                 { header: "QR Code", key: "qr", width: 15 },
                 { header: "Team", key: "team", width: 10 },
                 { header: "Name", key: "name", width: 20 },
                 { header: "Dept", key: "department", width: 15 },
                 { header: "College", key: "college", width: 25 },
                 { header: "Phone", key: "phone", width: 15 },
-                { header: "Email", key: "email", width: 30 },
-                { header: "Attendance", key: "attendance", width: 20 }
+                { header: "Email", key: "email", width: 30 }
             ];
+
+            if (includeAttendance) {
+                columns.push({ header: "Attendance", key: "attendance", width: 20 });
+            }
+
+            worksheet.columns = columns;
 
             worksheet.getRow(1).font = { bold: true };
             worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
@@ -235,15 +240,20 @@ const AdminDashboard = () => {
                     for (const m of participating) {
                         const originalIndex = reg.members ? reg.members.findIndex(member => member.name === m.name) : 0;
                         const attendanceInfo = m.attendance?.[eventName];
-                        const row = worksheet.addRow({
+                        const rowData: any = {
                             team: teamCounter,
                             name: m.name,
                             department: m.department,
                             college: m.college,
                             phone: m.phone,
-                            email: m.email,
-                            attendance: attendanceInfo?.attended ? `Present (${new Date(attendanceInfo.timestamp).toLocaleTimeString()})` : "Absent"
-                        });
+                            email: m.email
+                        };
+
+                        if (includeAttendance) {
+                            rowData.attendance = attendanceInfo?.attended ? `Present (${new Date(attendanceInfo.timestamp).toLocaleTimeString()})` : "Absent";
+                        }
+
+                        const row = worksheet.addRow(rowData);
 
                         row.height = 80;
                         row.alignment = { vertical: 'middle' };
@@ -278,10 +288,10 @@ const AdminDashboard = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `techbeta_master_sheets.xlsx`;
+        a.download = includeAttendance ? `techbeta_attendance_sheets.xlsx` : `techbeta_master_sheets.xlsx`;
         a.click();
         toast.dismiss();
-        toast.success("Master sheets exported!");
+        toast.success(includeAttendance ? "Attendance sheets exported!" : "Master sheets exported!");
     };
 
     const handleMarkAttendance = async (participantId: string, memberIndex: number, eventName: string) => {
@@ -425,7 +435,7 @@ const AdminDashboard = () => {
                             setActiveEvent={setActiveEvent}
                             registrations={registrations}
                             setIsScannerOpen={setIsScannerOpen}
-                            exportMasterExcel={exportMasterExcel}
+                            exportMasterExcel={() => exportMasterExcel(true)}
                             setAdminMode={setAdminMode}
                             recentScans={recentScans}
                             handleScan={handleScan}
@@ -445,7 +455,7 @@ const AdminDashboard = () => {
                             isScannerOpen={isScannerOpen}
                             setIsScannerOpen={setIsScannerOpen}
                             exportAllParticipantsExcel={exportAllParticipantsExcel}
-                            exportMasterExcel={exportMasterExcel}
+                            exportMasterExcel={() => exportMasterExcel(false)}
                             handleScan={handleScan}
                             updateStatus={updateStatus}
                             handleDelete={handleDelete}
