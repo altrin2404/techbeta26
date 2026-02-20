@@ -119,8 +119,10 @@ const HeroSection = () => {
               </Button>
             </RegistrationDialog>
           </Suspense>
-          <Button asChild variant="outline" size="lg" className="font-display text-sm tracking-wider border-glow-cyan min-h-[44px]">
-            <a href="#events">Explore Events</a>
+          <Button variant="outline" size="lg" className="font-display text-sm tracking-wider border-glow-cyan min-h-[44px]"
+            onClick={() => document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            Explore Events
           </Button>
         </motion.div>
       </div>
