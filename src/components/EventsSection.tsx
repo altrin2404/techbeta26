@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Code, Cpu, FileText, Gamepad2, Lightbulb, Presentation, Info, CheckCircle2, ChevronDown, ChevronUp, Palette, Music, Mic2, Trophy, Disc } from "lucide-react";
 import {
@@ -159,6 +159,12 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
 
 const EventsSection = () => {
     const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        const handleOpenEvents = () => setIsOpen(true);
+        window.addEventListener('open-events', handleOpenEvents);
+        return () => window.removeEventListener('open-events', handleOpenEvents);
+    }, []);
 
     return (
         <section id="events" className="relative py-12 px-4 shadow-inner">

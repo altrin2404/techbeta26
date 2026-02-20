@@ -120,7 +120,10 @@ const HeroSection = () => {
             </RegistrationDialog>
           </Suspense>
           <Button variant="outline" size="lg" className="font-display text-sm tracking-wider border-glow-cyan min-h-[44px]"
-            onClick={() => document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => {
+              document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
+              window.dispatchEvent(new Event('open-events'));
+            }}
           >
             Explore Events
           </Button>
