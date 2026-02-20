@@ -464,6 +464,7 @@ const AdminDashboard = () => {
                             scannedMemberIndex={scannedMemberIndex}
                             setScannedMemberIndex={setScannedMemberIndex}
                             onRemoveAttendance={handleRemoveAttendance}
+                            setAdminMode={setAdminMode}
                         />
                     )}
                 </Suspense>
