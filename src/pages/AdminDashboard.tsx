@@ -1,9 +1,9 @@
-import { useState, useEffect, Suspense, lazy } from "react";
+import { useState, useEffect, Suspense, lazy, useMemo } from "react";
 import {
     LogOut, ShieldCheck, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ExcelJS from "exceljs";
+// import ExcelJS from "exceljs"; // moved to dynamic import
 import { toast } from "sonner";
 import {
     subscribeToRegistrations,
@@ -16,6 +16,7 @@ import { auth } from "@/lib/firebase";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import QRScannerDialog from "@/components/QRScannerDialog";
+import { useDebounce } from "@/hooks/use-debounce";
 
 // Lazy Loaded Components for Performance
 const AdminLogin = lazy(() => import("@/components/admin/AdminLogin"));
@@ -125,6 +126,7 @@ const AdminDashboard = () => {
     };
 
     const exportAllParticipantsExcel = async () => {
+        const ExcelJS = (await import("exceljs")).default;
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet("All Participants");
 
@@ -201,6 +203,7 @@ const AdminDashboard = () => {
     };
 
     const exportMasterExcel = async (includeAttendance: boolean = false) => {
+        const ExcelJS = (await import("exceljs")).default;
         const workbook = new ExcelJS.Workbook();
         const allEvents = Array.from(new Set(registrations.flatMap(reg =>
             reg.members ? reg.members.flatMap(m => m.events) : reg.events
@@ -393,11 +396,17 @@ const AdminDashboard = () => {
         }
     };
 
-    const filteredRegistrations = registrations.filter(reg =>
-        reg.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        reg.college.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        reg.transactionId?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+    const filteredRegistrations = useMemo(() => {
+        if (!debouncedSearchQuery) return registrations;
+        const query = debouncedSearchQuery.toLowerCase();
+        return registrations.filter(reg =>
+            reg.name.toLowerCase().includes(query) ||
+            reg.college.toLowerCase().includes(query) ||
+            reg.transactionId?.toLowerCase().includes(query)
+        );
+    }, [registrations, debouncedSearchQuery]);
 
     if (isAuthLoading) {
         return (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, ChevronDown, ChevronUp, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,31 @@ const team = [
 
 const TeamSection = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsOpen(true);
+      setTimeout(() => {
+        document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    };
+    const handleHashChange = () => {
+      if (window.location.hash === '#team') {
+        handleOpen();
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('open-team', handleOpen);
+
+    if (window.location.hash === '#team') {
+      handleOpen();
+    }
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('open-team', handleOpen);
+    };
+  }, []);
 
   return (
     <section id="team" className="relative py-12 px-4">

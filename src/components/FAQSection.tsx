@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
 import {
@@ -38,6 +38,31 @@ const faqs = [
 
 const FAQSection = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsOpen(true);
+      setTimeout(() => {
+        document.getElementById('faqs')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    };
+    const handleHashChange = () => {
+      if (window.location.hash === '#faqs') {
+        handleOpen();
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('open-faqs', handleOpen);
+
+    if (window.location.hash === '#faqs') {
+      handleOpen();
+    }
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('open-faqs', handleOpen);
+    };
+  }, []);
 
   return (
     <section id="faqs" className="relative py-12 px-4">

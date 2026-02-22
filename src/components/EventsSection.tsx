@@ -161,15 +161,32 @@ const EventsSection = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        const handleOpenEvents = () => setIsOpen(true);
-        window.addEventListener('open-events', handleOpenEvents);
+        const handleOpenEvents = () => {
+            setIsOpen(true);
+            // Wait for expansion animation to start/complete before scrolling for better accuracy
+            setTimeout(() => {
+                document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        };
 
-        // Also check if we landed here with #events hash
+        const handleHashChange = () => {
+            if (window.location.hash === '#events') {
+                handleOpenEvents();
+            }
+        };
+
+        window.addEventListener('open-events', handleOpenEvents);
+        window.addEventListener('hashchange', handleHashChange);
+
+        // Initial check
         if (window.location.hash === '#events') {
             setIsOpen(true);
         }
 
-        return () => window.removeEventListener('open-events', handleOpenEvents);
+        return () => {
+            window.removeEventListener('open-events', handleOpenEvents);
+            window.removeEventListener('hashchange', handleHashChange);
+        };
     }, []);
 
     return (

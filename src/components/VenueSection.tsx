@@ -50,13 +50,19 @@ const VenueSection = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center pb-8 mt-12">
                         {/* Map Card */}
                         <div
-                            className="glass-card rounded-3xl overflow-hidden border border-black/5 dark:border-white/10 p-2 shadow-lg h-[280px] sm:h-[350px] lg:h-[400px]"
+                            className="glass-card rounded-3xl overflow-hidden border border-black/5 dark:border-white/10 p-2 shadow-lg h-[280px] sm:h-[350px] lg:h-[400px] relative group"
                         >
-                            <div className="w-full h-full relative">
-                                {/* Loading placeholder - stays until iframe loads */}
+                            <div className="w-full h-full relative bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden">
+                                {/* Static Map/Loading Background */}
+                                <div
+                                    className="absolute inset-0 bg-cover bg-center opacity-30 grayscale saturate-0"
+                                    style={{ backgroundImage: 'url("https://maps.googleapis.com/maps/api/staticmap?center=8.197754,77.382992&zoom=15&size=600x400&scale=2&key=YOUR_API_KEY_HERE")' }} // Fallback if no key
+                                />
+
                                 {!isMapLoaded && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-muted/20 animate-pulse z-20">
-                                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Loading Map...</p>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-background/40 backdrop-blur-[2px]">
+                                        <div className="h-10 w-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4" />
+                                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Initializing Map...</p>
                                     </div>
                                 )}
 
@@ -67,8 +73,9 @@ const VenueSection = () => {
                                     style={{ border: 0 }}
                                     allowFullScreen
                                     onLoad={() => setIsMapLoaded(true)}
+                                    loading="lazy"
                                     referrerPolicy="no-referrer-when-downgrade"
-                                    className={`relative z-10 rounded-2xl transition-all duration-700 ${isMapLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                                    className={`relative z-10 rounded-xl transition-all duration-1000 ease-out ${isMapLoaded ? "opacity-100 scale-100" : "opacity-0 scale-105"
                                         }`}
                                 ></iframe>
                             </div>
@@ -77,18 +84,35 @@ const VenueSection = () => {
                         {/* Location Details Card */}
                         <div className="space-y-4">
                             <div
-                                className="p-8 glass-card rounded-3xl border border-black/5 dark:border-white/10 bg-primary/5"
+                                className="p-8 glass-card rounded-3xl border border-black/5 dark:border-white/10 bg-primary/5 hover:bg-primary/10 transition-colors duration-500"
                             >
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Info size={24} className="text-primary" />
-                                    <h3 className="font-bold text-xl">Location Details</h3>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="h-12 w-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+                                        <MapPin size={24} className="text-primary" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-xl leading-tight">Location Details</h3>
+                                        <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">Nagercoil, Tamil Nadu</p>
+                                    </div>
                                 </div>
                                 <p className="text-lg text-muted-foreground leading-relaxed">
                                     <span className="font-bold text-foreground">St. Xavier's Catholic College of Engineering</span><br />
                                     Chunkankadai, Nagercoil, Tamil Nadu 629003.<br />
                                     <br />
-                                    @ <span className="text-primary font-bold">Rock Auditorium</span>
+                                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm font-bold">
+                                        <Info size={14} />
+                                        Rock Auditorium
+                                    </span>
                                 </p>
+
+                                <div className="mt-8">
+                                    <Button
+                                        className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold tracking-widest uppercase text-xs rounded-xl shadow-lg shadow-primary/20 transition-all hover:-translate-y-1 active:scale-[0.98]"
+                                        onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=8.197754,77.382992', '_blank')}
+                                    >
+                                        Get Directions
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>

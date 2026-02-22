@@ -262,7 +262,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                     {children}
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[700px] w-[95vw] sm:w-full max-h-[90vh] sm:max-h-[85vh] overflow-hidden p-0 gap-0 rounded-2xl sm:rounded-3xl border-none shadow-2xl bg-[#0f172a] text-white flex flex-col">
-                    <div className="bg-slate-900 border-b border-white/5 p-4 flex items-center justify-between sticky top-0 z-50">
+                    <div className="bg-slate-900 border-b border-white/5 p-4 sm:p-6 flex items-center justify-between sticky top-0 z-50">
                         <div className="flex items-center gap-2">
                             <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
                                 <QrCode size={16} />
@@ -284,23 +284,23 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                     </div>
                     <div className="flex-1 overflow-y-auto bg-slate-50 text-slate-900 custom-scrollbar">
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-6">
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4 sm:p-6">
                                 {/* ... keep DialogHeader ... */}
-                                <DialogHeader className="mb-4">
-                                    <DialogTitle className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                                <DialogHeader className="mb-4 space-y-2">
+                                    <DialogTitle className="text-xl sm:text-2xl font-black text-slate-900 flex flex-wrap items-center justify-center gap-2">
                                         {step === 1 ? (
                                             <>
                                                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">Team Details</span>
-                                                <Badge variant="outline" className="ml-2 border-primary/20 text-primary bg-primary/5">Step 1/2</Badge>
+                                                <Badge variant="outline" className="border-primary/20 text-primary bg-primary/5">Step 1/2</Badge>
                                             </>
                                         ) : (
                                             <>
                                                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-teal-600">Payment</span>
-                                                <Badge variant="outline" className="ml-2 border-emerald-500/20 text-emerald-600 bg-emerald-50">Step 2/2</Badge>
+                                                <Badge variant="outline" className="border-emerald-500/20 text-emerald-600 bg-emerald-50">Step 2/2</Badge>
                                             </>
                                         )}
                                     </DialogTitle>
-                                    <DialogDescription className="text-center font-medium text-muted-foreground">
+                                    <DialogDescription className="text-center font-bold text-slate-500 text-xs sm:text-sm">
                                         {step === 1 ? "Step 1: Participant Details" : <>Step 2: Pay Registration Fee: <span className="text-emerald-500 font-bold">₹{totalAmount / 100}</span></>}
                                     </DialogDescription>
                                 </DialogHeader>
@@ -314,7 +314,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                             exit={{ opacity: 0, x: 20 }}
                                             className="space-y-4"
                                         >
-                                            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                            <div className="space-y-4 max-h-[45vh] sm:max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                                                 {fields.map((field, index) => (
                                                     <div key={field.id} className="p-4 rounded-xl bg-slate-50 border border-slate-100 relative group">
                                                         <div className="flex items-center justify-between mb-3">
@@ -346,7 +346,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                                     </FormItem>
                                                                 )}
                                                             />
-                                                            <div className="grid grid-cols-2 gap-3">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                                 <FormField
                                                                     control={form.control}
                                                                     name={`members.${index}.email`}
@@ -372,7 +372,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                                     )}
                                                                 />
                                                             </div>
-                                                            <div className="grid grid-cols-2 gap-3">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                                 <FormField
                                                                     control={form.control}
                                                                     name={`members.${index}.department`}
@@ -421,79 +421,68 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                                                                 )}
                                                             />
 
-                                                            <div className="space-y-2 pt-2 border-t border-slate-100">
-                                                                {/* ... keep event checkboxes ... */}
-                                                                <div className="space-y-4">
-                                                                    <div>
-                                                                        <FormLabel className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 block">Technical Events</FormLabel>
-                                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                                            {technicalEvents.map((event) => (
-                                                                                <FormField
-                                                                                    key={event}
-                                                                                    control={form.control}
-                                                                                    name={`members.${index}.events` as any}
-                                                                                    render={({ field }) => (
-                                                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0 rounded-md border border-slate-200 bg-white p-2 hover:bg-slate-50 transition-colors">
-                                                                                            <FormControl>
-                                                                                                <Checkbox
-                                                                                                    checked={(field.value as string[])?.includes(event)}
-                                                                                                    onCheckedChange={(checked) => {
-                                                                                                        const currentValue = (field.value as string[]) || [];
-                                                                                                        return checked
-                                                                                                            ? field.onChange([...currentValue, event])
-                                                                                                            : field.onChange(
-                                                                                                                currentValue.filter(
-                                                                                                                    (value: string) => value !== event
-                                                                                                                )
-                                                                                                            )
-                                                                                                    }}
-                                                                                                    className="border-primary h-4 w-4"
-                                                                                                />
-                                                                                            </FormControl>
-                                                                                            <FormLabel className="text-[10px] font-bold cursor-pointer text-slate-700 leading-tight">
-                                                                                                {event}
-                                                                                            </FormLabel>
-                                                                                        </FormItem>
-                                                                                    )}
-                                                                                />
-                                                                            ))}
-                                                                        </div>
+                                                            <div className="space-y-6 pt-4 border-t border-slate-100">
+                                                                <div>
+                                                                    <FormLabel className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4 block">Technical Events</FormLabel>
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                                        {technicalEvents.map((event) => (
+                                                                            <FormField
+                                                                                key={event}
+                                                                                control={form.control}
+                                                                                name={`members.${index}.events` as any}
+                                                                                render={({ field }) => (
+                                                                                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-xl border border-slate-200 bg-white p-3 hover:bg-slate-50 transition-colors shadow-sm">
+                                                                                        <FormControl>
+                                                                                            <Checkbox
+                                                                                                checked={(field.value as string[])?.includes(event)}
+                                                                                                onCheckedChange={(checked) => {
+                                                                                                    const currentValue = (field.value as string[]) || [];
+                                                                                                    return checked
+                                                                                                        ? field.onChange([...currentValue, event])
+                                                                                                        : field.onChange(currentValue.filter((value: string) => value !== event))
+                                                                                                }}
+                                                                                                className="h-5 w-5 border-primary"
+                                                                                            />
+                                                                                        </FormControl>
+                                                                                        <FormLabel className="text-sm font-bold cursor-pointer text-slate-700 leading-none">
+                                                                                            {event}
+                                                                                        </FormLabel>
+                                                                                    </FormItem>
+                                                                                )}
+                                                                            />
+                                                                        ))}
                                                                     </div>
+                                                                </div>
 
-                                                                    <div>
-                                                                        <FormLabel className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 block">Non-Technical Events</FormLabel>
-                                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                                            {nonTechnicalEvents.map((event) => (
-                                                                                <FormField
-                                                                                    key={event}
-                                                                                    control={form.control}
-                                                                                    name={`members.${index}.events` as any}
-                                                                                    render={({ field }) => (
-                                                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0 rounded-md border border-slate-200 bg-white p-2 hover:bg-slate-50 transition-colors">
-                                                                                            <FormControl>
-                                                                                                <Checkbox
-                                                                                                    checked={(field.value as string[])?.includes(event)}
-                                                                                                    onCheckedChange={(checked) => {
-                                                                                                        const currentValue = (field.value as string[]) || [];
-                                                                                                        return checked
-                                                                                                            ? field.onChange([...currentValue, event])
-                                                                                                            : field.onChange(
-                                                                                                                currentValue.filter(
-                                                                                                                    (value: string) => value !== event
-                                                                                                                )
-                                                                                                            )
-                                                                                                    }}
-                                                                                                    className="border-primary h-4 w-4"
-                                                                                                />
-                                                                                            </FormControl>
-                                                                                            <FormLabel className="text-[10px] font-bold cursor-pointer text-slate-700 leading-tight">
-                                                                                                {event}
-                                                                                            </FormLabel>
-                                                                                        </FormItem>
-                                                                                    )}
-                                                                                />
-                                                                            ))}
-                                                                        </div>
+                                                                <div>
+                                                                    <FormLabel className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4 block">Non-Technical Events</FormLabel>
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                                        {nonTechnicalEvents.map((event) => (
+                                                                            <FormField
+                                                                                key={event}
+                                                                                control={form.control}
+                                                                                name={`members.${index}.events` as any}
+                                                                                render={({ field }) => (
+                                                                                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-xl border border-slate-200 bg-white p-3 hover:bg-slate-50 transition-colors shadow-sm">
+                                                                                        <FormControl>
+                                                                                            <Checkbox
+                                                                                                checked={(field.value as string[])?.includes(event)}
+                                                                                                onCheckedChange={(checked) => {
+                                                                                                    const currentValue = (field.value as string[]) || [];
+                                                                                                    return checked
+                                                                                                        ? field.onChange([...currentValue, event])
+                                                                                                        : field.onChange(currentValue.filter((value: string) => value !== event))
+                                                                                                }}
+                                                                                                className="h-5 w-5 border-primary"
+                                                                                            />
+                                                                                        </FormControl>
+                                                                                        <FormLabel className="text-sm font-bold cursor-pointer text-slate-700 leading-none">
+                                                                                            {event}
+                                                                                        </FormLabel>
+                                                                                    </FormItem>
+                                                                                )}
+                                                                            />
+                                                                        ))}
                                                                     </div>
                                                                 </div>
                                                                 <FormField

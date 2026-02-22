@@ -35,7 +35,7 @@ const HeroSection = () => {
             whileTap={{ scale: 0.98 }}
             className="flex flex-col items-center md:items-start text-center md:text-left cursor-default transition-all duration-300 max-w-full"
           >
-            <span className="font-display text-base font-black tracking-[0.05em] sm:tracking-[0.1em] text-primary sm:text-xl lg:text-3xl drop-shadow-sm break-words overflow-wrap-anywhere leading-tight">
+            <span className="font-display text-xs sm:text-base font-black tracking-[0.05em] sm:tracking-[0.1em] text-primary md:text-xl lg:text-3xl drop-shadow-sm break-words overflow-wrap-anywhere leading-tight">
               ST XAVIER'S CATHOLIC COLLEGE OF ENGINEERING
             </span>
             <div className="mt-4 flex flex-col items-center md:items-start gap-1">
@@ -121,17 +121,16 @@ const HeroSection = () => {
           transition={{ delay: 1.1 }}
           className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
         >
-          <Suspense fallback={<Button size="lg" disabled className="px-8"><Loader2 className="animate-spin" /></Button>}>
+          <Suspense fallback={<Button size="lg" disabled className="px-8 bg-primary/20"><Loader2 className="animate-spin h-5 w-5" /></Button>}>
             <RegistrationDialog>
-              <Button size="lg" className="font-display text-sm font-bold tracking-wider box-glow-cyan px-8 cursor-pointer min-h-[44px]">
+              <Button size="lg" className="font-display text-sm font-bold tracking-wider box-glow-cyan px-8 cursor-pointer min-h-[48px] active:scale-95 transition-transform">
                 Register Now
               </Button>
             </RegistrationDialog>
           </Suspense>
-          <Button variant="outline" size="lg" className="font-display text-sm tracking-wider border-glow-cyan min-h-[44px]"
+          <Button variant="outline" size="lg" className="font-display text-sm tracking-wider border-glow-cyan min-h-[48px] active:scale-95 transition-transform"
             onClick={() => {
               window.location.hash = 'events';
-              document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
               window.dispatchEvent(new Event('open-events'));
             }}
           >

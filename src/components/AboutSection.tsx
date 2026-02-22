@@ -1,10 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Info, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const AboutSection = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsOpen(true);
+      setTimeout(() => {
+        document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    };
+    const handleHashChange = () => {
+      if (window.location.hash === '#about') {
+        handleOpen();
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('open-about', handleOpen);
+
+    if (window.location.hash === '#about') {
+      handleOpen();
+    }
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('open-about', handleOpen);
+    };
+  }, []);
 
   return (
     <section id="about" className="relative py-12 px-4 shadow-sm">

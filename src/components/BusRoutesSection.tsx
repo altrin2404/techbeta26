@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bus, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,31 @@ const routes = [
 
 const BusRoutesSection = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsOpen(true);
+      setTimeout(() => {
+        document.getElementById('bus-routes')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    };
+    const handleHashChange = () => {
+      if (window.location.hash === '#bus-routes') {
+        handleOpen();
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('open-bus-routes', handleOpen);
+
+    if (window.location.hash === '#bus-routes') {
+      handleOpen();
+    }
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('open-bus-routes', handleOpen);
+    };
+  }, []);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggleRoute = (index: number) => {
