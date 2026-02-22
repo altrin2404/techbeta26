@@ -261,7 +261,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                 <DialogTrigger asChild>
                     {children}
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[700px] w-[92vw] sm:w-full max-h-[90vh] sm:max-h-[85vh] h-auto overflow-hidden p-0 gap-0 rounded-2xl sm:rounded-3xl border-none shadow-2xl bg-[#0f172a] text-white flex flex-col">
+                <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[700px] w-[95vw] sm:w-full max-h-[90vh] sm:max-h-[85vh] overflow-hidden p-0 gap-0 rounded-2xl sm:rounded-3xl border-none shadow-2xl bg-[#0f172a] text-white flex flex-col">
                     <div className="bg-slate-900 border-b border-white/5 p-4 flex items-center justify-between sticky top-0 z-50">
                         <div className="flex items-center gap-2">
                             <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
