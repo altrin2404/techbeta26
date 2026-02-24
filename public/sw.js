@@ -33,10 +33,21 @@ self.addEventListener("activate", (event) => {
     return self.clients.claim();
 });
 
-// Fetch Event: Cache First, Network Fallback
+// Fetch Event: Cache First, Network Fallback (ONLY for admin routes)
 self.addEventListener("fetch", (event) => {
     // Only cache GET requests
     if (event.request.method !== "GET") return;
+
+    const url = new URL(event.request.url);
+
+    // Only intercept admin-related requests and static assets
+    const isAdminRoute = url.pathname.startsWith("/admin");
+    const isCachedAsset = ASSETS_TO_CACHE.some(asset => url.pathname === asset || url.pathname.endsWith(asset));
+
+    if (!isAdminRoute && !isCachedAsset) {
+        // Let non-admin requests pass through normally
+        return;
+    }
 
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
