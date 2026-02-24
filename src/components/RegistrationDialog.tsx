@@ -230,6 +230,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             name: "TECHBETA 2K26",
             description: `Registration Fee for ${fields.length} Member(s)`,
             image: "/brigitz-logo.png",
+            redirect: false,
             handler: function (response: any) {
                 form.setValue('transactionId', response.razorpay_payment_id);
                 form.setValue('upiName', 'Razorpay Online');
@@ -238,6 +239,12 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
 
                 const values = form.getValues();
                 onSubmit(values);
+            },
+            modal: {
+                ondismiss: function () {
+                    // User closed the Razorpay modal without completing payment
+                    console.log("Payment modal dismissed by user.");
+                },
             },
             prefill: {
                 name: form.getValues('members.0.name'),
