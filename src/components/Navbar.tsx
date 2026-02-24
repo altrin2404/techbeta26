@@ -17,6 +17,7 @@ const navLinks = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isRegOpen, setIsRegOpen] = useState(false);
 
   const handleNav = (e: React.MouseEvent, href: string) => {
     e.preventDefault();
@@ -53,13 +54,12 @@ const Navbar = () => {
             ))}
           </div>
 
-          <Suspense fallback={<Button size="sm" disabled className="bg-primary/20"><Loader2 className="h-4 w-4 animate-spin" /></Button>}>
-            <RegistrationDialog>
-              <Button className="font-display text-sm font-bold tracking-wider box-glow-cyan bg-primary hover:bg-primary/90 text-white border-none h-11 px-8 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center leading-none">
-                Register Now
-              </Button>
-            </RegistrationDialog>
-          </Suspense>
+          <Button
+            onClick={() => setIsRegOpen(true)}
+            className="font-display text-sm font-bold tracking-wider box-glow-cyan bg-primary hover:bg-primary/90 text-white border-none h-11 px-8 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center leading-none"
+          >
+            Register Now
+          </Button>
         </div>
 
         {/* Mobile toggle */}
@@ -88,19 +88,26 @@ const Navbar = () => {
                   {link.label}
                 </a>
               ))}
-              <div className="pt-2" onClick={() => setIsOpen(false)}>
-                <Suspense fallback={<Button size="sm" disabled className="w-full bg-primary/20"><Loader2 className="h-4 w-4 animate-spin" /></Button>}>
-                  <RegistrationDialog>
-                    <Button size="sm" className="font-display text-xs font-semibold tracking-wider box-glow-cyan w-full bg-primary hover:bg-primary/90 text-white border-none">
-                      Register Now
-                    </Button>
-                  </RegistrationDialog>
-                </Suspense>
+              <div className="pt-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setIsRegOpen(true);
+                    setIsOpen(false);
+                  }}
+                  className="font-display text-xs font-semibold tracking-wider box-glow-cyan w-full bg-primary hover:bg-primary/90 text-white border-none"
+                >
+                  Register Now
+                </Button>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Suspense fallback={null}>
+        <RegistrationDialog open={isRegOpen} onOpenChange={setIsRegOpen} />
+      </Suspense>
     </nav>
   );
 };

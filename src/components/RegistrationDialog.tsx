@@ -59,11 +59,16 @@ const nonTechnicalEvents = [
 ];
 
 interface RegistrationDialogProps {
-    children: React.ReactNode;
+    children?: React.ReactNode;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
-const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
-    const [open, setOpen] = React.useState(false);
+const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setControlledOpen }: RegistrationDialogProps) => {
+    const [internalOpen, setInternalOpen] = React.useState(false);
+    const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+    const setOpen = setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
+
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [showSuccess, setShowSuccess] = React.useState(false);
     const [step, setStep] = React.useState(1);
@@ -258,7 +263,7 @@ const RegistrationDialog = ({ children }: RegistrationDialogProps) => {
                 setOpen(val);
                 if (!val) setStep(1);
             }}>
-                <DialogTrigger asChild>
+                <DialogTrigger asChild onPointerDown={(e) => e.stopPropagation()}>
                     {children}
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[700px] w-[95vw] sm:w-full max-h-[90vh] sm:max-h-[85vh] overflow-hidden p-0 gap-0 rounded-2xl sm:rounded-3xl border-none shadow-2xl bg-[#0f172a] text-white flex flex-col">
