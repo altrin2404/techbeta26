@@ -95,22 +95,30 @@ const AdminDashboard = () => {
             toast.success(`Status updated to ${newStatus}`);
             if (newStatus === "Verified") {
                 const participant = registrations.find(r => r.id === id);
+                console.log("Updating status to Verified for participant:", participant);
                 if (participant) {
                     toast.loading("Sending verification emails...");
+                    console.log("Member details for email:", participant.members);
                     const membersToNotify = participant.members || [{
                         name: participant.name, email: participant.email, events: participant.events
                     }];
+                    console.log("Final notify list:", membersToNotify);
                     let successCount = 0;
                     for (let i = 0; i < membersToNotify.length; i++) {
                         const m = membersToNotify[i];
                         const qrData = JSON.stringify({ id: participant.id, index: i, name: m.name, events: m.events });
                         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
+                        console.log(`Sending email to ${m.name} (${m.email}) with index ${i}`);
                         const emailResult = await sendVerificationEmail(m.name, m.email, participant.transactionId, qrCodeUrl);
+                        console.log(`Email result for ${m.name}:`, emailResult);
                         if (emailResult.success) successCount++;
-                        await new Promise(r => setTimeout(r, 500));
+                        await new Promise(r => setTimeout(r, 800)); // Slightly longer delay to avoid potential rate limits
                     }
                     toast.dismiss();
                     toast.success(`Sent ${successCount}/${membersToNotify.length} emails.`);
+                    console.log(`Email sending process complete: ${successCount} successful.`);
+                } else {
+                    console.error("Participant not found in state after status update!");
                 }
             }
         } else {

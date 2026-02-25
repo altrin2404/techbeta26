@@ -199,7 +199,6 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             name: "TECHBETA 2K26",
             description: `Registration Fee for ${fields.length} Member(s)`,
             image: "/brigitz-logo.png",
-            callback_url: window.location.origin + "/",
             redirect: false,
             handler: function (response: any) {
                 form.setValue('transactionId', response.razorpay_payment_id);
