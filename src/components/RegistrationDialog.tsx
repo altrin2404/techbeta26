@@ -114,36 +114,6 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
         const leadMember = values.members[0];
         const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
 
-        // Flatten data for Google Forms
-        const allNames = values.members.map(m => m.name).join(", ");
-        const allEmails = values.members.map(m => m.email).join(", ");
-        const allPhones = values.members.map(m => m.phone).join(", ");
-        const allColleges = values.members.map(m => m.college).join(", ");
-        const allDepts = values.members.map(m => m.department).join(", ");
-        const allYears = values.members.map(m => m.year).join(", ");
-
-        const submitToGoogleForms = async () => {
-            try {
-                const formData = new FormData();
-                // Sanitize and trim inputs before appending
-                formData.append("entry.2005620554", allNames.trim());
-                formData.append("entry.1045781291", allEmails.trim());
-                formData.append("entry.1166974658", allPhones.trim());
-                formData.append("entry.1065046570", allColleges.trim());
-                formData.append("entry.839337160", allDepts.trim());
-                formData.append("entry.1174092410", allEvents.join(", "));
-                formData.append("entry.1206806733", values.transactionId.trim());
-
-                await fetch("https://docs.google.com/forms/d/e/1FAIpQLSe12B5j3CqwXqV-gwWb1Q_yQ8N65s3V273x0-4x64585148/formResponse", {
-                    method: "POST",
-                    body: formData,
-                    mode: "no-cors",
-                });
-            } catch (error) {
-                console.error("Google Forms Error:", error);
-            }
-        };
-
         const fireConfetti = () => {
             const count = 80;
             const defaults = { origin: { y: 0.7 } };
@@ -167,7 +137,6 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
         };
 
         setTimeout(async () => {
-            await submitToGoogleForms();
 
             const { addRegistration } = await import("@/lib/registrationService");
 
