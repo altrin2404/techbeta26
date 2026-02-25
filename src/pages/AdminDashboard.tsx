@@ -97,7 +97,7 @@ const AdminDashboard = () => {
                 const participant = registrations.find(r => r.id === id);
                 console.log("Updating status to Verified for participant:", participant);
                 if (participant) {
-                    toast.loading("Sending verification emails...");
+                    const toastId = toast.loading("Sending verification emails...");
                     console.log("Member details for email:", participant.members);
                     const membersToNotify = participant.members || [{
                         name: participant.name, email: participant.email, events: participant.events
@@ -114,8 +114,12 @@ const AdminDashboard = () => {
                         if (emailResult.success) successCount++;
                         await new Promise(r => setTimeout(r, 800)); // Slightly longer delay to avoid potential rate limits
                     }
-                    toast.dismiss();
-                    toast.success(`Sent ${successCount}/${membersToNotify.length} emails.`);
+                    toast.dismiss(toastId);
+                    if (successCount === membersToNotify.length) {
+                        toast.success(`Sent all ${successCount} verification emails!`);
+                    } else {
+                        toast.error(`Sent ${successCount}/${membersToNotify.length} emails. Some failed.`);
+                    }
                     console.log(`Email sending process complete: ${successCount} successful.`);
                 } else {
                     console.error("Participant not found in state after status update!");
