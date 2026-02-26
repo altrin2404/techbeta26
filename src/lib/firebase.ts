@@ -12,8 +12,15 @@ const firebaseConfig = {
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+// Check for missing config
+const isConfigValid = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
+
+if (!isConfigValid) {
+    console.error("Firebase configuration is missing! Please check environment variables.");
+}
+
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = isConfigValid ? initializeApp(firebaseConfig) : null as any;
 
 // Initialize Firestore
 export const db = getFirestore(app);
