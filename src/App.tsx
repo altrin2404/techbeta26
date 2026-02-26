@@ -22,26 +22,29 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 
 // ... existing code ...
 
-const App = () => (
-  <TooltipProvider>
-    <SpeedInsights />
-    <Toaster />
-    <Sonner />
+const App = () => {
+  console.log("App initializing...");
+  return (
     <ErrorBoundary>
-      <BrowserRouter future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
+      <TooltipProvider>
+        <SpeedInsights />
+        <Toaster />
+        <Sonner />
+        <BrowserRouter future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </TooltipProvider>
     </ErrorBoundary>
-  </TooltipProvider>
-);
+  );
+};
 
 export default App;
