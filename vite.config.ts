@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: "esnext",
     minify: "esbuild",
-    rollupOptions: {
+    /* rollupOptions: {
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => ({
           'firebase': ['firebase/app', 'firebase/firestore', 'firebase/auth'],
         },
       },
-    },
+    }, */
     cssCodeSplit: true,
     chunkSizeWarningLimit: 1500,
     sourcemap: false,
