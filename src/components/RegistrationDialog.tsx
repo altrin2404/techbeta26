@@ -185,6 +185,14 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     }, [razorpayError]);
 
     const displayRazorpay = async () => {
+        const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY;
+
+        if (!razorpayKey) {
+            console.error("Razorpay API Key is missing! Please check environment variables.");
+            toast.error("Payment configuration error. Please try again later.");
+            return;
+        }
+
         if (!isRazorpayLoaded) {
             toast.error("Payment gateway is still loading. Please wait a moment...");
             return;
@@ -193,7 +201,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
         const amountToPay = fields.length * 100; // 100 paise = 1 INR per member
 
         const options = {
-            key: import.meta.env.VITE_RAZORPAY_KEY,
+            key: razorpayKey,
             amount: amountToPay.toString(),
             currency: "INR",
             name: "TECHBETA 2K26",
