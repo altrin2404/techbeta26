@@ -44,5 +44,8 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1500,
     sourcemap: false,
     reportCompressedSize: false,
+    modulePreload: {
+      polyfill: true,
+    },
   },
 }));
