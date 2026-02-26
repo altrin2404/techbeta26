@@ -53,10 +53,9 @@ const VenueSection = () => {
                             className="glass-card rounded-3xl overflow-hidden border border-black/5 dark:border-white/10 p-2 shadow-lg h-[280px] sm:h-[350px] lg:h-[400px] relative group"
                         >
                             <div className="w-full h-full relative bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden">
-                                {/* Static Map/Loading Background */}
+                                {/* Loading Background */}
                                 <div
-                                    className="absolute inset-0 bg-cover bg-center opacity-30 grayscale saturate-0"
-                                    style={{ backgroundImage: 'url("https://maps.googleapis.com/maps/api/staticmap?center=8.197754,77.382992&zoom=15&size=600x400&scale=2&key=YOUR_API_KEY_HERE")' }} // Fallback if no key
+                                    className="absolute inset-0 bg-slate-200 dark:bg-slate-800 animate-pulse"
                                 />
 
                                 {!isMapLoaded && (
