@@ -23,11 +23,10 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 // ... existing code ...
 
 const App = () => {
-  console.log("App initializing (v2)...");
   return (
     <ErrorBoundary>
       <TooltipProvider>
-        {/* <SpeedInsights /> */}
+        <SpeedInsights />
         <Toaster />
         <Sonner />
         <BrowserRouter future={{
