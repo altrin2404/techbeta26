@@ -92,6 +92,7 @@ export const addRegistration = async (data: Omit<Registration, "id" | "status" |
             if (webhookUrl) {
                 await fetch(webhookUrl, {
                     method: 'POST',
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({
                         ...sanitizedData,
