@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, ChevronDown, ChevronUp, Phone } from "lucide-react";
+import { Users, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const team = [
-  { name: "Dr. Suja A. Alex", role: "Convener (Hod/IT)", img: "👩‍🏫", phone: "" },
-  { name: "Dr. G Geo Jenefer", role: "Staff Coordinator (AP/IT)", img: "👩‍🏫", phone: "" },
-  { name: "Tony Mathew", role: "Secretary (Final Year/IT)", img: "👨‍🎓", phone: "" },
-  { name: "Sheno Mcjus", role: "Treasurer (Final Year/IT)", img: "👨‍🎓", phone: "" },
+  { name: "Dr. Suja A. Alex", role: "Convener (Hod/IT)", img: "👩‍🏫" },
+  { name: "Dr. G Geo Jenefer", role: "Staff Coordinator (AP/IT)", img: "👩‍🏫" },
+  { name: "Tony Mathew", role: "Secretary (Final Year/IT)", img: "👨‍🎓" },
+  { name: "Sheno Mcjus", role: "Treasurer (Final Year/IT)", img: "👨‍🎓" },
 ];
 
 const TeamSection = () => {
@@ -96,10 +96,6 @@ const TeamSection = () => {
                       </div>
                       <h3 className="mt-6 font-display text-xl font-bold text-foreground group-hover:text-secondary transition-colors">{member.name}</h3>
                       <p className="mt-1 text-sm font-black tracking-wider text-secondary uppercase">{member.role}</p>
-                      <div className="mt-3 flex items-center gap-2 text-foreground/60 min-h-[1.5rem]">
-                        <Phone size={14} className="text-primary" />
-                        <span className="text-sm font-semibold">{member.phone}</span>
-                      </div>
                     </div>
                   </motion.div>
                 ))}

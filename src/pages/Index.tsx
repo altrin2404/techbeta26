@@ -4,7 +4,6 @@ import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
 
 const CountdownSection = lazy(() => import("@/components/CountdownSection"));
-const AboutSection = lazy(() => import("@/components/AboutSection"));
 const EventsSection = lazy(() => import("@/components/EventsSection"));
 const ScheduleSection = lazy(() => import("@/components/ScheduleSection"));
 const TeamSection = lazy(() => import("@/components/TeamSection"));
@@ -40,10 +39,6 @@ const Index = () => {
         <HeroSection />
         <Suspense fallback={<SectionLoader />}>
           <CountdownSection />
-        </Suspense>
-        <SectionDivider />
-        <Suspense fallback={<SectionLoader />}>
-          <AboutSection />
         </Suspense>
         <SectionDivider />
         <div id="events">

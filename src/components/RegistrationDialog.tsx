@@ -45,17 +45,10 @@ const formSchema = z.object({
 });
 
 const technicalEvents = [
-    "Ideathon",
-    "Web/Logo Designing",
-    "Debugging",
-    "Tech Quiz"
-];
-
-const nonTechnicalEvents = [
-    "Gaming",
-    "Photography",
-    "Treasure Hunt",
-    "Surprise Event"
+    "FutureMinds",
+    "Webfusion",
+    "PromptStorm",
+    "Postercraft"
 ];
 
 interface RegistrationDialogProps {
@@ -89,7 +82,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     });
 
     const watchMembers = form.watch("members");
-    const totalAmount = (watchMembers?.length || 0) * 20000;
+    const totalAmount = (watchMembers?.length || 0) * 100;
 
     const nextStep = async () => {
         const isValid = await form.trigger("members");
@@ -198,7 +191,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             return;
         }
 
-        const amountToPay = fields.length * 20000; // 20000 paise = 200 INR per member
+        const amountToPay = fields.length * 100; // 100 paise = 1 INR per member
 
         const options = {
             key: razorpayKey,
@@ -206,7 +199,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             currency: "INR",
             name: "TECHBETA 2K26",
             description: `Registration Fee for ${fields.length} Member(s)`,
-            image: "/brigitz-logo.png",
+            image: `${window.location.origin}/brigitz-logo.png`,
             redirect: false,
             handler: function (response: any) {
                 form.setValue('transactionId', response.razorpay_payment_id);
@@ -445,37 +438,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                     </div>
                                                                 </div>
 
-                                                                <div>
-                                                                    <FormLabel className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4 block">Non-Technical Events</FormLabel>
-                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                                        {nonTechnicalEvents.map((event) => (
-                                                                            <FormField
-                                                                                key={event}
-                                                                                control={form.control}
-                                                                                name={`members.${index}.events` as any}
-                                                                                render={({ field }) => (
-                                                                                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-xl border border-slate-200 bg-white p-3 hover:bg-slate-50 transition-colors shadow-sm">
-                                                                                        <FormControl>
-                                                                                            <Checkbox
-                                                                                                checked={(field.value as string[])?.includes(event)}
-                                                                                                onCheckedChange={(checked) => {
-                                                                                                    const currentValue = (field.value as string[]) || [];
-                                                                                                    return checked
-                                                                                                        ? field.onChange([...currentValue, event])
-                                                                                                        : field.onChange(currentValue.filter((value: string) => value !== event))
-                                                                                                }}
-                                                                                                className="h-5 w-5 border-primary"
-                                                                                            />
-                                                                                        </FormControl>
-                                                                                        <FormLabel className="text-sm font-bold cursor-pointer text-slate-700 leading-none">
-                                                                                            {event}
-                                                                                        </FormLabel>
-                                                                                    </FormItem>
-                                                                                )}
-                                                                            />
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
+
                                                                 <FormField
                                                                     name={`members.${index}.events` as any}
                                                                     render={() => <FormMessage className="text-[10px]" />}
@@ -524,7 +487,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                 <p className="text-sm text-muted-foreground px-6">
                                                     For {fields.length} Team Member(s)
                                                     <br />
-                                                    <span className="text-xs opacity-70">(₹200 per member)</span>
+                                                    <span className="text-xs opacity-70">(₹1 per member)</span>
                                                 </p>
                                             </div>
 

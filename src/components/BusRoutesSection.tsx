@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bus, ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { Bus, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const routes = [
-  { bus: "Nagercoil", number: "Bus No. 1", time: "8:20 AM" },
-  { bus: "Kanyakumari", number: "Bus No. 5", time: "7:45 AM" },
-  { bus: "Marthandam", number: "Bus No. 8", time: "8:00 AM" },
-  { bus: "Kulasekharam", number: "Bus No. 12", time: "7:40 AM" },
-  { bus: "Mondaymarket", number: "Bus No. 15", time: "8:10 AM" },
+  { bus: "Nagercoil", number: "Bus No. 1" },
+  { bus: "Kanyakumari", number: "Bus No. 5" },
+  { bus: "Marthandam", number: "Bus No. 11" },
+  { bus: "Kulasekharam", number: "Bus No. 8 & 12" },
+  { bus: "Monday Market", number: "Bus No. 15" },
 ];
 
 const BusRoutesSection = () => {
@@ -125,24 +125,13 @@ const BusRoutesSection = () => {
                             className="mt-2"
                           >
                             <div className="p-6 glass-card rounded-2xl border border-primary/20 bg-primary/5 backdrop-blur-sm">
-                              <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10">
-                                    <span className="text-[10px] font-black text-primary">#</span>
-                                  </div>
-                                  <div>
-                                    <p className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">Bus Number</p>
-                                    <p className="text-sm font-black text-foreground">{route.number}</p>
-                                  </div>
+                              <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10">
+                                  <span className="text-[10px] font-black text-primary">#</span>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                  <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10">
-                                    <Clock className="h-4 w-4 text-secondary" />
-                                  </div>
-                                  <div>
-                                    <p className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">Departure</p>
-                                    <p className="text-sm font-black text-secondary">{route.time}</p>
-                                  </div>
+                                <div>
+                                  <p className="text-[10px] font-black text-foreground/60 uppercase tracking-widest">Bus Number</p>
+                                  <p className="text-sm font-black text-foreground">{route.number}</p>
                                 </div>
                               </div>
                             </div>

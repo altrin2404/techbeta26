@@ -8,67 +8,37 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 const technicalEvents = [
     {
         icon: Lightbulb,
-        name: "",
-        description: "",
-        shortRules: "",
+        name: "FutureMinds",
+        description: "Ideathon - Pitch your innovative ideas and build the future.",
+        shortRules: "Ideathon Event",
         detailedRules: [] as string[]
     },
     {
         icon: Code,
-        name: "",
-        description: "",
-        shortRules: "",
+        name: "Webfusion",
+        description: "Web Designing - Create stunning and functional web interfaces.",
+        shortRules: "Web Design Competition",
         detailedRules: [] as string[]
     },
     {
         icon: Cpu,
-        name: "",
-        description: "",
-        shortRules: "",
+        name: "PromptStorm",
+        description: "Prompt Battle - Test your AI prompting skills.",
+        shortRules: "Prompt Battle",
         detailedRules: [] as string[]
     },
     {
-        icon: Gamepad2,
-        name: "",
-        description: "",
-        shortRules: "",
-        detailedRules: [] as string[]
-    },
-];
-
-const nonTechnicalEvents = [
-    {
-        icon: Palette,
-        name: "",
-        description: "",
-        shortRules: "",
-        detailedRules: [] as string[]
-    },
-    {
-        icon: Music,
-        name: "",
-        description: "",
-        shortRules: "",
-        detailedRules: [] as string[]
-    },
-    {
-        icon: Mic2,
-        name: "",
-        description: "",
-        shortRules: "",
-        detailedRules: [] as string[]
-    },
-    {
-        icon: Trophy,
-        name: "",
-        description: "",
-        shortRules: "",
+        icon: Presentation,
+        name: "Postercraft",
+        description: "Poster Presentation - Visually present your technical concepts.",
+        shortRules: "Poster Presentation",
         detailedRules: [] as string[]
     },
 ];
@@ -81,81 +51,110 @@ type EventItem = {
     detailedRules: string[];
 };
 
-const EventCard = React.memo(({ event, index }: { event: EventItem; index: number }) => (
-    <motion.div
-        key={event.name || `event-${index}`}
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: index * 0.1, duration: 0.6 }}
-        whileHover={{ y: -10, scale: 1.01 }}
-        whileTap={{ scale: 0.99 }}
-        className="group glass-card relative overflow-hidden rounded-2xl border border-black/5 p-6 transition-all duration-500 hover:border-primary/30 hover:box-glow-cyan cursor-pointer"
-    >
-        <div className="absolute -inset-1 opacity-0 group-hover:opacity-10 transition-opacity duration-500 bg-gradient-to-br from-primary via-transparent to-secondary blur-2xl" />
+const EventCard = React.memo(({ event, index }: { event: EventItem; index: number }) => {
+    const [isInfoOpen, setIsInfoOpen] = useState(false);
 
-        <div className="relative z-10">
-            <div className="mb-5 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                        <event.icon className="h-6 w-6 text-primary" />
+    return (
+        <Dialog open={isInfoOpen} onOpenChange={setIsInfoOpen}>
+            <motion.div
+                key={event.name || `event-${index}`}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.6 }}
+                whileHover={{ y: -10, scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className="group glass-card relative overflow-hidden rounded-2xl border border-black/5 p-6 transition-all duration-500 hover:border-primary/30 hover:box-glow-cyan cursor-pointer"
+                onClick={() => setIsInfoOpen(true)}
+            >
+                <div className="absolute -inset-1 opacity-0 group-hover:opacity-10 transition-opacity duration-500 bg-gradient-to-br from-primary via-transparent to-secondary blur-2xl" />
+
+                <div className="relative z-10">
+                    <div className="mb-4">
+                        <h3 className="font-display text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-tight break-words">
+                            {event.name}
+                        </h3>
+                        <div className="mt-2 inline-flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity bg-primary/10 px-3 py-1.5 rounded-full">
+                            <span className="text-[10px] font-black text-primary uppercase tracking-widest whitespace-nowrap">Click for Rules</span>
+                            <Info size={14} className="text-primary" />
+                        </div>
                     </div>
-                    <h3 className="font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors min-h-[1.75rem]">
-                        {event.name}
-                    </h3>
-                </div>
 
-                {event.detailedRules.length > 0 && (
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground/40 hover:text-primary hover:bg-primary/5 rounded-full">
-                                <Info size={18} />
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-md max-h-[85dvh] overflow-y-auto bg-white border-black/5 rounded-3xl p-0 overflow-hidden safe-bottom">
-                            <div className="bg-primary/5 px-6 py-8 flex items-center gap-4">
-                                <div className="h-14 w-14 rounded-2xl bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
-                                    <event.icon className="h-8 w-8 text-primary" />
-                                </div>
-                                <div>
-                                    <h4 className="font-display text-xl font-black text-foreground">{event.name}</h4>
-                                    <p className="text-xs font-bold text-primary uppercase tracking-widest">Event Rules & Guidelines</p>
-                                </div>
-                            </div>
-                            <div className="p-6 space-y-6">
-                                <p className="text-sm font-medium text-muted-foreground italic">{event.description}</p>
+                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-medium line-clamp-2 min-h-[2.5rem]">
+                        {event.description}
+                    </p>
 
-                                <div className="space-y-3">
-                                    {event.detailedRules.map((rule, idx) => (
-                                        <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 group/rule hover:border-primary/20 transition-colors">
-                                            <CheckCircle2 size={16} className="text-primary mt-0.5 shrink-0" />
-                                            <p className="text-xs font-bold text-foreground leading-relaxed">{rule}</p>
+                    <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
+                        <span className="text-[10px] font-black uppercase text-primary shrink-0">Details :</span>
+                        <p className="text-[11px] text-foreground font-bold truncate">
+                            {event.shortRules}
+                        </p>
+                    </div>
+
+                    {event.name === "FutureMinds" && (
+                        <div className="mt-4" onClick={(e) => e.stopPropagation()}>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" size="sm" className="w-full text-sm font-black border-primary/30 text-primary hover:bg-primary/5 rounded-xl border-2 border-dashed bg-white shadow-sm">
+                                        Problem Statements
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md bg-white border-black/5 rounded-3xl p-6">
+                                    <DialogHeader>
+                                        <DialogTitle className="font-display text-xl font-black text-foreground">Problem Statements</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4 pt-4">
+                                        <div className="p-6 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                                            <p className="text-lg font-black text-primary tracking-widest">PS1-PS5</p>
                                         </div>
-                                    ))}
+                                        <DialogClose asChild>
+                                            <Button className="w-full font-black tracking-widest text-xs rounded-xl">
+                                                Close
+                                            </Button>
+                                        </DialogClose>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                    )}
+                </div>
+            </motion.div>
+
+            <DialogContent className="max-w-md max-h-[85dvh] overflow-y-auto bg-white border-black/5 rounded-3xl p-0 overflow-hidden safe-bottom">
+                <div className="bg-primary/5 px-6 py-8 flex items-center gap-4">
+                    <div>
+                        <h4 className="font-display text-xl font-black text-foreground">{event.name}</h4>
+                        <p className="text-xs font-bold text-primary uppercase tracking-widest">Event Rules & Guidelines</p>
+                    </div>
+                </div>
+                <div className="p-6 space-y-6">
+                    <p className="text-sm font-medium text-muted-foreground italic">{event.description}</p>
+
+                    <div className="space-y-3">
+                        {event.detailedRules.length > 0 ? (
+                            event.detailedRules.map((rule, idx) => (
+                                <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 group/rule hover:border-primary/20 transition-colors">
+                                    <CheckCircle2 size={16} className="text-primary mt-0.5 shrink-0" />
+                                    <p className="text-xs font-bold text-foreground leading-relaxed">{rule}</p>
                                 </div>
-
-                                <Button onClick={() => (document.querySelector('button[aria-label="Close"]') as HTMLElement)?.click()} className="w-full h-12 bg-primary hover:bg-primary/90 font-black tracking-widest uppercase text-xs rounded-xl">
-                                    Got It
-                                </Button>
+                            ))
+                        ) : (
+                            <div className="p-4 text-center rounded-xl bg-slate-50 border border-slate-100">
+                                <p className="text-sm font-bold text-muted-foreground">Rules will be updated soon.</p>
                             </div>
-                        </DialogContent>
-                    </Dialog>
-                )}
-            </div>
+                        )}
+                    </div>
 
-            <p className="text-sm leading-relaxed text-foreground/70 font-medium line-clamp-2 min-h-[2.5rem]">
-                {event.description}
-            </p>
-
-            <div className="mt-6 flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
-                <span className="text-[10px] font-black uppercase text-primary shrink-0">Details :</span>
-                <p className="text-[10px] text-foreground/80 font-bold truncate">
-                    {event.shortRules}
-                </p>
-            </div>
-        </div>
-    </motion.div>
-));
+                    <DialogClose asChild>
+                        <Button className="w-full h-12 bg-primary hover:bg-primary/90 font-black tracking-widest uppercase text-xs rounded-xl">
+                            Got It
+                        </Button>
+                    </DialogClose>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+});
 
 const EventsSection = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -233,38 +232,13 @@ const EventsSection = () => {
                             transition={{ duration: 0.5, ease: "easeInOut" }}
                             className="overflow-hidden"
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 pt-4 pb-8">
-
+                            <div className="pt-4 pb-8">
                                 {/* Technical Events Column */}
                                 <div>
-                                    <div className="mb-6 flex items-center gap-3 justify-center md:justify-start">
-                                        <div className="h-10 w-10 full flex items-center justify-center rounded-lg bg-secondary/10">
-                                            <Cpu className="h-5 w-5 text-secondary" />
-                                        </div>
-                                        <h3 className="font-display text-xl font-bold text-foreground">
-                                            Technical Events
-                                        </h3>
-                                    </div>
-                                    <div className="grid gap-5">
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                                         {technicalEvents.map((event, i) => (
                                             <EventCard key={`tech-${i}`} event={event} index={i} />
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Non-Technical Events Column */}
-                                <div>
-                                    <div className="mb-6 flex items-center gap-3 justify-center md:justify-start">
-                                        <div className="h-10 w-10 full flex items-center justify-center rounded-lg bg-orange-500/10">
-                                            <Trophy className="h-5 w-5 text-orange-500" />
-                                        </div>
-                                        <h3 className="font-display text-xl font-bold text-foreground">
-                                            Non-Technical Events
-                                        </h3>
-                                    </div>
-                                    <div className="grid gap-5">
-                                        {nonTechnicalEvents.map((event, i) => (
-                                            <EventCard key={`nontech-${i}`} event={event} index={i} />
                                         ))}
                                     </div>
                                 </div>

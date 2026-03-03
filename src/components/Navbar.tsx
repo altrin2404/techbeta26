@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 const RegistrationDialog = lazy(() => import("./RegistrationDialog"));
 
 const navLinks = [
-  { label: "About", href: "#about" },
   { label: "Events", href: "#events" },
   { label: "Team", href: "#team" },
   { label: "College Bus Routes", href: "#bus-routes" },

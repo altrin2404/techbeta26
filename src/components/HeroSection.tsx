@@ -28,7 +28,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mb-8 flex flex-col md:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-10 px-2 sm:px-4"
+          className="mb-4 flex flex-col md:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-10 px-2 sm:px-4"
         >
           <motion.div
             whileHover={{ y: -5, scale: 1.01 }}
@@ -39,9 +39,6 @@ const HeroSection = () => {
               ST XAVIER'S CATHOLIC COLLEGE OF ENGINEERING
             </span>
             <div className="mt-4 flex flex-col items-center md:items-start gap-1">
-              <span className="font-display text-[10px] font-bold tracking-[0.4em] text-muted-foreground uppercase">
-                Organised by
-              </span>
               <div className="flex items-center gap-4">
                 <span className="font-display text-xs font-extrabold tracking-[0.05em] sm:tracking-[0.1em] text-secondary uppercase sm:text-base lg:text-xl">
                   Department of Information Technology
@@ -80,6 +77,14 @@ const HeroSection = () => {
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="-mt-2 mb-2 font-display text-[9px] sm:text-xs tracking-[0.4em] text-muted-foreground uppercase font-bold"
+        >
+          Proudly Organises
+        </motion.p>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="mb-4 font-display text-sm tracking-[0.3em] text-muted-foreground uppercase font-bold"
         >
@@ -95,14 +100,7 @@ const HeroSection = () => {
           TECHBETA <span className="text-primary text-glow-cyan">2K26</span>
         </motion.h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground sm:text-xl font-semibold italic"
-        >
-          "THEME!"
-        </motion.p>
+
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
