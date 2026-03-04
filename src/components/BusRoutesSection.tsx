@@ -4,11 +4,10 @@ import { Bus, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const routes = [
-  { bus: "Nagercoil", number: "Bus No. 1" },
-  { bus: "Kanyakumari", number: "Bus No. 5" },
-  { bus: "Marthandam", number: "Bus No. 11" },
-  { bus: "Kulasekharam", number: "Bus No. 8 & 12" },
-  { bus: "Monday Market", number: "Bus No. 15" },
+  { bus: "Nagercoil", number: "Bus No. 17, 22" },
+  { bus: "Kanyakumari", number: "Bus No. 1" },
+  { bus: "Marthandam", number: "Bus No. 3, 4, 6, 11, 14" },
+  { bus: "Kulasekharam", number: "Bus No. 8, 12" },
 ];
 
 const BusRoutesSection = () => {
