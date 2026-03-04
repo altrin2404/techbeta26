@@ -82,7 +82,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     });
 
     const watchMembers = form.watch("members");
-    const totalAmount = (watchMembers?.length || 0) * 100;
+    const totalAmount = (watchMembers?.length || 0) * 15000;
 
     const nextStep = async () => {
         const isValid = await form.trigger("members");
@@ -191,7 +191,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             return;
         }
 
-        const amountToPay = fields.length * 100; // 100 paise = 1 INR per member
+        const amountToPay = fields.length * 15000; // 15000 paise = 150 INR per member
 
         const options = {
             key: razorpayKey,
@@ -487,7 +487,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                 <p className="text-sm text-muted-foreground px-6">
                                                     For {fields.length} Team Member(s)
                                                     <br />
-                                                    <span className="text-xs opacity-70">(₹1 per member)</span>
+                                                    <span className="text-xs opacity-70">(₹150 per member)</span>
                                                 </p>
                                             </div>
 
