@@ -15,12 +15,12 @@ const faqs = [
     a: "TECHBETA 2K26 is open to all college students across the country. Both undergraduate and postgraduate students can participate.",
   },
   {
-    q: "Can I participate in multiple events?",
-    a: "Yes! You can register for multiple events as long as the timings don't overlap. Check the schedule for details.",
-  },
-  {
     q: "Is there a registration fee?",
     a: "The registration fee is ₹200 per participant, which includes lunch. This is available through online registration only.",
+  },
+  {
+    q: "Is lunch provided during the event?",
+    a: "Yes! Lunch is included in the ₹200 registration fee for all registered participants. It will be served at the college food court during the scheduled break.",
   },
   {
     q: "How do I register for the event?",

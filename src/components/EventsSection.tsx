@@ -95,23 +95,65 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                         <div className="mt-4" onClick={(e) => e.stopPropagation()}>
                             <Dialog>
                                 <DialogTrigger asChild>
-                                    <Button variant="outline" size="sm" className="w-full text-sm font-black border-primary/30 text-primary hover:bg-primary/5 rounded-xl border-2 border-dashed bg-white shadow-sm">
+                                    <Button variant="outline" size="sm" className="w-full text-sm font-black bg-primary text-white hover:bg-primary/90 rounded-xl border-2 border-primary shadow-lg shadow-primary/30 animate-pulse">
                                         Problem Statements
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-md bg-white border-black/5 rounded-3xl p-6">
-                                    <DialogHeader>
-                                        <DialogTitle className="font-display text-xl font-black text-foreground">Problem Statements</DialogTitle>
-                                    </DialogHeader>
-                                    <div className="space-y-4 pt-4">
-                                        <div className="p-6 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                                            <p className="text-lg font-black text-primary tracking-widest">PS1-PS5</p>
+                                <DialogContent className="max-w-2xl bg-white border-black/5 rounded-3xl p-0 overflow-hidden flex flex-col" style={{ maxHeight: '85vh' }}>
+                                    <div className="bg-primary/5 px-6 py-6 shrink-0">
+                                        <DialogHeader>
+                                            <DialogTitle className="font-display text-xl font-black text-foreground">Problem Statements</DialogTitle>
+                                            <DialogDescription className="text-xs font-bold text-primary uppercase tracking-widest mt-1">FutureMinds — Ideathon</DialogDescription>
+                                        </DialogHeader>
+                                        <div className="mt-3 inline-flex items-center gap-2 bg-primary/10 border-2 border-primary/20 rounded-xl px-4 py-2">
+                                            <span className="flex items-center justify-center h-6 w-6 rounded-md bg-primary text-white text-xs font-black">5</span>
+                                            <span className="text-sm font-extrabold text-primary uppercase tracking-widest">Problem Statements</span>
                                         </div>
+                                    </div>
+                                    <div className="overflow-y-auto flex-1 px-6 pb-6 pt-4 space-y-3">
+                                        {[
+                                            {
+                                                id: "PS1",
+                                                title: "Smart Waste Segregation",
+                                                desc: "Many Indian cities struggle with improper waste segregation at the household level, leading to inefficient recycling and landfill overflow. Design a technology-driven system that encourages and monitors waste segregation in residential areas."
+                                            },
+                                            {
+                                                id: "PS2",
+                                                title: "Water Usage Monitor",
+                                                desc: "Water scarcity is becoming a serious issue in many parts of India. Develop a system that helps households monitor water usage and reduce wastage through smart alerts, analytics, or automated control."
+                                            },
+                                            {
+                                                id: "PS3",
+                                                title: "Food Redistribution",
+                                                desc: "Large amounts of food are wasted daily in restaurants, weddings, and public events across India. Propose a solution that helps track surplus food and redistribute it efficiently to people in need."
+                                            },
+                                            {
+                                                id: "PS4",
+                                                title: "Campus Waste Management",
+                                                desc: "College campuses generate large amounts of waste including plastic, paper, and food waste. Design a sustainable waste management system that promotes segregation, recycling, and awareness among students."
+                                            },
+                                            {
+                                                id: "PS5",
+                                                title: "Urban Green Cover",
+                                                desc: "Urbanization has significantly reduced green spaces in Indian cities. Propose a solution that motivates communities to plant trees and monitor urban green cover using technology."
+                                            },
+                                        ].map((ps) => (
+                                            <div key={ps.id} className="flex gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-primary/20 transition-colors">
+                                                <span className="shrink-0 flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-white text-[10px] font-black tracking-wider">{ps.id}</span>
+                                                <div>
+                                                    <p className="text-base font-extrabold text-foreground leading-tight">{ps.title}</p>
+                                                    <p className="text-sm font-semibold text-muted-foreground mt-1.5 leading-relaxed">{ps.desc}</p>
+                                                </div>
+                                            </div>
+                                        ))}
                                         <DialogClose asChild>
-                                            <Button className="w-full font-black tracking-widest text-xs rounded-xl">
+                                            <Button className="w-full h-11 bg-primary hover:bg-primary/90 font-black tracking-widest uppercase text-xs rounded-xl mt-2">
                                                 Close
                                             </Button>
                                         </DialogClose>
+                                    </div>
+                                    <div className="shrink-0 flex justify-center py-2 bg-gradient-to-t from-white to-transparent border-t border-slate-100">
+                                        <ChevronDown className="h-6 w-6 text-primary animate-bounce" />
                                     </div>
                                 </DialogContent>
                             </Dialog>
