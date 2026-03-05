@@ -109,7 +109,7 @@ const HeroSection = () => {
           className="mt-4 flex flex-col items-center gap-2 text-sm text-foreground"
         >
           <p className="font-display text-xs tracking-widest text-secondary font-bold">
-            📅 March 13, 2026 &nbsp;|&nbsp; 📍 SXCCE, Nagercoil, 9:00 AM
+            📅 March 27, 2026 &nbsp;|&nbsp; 📍 SXCCE, Nagercoil, 9:00 AM
           </p>
         </motion.div>
 

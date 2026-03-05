@@ -12,7 +12,7 @@ interface TimeLeft {
 }
 
 const CountdownSection = () => {
-    const targetDate = new Date("2026-03-13T09:00:00").getTime();
+    const targetDate = new Date("2026-03-27T09:00:00").getTime();
 
     const calculateTimeLeft = useCallback((): TimeLeft => {
         const now = new Date().getTime();
@@ -98,7 +98,7 @@ const CountdownSection = () => {
                                 </p>
                                 <div className="relative inline-block">
                                     <span className="font-display text-8xl font-black text-foreground">
-                                        13
+                                        27
                                     </span>
                                     <motion.div
                                         animate={{ scale: [1, 1.2, 1] }}
