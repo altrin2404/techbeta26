@@ -13,19 +13,7 @@ This project features a real-time registration system, dynamic UI with animation
 -   **Animations**: [Framer Motion](https://www.framer.com/motion/)
 -   **Database**: [Firebase Cloud Firestore](https://firebase.google.com/)
 -   **Icons**: [Lucide React](https://lucide.dev/)
--   **Deployment**: [Vercel](https://vercel.com/)
-
-## 🔑 Credentials
-
-### Admin Dashboard Access
--   **URL**: `/admin`
--   **Username**: `admin`
--   **Password**: `techbeta26@admin`
-
-### Firebase Configuration
-The project uses the following public Firebase config (safe to expose for client-side apps):
--   **Project ID**: `techbeta2k26`
--   **Auth Domain**: `techbeta2k26.firebaseapp.com`
+-   **Deployment**: [Vercel](https://
 
 ## 🛠️ GitHub Guide (How to Push)
 
