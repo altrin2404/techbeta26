@@ -235,11 +235,7 @@
     animation: none !important;
   }
 
-  /* Force GPU acceleration on mobile for fixed/absolute elements without clobbering transforms */
-  .fixed,
-  .absolute {
-    will-change: transform, opacity;
-  }
+
 
   /* Optimize button active states for mobile */
   button:active,
@@ -254,10 +250,7 @@ section {
   contain: layout style;
 }
 
-/* Reset will-change after use (best practice) */
-[style*="will-change"] {
-  will-change: auto;
-}
+
 
 /* Respect user's reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
@@ -269,5 +262,10 @@ section {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .glass-card {
+    backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.95) !important;
   }
 }

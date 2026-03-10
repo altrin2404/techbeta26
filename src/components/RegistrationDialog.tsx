@@ -48,7 +48,8 @@ const technicalEvents = [
     "FutureMinds",
     "Webfusion",
     "PromptStorm",
-    "Postercraft"
+    "Postercraft",
+    "LogoHub"
 ];
 
 interface RegistrationDialogProps {
@@ -479,7 +480,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                             {/* ... keep payment step ... */}
                                             <div className="text-center space-y-4 py-4">
                                                 <div className="mx-auto w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-4 border border-primary/10">
-                                                    <img src="/brigitz-logo.png" alt="Logo" className="h-16 w-auto object-contain" />
+                                                    <img src="/brigitz-logo.png" alt="Logo" className="h-16 w-auto object-contain" loading="lazy" decoding="async" />
                                                 </div>
                                                 <h3 className="text-xl font-bold">
                                                     Total Fee: <span className="inline-block bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-1 rounded-lg text-2xl font-black shadow-lg shadow-slate-800/40">₹{totalAmount / 100}</span>

@@ -28,15 +28,15 @@ const DynamicBackground = () => {
 
             {/* Radial Glows — CSS animated */}
             <div
-                className={`absolute -top-[10%] -left-[10%] h-[60%] w-[60%] rounded-full bg-primary/10 ${isMobile ? 'blur-[20px]' : 'blur-[60px] dynamic-bg-orb-1'}`}
+                className={`absolute -top-[10%] -left-[10%] h-[60%] w-[60%] rounded-full bg-primary/10 ${isMobile ? 'blur-[20px]' : 'blur-[30px] dynamic-bg-orb-1'}`}
             />
 
             <div
-                className={`absolute bottom-[0%] -right-[10%] h-[50%] w-[50%] rounded-full bg-secondary/10 ${isMobile ? 'blur-[20px]' : 'blur-[60px] dynamic-bg-orb-2'}`}
+                className={`absolute bottom-[0%] -right-[10%] h-[50%] w-[50%] rounded-full bg-secondary/10 ${isMobile ? 'blur-[20px]' : 'blur-[30px] dynamic-bg-orb-2'}`}
             />
 
             {/* Particles — CSS animated, desktop only */}
-            {!isMobile && [...Array(6)].map((_, i) => (
+            {!isMobile && [...Array(4)].map((_, i) => (
                 <div
                     key={i}
                     className="absolute h-1 w-1 rounded-full bg-primary/40 shadow-[0_0_10px_rgba(3,169,244,0.3)] dynamic-bg-particle"
@@ -60,11 +60,9 @@ const DynamicBackground = () => {
             <style>{`
                 .dynamic-bg-orb-1 {
                     animation: orb1Pulse 15s ease-in-out infinite;
-                    will-change: transform, opacity;
                 }
                 .dynamic-bg-orb-2 {
                     animation: orb2Pulse 18s ease-in-out 2s infinite;
-                    will-change: transform, opacity;
                 }
                 .dynamic-bg-particle {
                     animation: particleDrift linear infinite;

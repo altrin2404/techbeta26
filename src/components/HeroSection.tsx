@@ -1,5 +1,4 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 const RegistrationDialog = lazy(() => import("./RegistrationDialog"));
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Loader2 } from "lucide-react";
@@ -24,15 +23,10 @@ const HeroSection = () => {
       <div className="absolute top-1/3 right-1/4 h-[300px] w-[300px] rounded-full bg-secondary/5 blur-[100px]" />
 
       <div className="relative z-10 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mb-4 flex flex-col md:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-10 px-2 sm:px-4"
+        <div
+          className="mb-4 flex flex-col md:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-10 px-2 sm:px-4 hero-fade-in"
         >
-          <motion.div
-            whileHover={{ y: -5, scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
+          <div
             className="flex flex-col items-center md:items-start text-center md:text-left cursor-default transition-all duration-300 max-w-full"
           >
             <span className="font-display text-xs sm:text-base font-black tracking-[0.05em] sm:tracking-[0.1em] text-primary md:text-xl lg:text-3xl drop-shadow-sm break-words overflow-wrap-anywhere leading-tight">
@@ -46,20 +40,10 @@ const HeroSection = () => {
                 <div className="hidden md:block h-[2px] w-16 bg-gradient-to-r from-secondary/50 to-transparent" />
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            animate={isMobile ? {} : {
-              y: [0, -10, 0],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            whileTap={{ scale: 0.95 }}
-            className="relative group cursor-pointer will-change-transform"
+          <div
+            className={`relative group cursor-pointer ${isMobile ? '' : 'hero-float'}`}
           >
             <img
               src="/brigitz-logo.png"
@@ -68,56 +52,47 @@ const HeroSection = () => {
               height={150}
               className="max-h-[80px] sm:max-h-[120px] md:max-h-[150px] w-auto object-contain drop-shadow-xl transition-all duration-500"
               loading="eager"
+              decoding="async"
               onError={(e) => (e.currentTarget.style.display = 'none')}
             />
             <div className="absolute -inset-4 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="-mt-2 mb-2 font-display text-[9px] sm:text-xs tracking-[0.4em] text-muted-foreground uppercase font-bold"
+        <p
+          className="-mt-2 mb-2 font-display text-[9px] sm:text-xs tracking-[0.4em] text-muted-foreground uppercase font-bold hero-fade-in"
+          style={{ animationDelay: '0.15s' }}
         >
           Proudly Organises
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-4 font-display text-sm tracking-[0.3em] text-muted-foreground uppercase font-bold"
+        </p>
+        <p
+          className="mb-4 font-display text-sm tracking-[0.3em] text-muted-foreground uppercase font-bold hero-fade-in"
+          style={{ animationDelay: '0.2s' }}
         >
           A National Level Technical Symposium
-        </motion.p>
+        </p>
 
-        <motion.h1
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
-          className="font-display text-4xl font-black tracking-wide sm:tracking-wider text-foreground sm:text-6xl md:text-8xl lg:text-9xl"
+        <h1
+          className="font-display text-4xl font-black tracking-wide sm:tracking-wider text-foreground sm:text-6xl md:text-8xl lg:text-9xl hero-fade-in hero-scale-in"
+          style={{ animationDelay: '0.4s' }}
         >
           TECHBETA <span className="text-primary text-glow-cyan">2K26</span>
-        </motion.h1>
+        </h1>
 
 
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="mt-4 flex flex-col items-center gap-2 text-sm text-foreground"
+        <div
+          className="mt-4 flex flex-col items-center gap-2 text-sm text-foreground hero-fade-in"
+          style={{ animationDelay: '0.9s' }}
         >
           <p className="font-display text-xs tracking-widest text-secondary font-bold">
             📅 March 27, 2026 &nbsp;|&nbsp; 📍 SXCCE, Nagercoil, 9:00 AM
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1 }}
-          className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
+        <div
+          className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center hero-fade-in"
+          style={{ animationDelay: '1.1s' }}
         >
           <Suspense fallback={<Button size="lg" disabled className="px-8 bg-primary/20"><Loader2 className="animate-spin h-5 w-5" /></Button>}>
             <RegistrationDialog>
@@ -134,19 +109,52 @@ const HeroSection = () => {
           >
             Explore Events
           </Button>
-        </motion.div>
+        </div>
       </div>
 
       {/* Scroll indicator */}
-      <motion.div
-        animate={{ y: [0, 10, 0] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+      <div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 hero-scroll-bounce"
       >
         <ChevronDown className="h-6 w-6 text-primary/50" />
-      </motion.div>
+      </div>
+
+      {/* CSS animations replacing framer-motion */}
+      <style>{`
+        .hero-fade-in {
+          opacity: 0;
+          transform: translateY(20px);
+          animation: heroFadeIn 0.8s ease-out forwards;
+        }
+        .hero-scale-in {
+          animation: heroScaleIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .hero-float {
+          animation: heroFloat 4s ease-in-out infinite;
+        }
+        .hero-scroll-bounce {
+          animation: heroScrollBounce 2s ease-in-out infinite;
+        }
+        @keyframes heroFadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes heroScaleIn {
+          from { opacity: 0; transform: scale(0.8); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes heroFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes heroScrollBounce {
+          0%, 100% { transform: translateY(0) translateX(-50%); }
+          50% { transform: translateY(10px) translateX(-50%); }
+        }
+      `}</style>
     </section>
   );
 };
 
 export default HeroSection;
+

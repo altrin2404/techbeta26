@@ -48,20 +48,24 @@ const SponsorsContactSection = () => {
               <div className="mt-12 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-3 pb-8">
                 {[
                   { Icon: Mail, text: "techbeta2k26@gmail.com", label: "Email", href: "https://mail.google.com/mail/?view=cm&fs=1&to=techbeta2k26@gmail.com" },
-                  { Icon: Phone, text: "+91 70123 64935 / +91 94879 64783", label: "Phone", href: "tel:+917012364935" },
+                  { Icon: Phone, text: "94877 67267\n70123 64935\n94879 64783", label: "Phone", href: "" },
                   { Icon: MapPin, text: "SXCCE, Nagercoil", label: "Location", href: "https://maps.app.goo.gl/fo93cH9bMfrrz1WL7" }
-                ].map((contact, i) => (
-                  <motion.a
+                ].map((contact, i) => {
+                  const Tag = contact.href ? motion.a : motion.div;
+                  return (
+                  <Tag
                     key={i}
-                    href={contact.href}
-                    target={contact.href.startsWith('tel') ? undefined : "_blank"}
-                    rel={contact.href.startsWith('http') ? "noopener noreferrer" : undefined}
+                    {...(contact.href ? {
+                      href: contact.href,
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                    } : {})}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
                     whileHover={{ y: -8, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="group glass-card relative overflow-hidden flex flex-col items-center gap-4 rounded-2xl border border-black/5 p-8 text-center transition-all duration-300 hover:border-primary/30 shadow-sm cursor-pointer"
+                    className={`group glass-card relative overflow-hidden flex flex-col items-center gap-4 rounded-2xl border border-black/5 p-8 text-center transition-all duration-300 hover:border-primary/30 shadow-sm ${contact.href ? 'cursor-pointer' : 'cursor-default'}`}
                   >
                     <div className="absolute -inset-1 opacity-0 group-hover:opacity-10 transition-opacity duration-500 bg-primary/10 blur-2xl" />
                     <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-transform duration-300 group-hover:scale-110">
@@ -69,10 +73,11 @@ const SponsorsContactSection = () => {
                     </div>
                     <div className="relative z-10">
                       <p className="text-[10px] font-black uppercase tracking-widest text-foreground/60 mb-1">{contact.label}</p>
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{contact.text}</p>
+                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors whitespace-pre-line">{contact.text}</p>
                     </div>
-                  </motion.a>
-                ))}
+                  </Tag>
+                  );
+                })}
               </div>
             </motion.div>
           )}

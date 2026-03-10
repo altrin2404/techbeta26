@@ -41,6 +41,13 @@ const technicalEvents = [
         shortRules: "Poster Presentation",
         detailedRules: [] as string[]
     },
+    {
+        icon: Palette,
+        name: "LogoHub",
+        description: "Logo Designing - Showcase your creativity by designing stunning logos.",
+        shortRules: "Logo Design Competition",
+        detailedRules: [] as string[]
+    },
 ];
 
 type EventItem = {
@@ -278,9 +285,11 @@ const EventsSection = () => {
                                 {/* Technical Events Column */}
                                 <div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                                    <div className="flex flex-wrap justify-center gap-5">
                                         {technicalEvents.map((event, i) => (
-                                            <EventCard key={`tech-${i}`} event={event} index={i} />
+                                            <div key={`tech-${i}`} className="w-full md:w-[calc(50%-10px)] lg:w-[calc(33.33%-14px)]">
+                                                <EventCard event={event} index={i} />
+                                            </div>
                                         ))}
                                     </div>
                                 </div>

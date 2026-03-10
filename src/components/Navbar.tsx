@@ -1,7 +1,6 @@
 import { useState, Suspense, lazy } from "react";
 import { Menu, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
 
 const RegistrationDialog = lazy(() => import("./RegistrationDialog"));
 
@@ -67,42 +66,41 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-white/5 bg-[#0f172a]/95 backdrop-blur-xl md:hidden"
-          >
-            <div className="flex flex-col gap-1 p-4 safe-bottom">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => handleNav(e, link.href)}
-                  className="text-sm font-bold text-white/70 transition-colors hover:text-primary tracking-wide min-h-[44px] flex items-center px-2 rounded-lg hover:bg-white/5 active:bg-white/10"
-                >
-                  {link.label}
-                </a>
-              ))}
-              <div className="pt-2">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setIsRegOpen(true);
-                    setIsOpen(false);
-                  }}
-                  className="font-display text-xs font-semibold tracking-wider box-glow-cyan w-full bg-primary hover:bg-primary/90 text-white border-none"
-                >
-                  Register Now
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Mobile menu — CSS transition instead of framer-motion */}
+      <div
+        className="overflow-hidden border-t border-white/5 bg-[#0f172a]/95 backdrop-blur-xl md:hidden"
+        style={{
+          maxHeight: isOpen ? '400px' : '0px',
+          opacity: isOpen ? 1 : 0,
+          transition: 'max-height 0.3s ease, opacity 0.3s ease',
+          borderTopWidth: isOpen ? undefined : 0,
+        }}
+      >
+        <div className="flex flex-col gap-1 p-4 safe-bottom">
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={(e) => handleNav(e, link.href)}
+              className="text-sm font-bold text-white/70 transition-colors hover:text-primary tracking-wide min-h-[44px] flex items-center px-2 rounded-lg hover:bg-white/5 active:bg-white/10"
+            >
+              {link.label}
+            </a>
+          ))}
+          <div className="pt-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                setIsRegOpen(true);
+                setIsOpen(false);
+              }}
+              className="font-display text-xs font-semibold tracking-wider box-glow-cyan w-full bg-primary hover:bg-primary/90 text-white border-none"
+            >
+              Register Now
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <Suspense fallback={null}>
         <RegistrationDialog open={isRegOpen} onOpenChange={setIsRegOpen} />
