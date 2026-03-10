@@ -76,7 +76,7 @@ const HeroSection = () => {
           className="font-display text-4xl font-black tracking-wide sm:tracking-wider text-foreground sm:text-6xl md:text-8xl lg:text-9xl hero-fade-in hero-scale-in"
           style={{ animationDelay: '0.4s' }}
         >
-          TECHBETA <span className="text-primary text-glow-cyan">2K26</span>
+          TECHBETA'<span className="text-primary text-glow-cyan">2K26</span>
         </h1>
 
 

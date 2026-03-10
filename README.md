@@ -1,6 +1,6 @@
-# TECHBETA 2K26
+# TECHBETA'2K26
 
-A modern, responsive event registration website for **TechBeta 2K26**, a National Level Technical Symposium organized by the **Department of Information Technology** at **St. Xavier's Catholic College of Engineering**.
+A modern, responsive event registration website for **TechBeta'2K26**, a National Level Technical Symposium organized by the **Department of Information Technology** at **St. Xavier's Catholic College of Engineering**.
 
 This project features a real-time registration system, dynamic UI with animations, and an admin dashboard for managing participants.
 
