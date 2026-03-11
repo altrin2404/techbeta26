@@ -18,35 +18,70 @@ const technicalEvents = [
         name: "FutureMinds",
         description: "Ideathon - Pitch your innovative ideas and build the future.",
         shortRules: "Ideathon Event",
-        detailedRules: [] as string[]
+        detailedRules: [
+            "Participants from any technical stream are encouraged to participate.",
+            "1–2 participants per team are allowed.",
+            "Each team will get 5 minutes (4 minutes for presentation + 1 minute for Q&A).",
+            "Presentation must contain 8–12 slides.",
+            "Submit the problem statement and idea presentation (PDF/PPT) on or before 25/03/2026 to ideathonit@gmail.com."
+        ]
     },
     {
         icon: Code,
         name: "Webfusion",
         description: "Web Designing - Create stunning and functional web interfaces.",
         shortRules: "Web Design Competition",
-        detailedRules: [] as string[]
+        detailedRules: [
+            "Individual participation only.",
+            "Participants will be given 1 hour time and late submission is not accepted.",
+            "Participants should use HTML, CSS, JavaScript for designing.",
+            "Use of internet is not allowed during competition.",
+            "The design must follow the given theme.",
+            "The decision of judges will be final."
+        ]
     },
     {
         icon: Cpu,
         name: "PromptStorm",
         description: "Prompt Battle - Test your AI prompting skills.",
         shortRules: "Prompt Battle",
-        detailedRules: [] as string[]
+        detailedRules: [
+            "Individual participation only.",
+            "The competition consists of two rounds.",
+            "Round 1: 30 minutes – 3 topics will be given.",
+            "Top 50% participants will be selected for Round 2 based on performance.",
+            "Round 2: 40 minutes – 4 topics will be given, participants must choose any 3 topics.",
+            "Judges’ decision will be final."
+        ]
     },
     {
         icon: Presentation,
         name: "Postercraft",
         description: "Poster Presentation - Visually present your technical concepts.",
         shortRules: "Poster Presentation",
-        detailedRules: [] as string[]
+        detailedRules: [
+            "The poster must be related to the given theme or topic of the event.",
+            "Participants can present individually or in teams of maximum 2 members.",
+            "The poster should include a clear title, visuals, and brief explanation of the idea.",
+            "Use of charts, diagrams, and creative designs is encouraged.",
+            "Participants will be given 3–5 minutes to explain their poster to the judges.",
+            "Posters should be submitted/displayed before the competition begins.",
+            "The judges’ decision will be final."
+        ]
     },
     {
         icon: Palette,
         name: "LogoHub",
         description: "Logo Designing - Showcase your creativity by designing stunning logos.",
         shortRules: "Logo Design Competition",
-        detailedRules: [] as string[]
+        detailedRules: [
+            "Individual participation only.",
+            "Time limit: 1 hour to design and submit the logo.",
+            "The theme will be given on the spot, and participants must analyze it and design the logo accordingly.",
+            "Participants may use any digital design software.",
+            "The design must be original and created during the competition.",
+            "Final logo must be submitted in PNG/JPG format within the given time."
+        ]
     },
 ];
 
@@ -169,20 +204,20 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                 </div>
             </motion.div>
 
-            <DialogContent className="max-w-md max-h-[85dvh] overflow-y-auto bg-white border-black/5 rounded-3xl p-0 overflow-hidden safe-bottom">
-                <div className="bg-primary/5 px-6 py-8 flex items-center gap-4">
+            <DialogContent className="max-w-md max-h-[85dvh] flex flex-col bg-white border-black/5 rounded-3xl p-0 overflow-hidden safe-bottom">
+                <div className="bg-primary/5 px-6 py-8 flex items-center gap-4 shrink-0">
                     <div>
                         <h4 className="font-display text-xl font-black text-foreground">{event.name}</h4>
                         <p className="text-xs font-bold text-primary uppercase tracking-widest">Event Rules & Guidelines</p>
                     </div>
                 </div>
-                <div className="p-6 space-y-6">
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
                     <p className="text-sm font-medium text-muted-foreground italic">{event.description}</p>
 
                     <div className="space-y-3">
                         {event.detailedRules.length > 0 ? (
                             event.detailedRules.map((rule, idx) => (
-                                <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 group/rule hover:border-primary/20 transition-colors">
+                                <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/10 group/rule hover:border-primary/20 transition-colors">
                                     <CheckCircle2 size={16} className="text-primary mt-0.5 shrink-0" />
                                     <p className="text-xs font-bold text-foreground leading-relaxed">{rule}</p>
                                 </div>
