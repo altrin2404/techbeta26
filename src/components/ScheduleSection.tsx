@@ -5,32 +5,39 @@ import { Button } from "@/components/ui/button";
 
 const schedule = [
     {
-        time: "",
-        event: "",
-        description: "",
+        time: "09:00 AM",
+        event: "Inaugration",
+        description: "Official opening ceremony of TechBeta'2k26.",
         icon: PlayCircle,
         color: "bg-blue-500",
     },
     {
-        time: "",
-        event: "",
-        description: "",
+        time: "10:00 AM",
+        event: "Events Commences",
+        description: "Commencement of all technical competitions and workshops",
         icon: UserCheck,
         color: "bg-purple-500",
     },
     {
-        time: "",
-        event: "",
-        description: "",
+        time: "01:00 PM",
+        event: "Lunch Break",
+        description: "Lunch will be provided at food court",
         icon: Coffee,
         color: "bg-orange-500",
     },
     {
-        time: "",
-        event: "",
-        description: "",
-        icon: Clock,
+        time: "01:45 PM",
+        event: "Valedictory & Prize Distribution",
+        description: "Closing ceremony and awarding the winners.",
+        icon: Trophy,
         color: "bg-green-500",
+    },
+    {
+        time: "04:15 PM",
+        event: "Departure",
+        description: "Make use of College Buses",
+        icon: Clock,
+        color: "bg-slate-500",
     },
 ];
 
