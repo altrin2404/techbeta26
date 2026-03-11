@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 const team = [
   { name: "Dr. Suja A. Alex", role: "Convener (Associate Professor, Hod/IT)", img: "👩‍🏫" },
   { name: "Dr. G Geo Jenefer", role: "Staff Coordinator (AP/IT)", img: "👩‍🏫" },
-  { name: "Tony Mathew R", role: "Secretary (Final Year/IT)", img: "👨‍🎓" },
-  { name: "Sheno Mcjus J", role: "Treasurer (Final Year/IT)", img: "👨‍🎓" },
+  { name: "Mr. Tony Mathew R", role: "Secretary (Final Year/IT)", img: "👨‍🎓" },
+  { name: "Ms. Sheno Mcjus J", role: "Treasurer (Final Year/IT)", img: "👩‍🎓" },
 ];
 
 const TeamSection = () => {

@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode, CheckCircle, Plus, Trash2, Users, X } from "lucide-react";
+import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode, CheckCircle, Plus, Trash2, Users, X, HelpCircle } from "lucide-react";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import type { Registration } from "@/lib/registrationService";
 
@@ -35,7 +35,7 @@ const memberSchema = z.object({
     college: z.string().min(2, "College is required"),
     department: z.string().min(2, "Department is required"),
     year: z.string().min(1, "Year is required"),
-    events: z.array(z.string()).min(1, "Select at least one event"),
+    events: z.array(z.string()).min(1, "Select at least one event").max(2, "Maximum 2 events allowed"),
 });
 
 const formSchema = z.object({
@@ -253,8 +253,8 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                 <QrCode size={16} />
                             </div>
                             <div>
-                                <DialogTitle className="text-sm font-bold tracking-wide uppercase text-white">Event Registration</DialogTitle>
-                                <DialogDescription className="text-[10px] text-slate-400 font-medium">Join TECHBETA'2K26</DialogDescription>
+                                <DialogTitle className="text-base font-bold tracking-wide uppercase text-white">Event Registration</DialogTitle>
+                                <DialogDescription className="text-xs text-slate-400 font-medium">Join TECHBETA'2K26</DialogDescription>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -285,7 +285,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                             </>
                                         )}
                                     </DialogTitle>
-                                    <DialogDescription className="text-center font-bold text-slate-500 text-xs sm:text-sm">
+                                    <DialogDescription className="text-center font-bold text-slate-500 text-sm sm:text-base">
                                         {step === 1 ? "Step 1: Participant Details" : <>Step 2: Pay Registration Fee: <span className="text-emerald-500 font-bold">₹{totalAmount / 100}</span></>}
                                     </DialogDescription>
                                 </DialogHeader>
@@ -303,7 +303,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                 {fields.map((field, index) => (
                                                     <div key={field.id} className="p-4 rounded-xl bg-slate-50 border border-slate-100 relative group">
                                                         <div className="flex items-center justify-between mb-3">
-                                                            <h4 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                                                            <h4 className="text-base font-bold uppercase tracking-wider text-primary flex items-center gap-2">
                                                                 <Users size={14} /> Member {index + 1}
                                                             </h4>
                                                             {index > 0 && (
@@ -340,7 +340,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                             <FormControl>
                                                                                 <Input placeholder="Email" {...field} className="bg-white" />
                                                                             </FormControl>
-                                                                            <FormMessage className="text-[10px]" />
+                                                                            <FormMessage className="text-xs" />
                                                                         </FormItem>
                                                                     )}
                                                                 />
@@ -352,7 +352,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                             <FormControl>
                                                                                 <Input placeholder="Mobile" {...field} className="bg-white" />
                                                                             </FormControl>
-                                                                            <FormMessage className="text-[10px]" />
+                                                                            <FormMessage className="text-xs" />
                                                                         </FormItem>
                                                                     )}
                                                                 />
@@ -366,7 +366,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                             <FormControl>
                                                                                 <Input placeholder="Department" {...field} className="bg-white" />
                                                                             </FormControl>
-                                                                            <FormMessage className="text-[10px]" />
+                                                                            <FormMessage className="text-xs" />
                                                                         </FormItem>
                                                                     )}
                                                                 />
@@ -388,7 +388,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                                     <option value="PG">PG</option>
                                                                                 </select>
                                                                             </FormControl>
-                                                                            <FormMessage className="text-[10px]" />
+                                                                            <FormMessage className="text-xs" />
                                                                         </FormItem>
                                                                     )}
                                                                 />
@@ -408,7 +408,15 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
 
                                                             <div className="space-y-6 pt-4 border-t border-slate-100">
                                                                 <div>
-                                                                    <FormLabel className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4 block">Technical Events</FormLabel>
+                                                                    <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
+                                                                        <div className="mt-0.5 text-blue-500">
+                                                                            <HelpCircle size={14} />
+                                                                        </div>
+                                                                        <p className="text-xs font-bold text-blue-700 leading-tight">
+                                                                            Important: Each participant can register for a maximum of any 2 technical events.
+                                                                        </p>
+                                                                    </div>
+                                                                    <FormLabel className="text-sm font-black uppercase tracking-[0.2em] text-slate-400 mb-4 block">Technical Events</FormLabel>
                                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                                         {technicalEvents.map((event) => (
                                                                             <FormField
@@ -421,11 +429,18 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                                             <Checkbox
                                                                                                 checked={(field.value as string[])?.includes(event)}
                                                                                                 onCheckedChange={(checked) => {
-                                                                                                    const currentValue = (field.value as string[]) || [];
-                                                                                                    return checked
-                                                                                                        ? field.onChange([...currentValue, event])
-                                                                                                        : field.onChange(currentValue.filter((value: string) => value !== event))
-                                                                                                }}
+                                                                                                     const currentValue = (field.value as string[]) || [];
+                                                                                                      if (checked && currentValue.length >= 2) {
+                                                                                                         toast.error("Maximum 2 events allowed", {
+                                                                                                             description: "A participant can only register for up to 2 technical events."
+                                                                                                         });
+                                                                                                         alert("Attention: You can only register for a maximum of 2 events per participant.");
+                                                                                                         return;
+                                                                                                     }
+                                                                                                     return checked
+                                                                                                         ? field.onChange([...currentValue, event])
+                                                                                                         : field.onChange(currentValue.filter((value: string) => value !== event))
+                                                                                                 }}
                                                                                                 className="h-5 w-5 border-primary"
                                                                                             />
                                                                                         </FormControl>
@@ -442,7 +457,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
 
                                                                 <FormField
                                                                     name={`members.${index}.events` as any}
-                                                                    render={() => <FormMessage className="text-[10px]" />}
+                                                                    render={() => <FormMessage className="text-xs" />}
                                                                 />
                                                             </div>
                                                         </div>
@@ -482,13 +497,13 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                 <div className="mx-auto w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-4 border border-primary/10">
                                                     <img src="/brigitz-logo.png" alt="Logo" className="h-16 w-auto object-contain" loading="lazy" decoding="async" />
                                                 </div>
-                                                <h3 className="text-xl font-bold">
-                                                    Total Fee: <span className="inline-block bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-1 rounded-lg text-2xl font-black shadow-lg shadow-slate-800/40">₹{totalAmount / 100}</span>
+                                                <h3 className="text-2xl font-bold">
+                                                    Total Fee: <span className="inline-block bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-1 rounded-lg text-3xl font-black shadow-lg shadow-slate-800/40">₹{totalAmount / 100}</span>
                                                 </h3>
-                                                <p className="text-sm text-muted-foreground px-6">
+                                                <p className="text-base text-muted-foreground px-6">
                                                     For {fields.length} Team Member(s)
                                                     <br />
-                                                    <span className="text-xs opacity-70">(₹200 per member)</span>
+                                                    <span className="text-sm opacity-70">(₹200 per member)</span>
                                                 </p>
                                             </div>
 
@@ -527,15 +542,15 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 <DialogContent className="max-w-sm bg-white border-2 border-green-500 rounded-3xl p-0 overflow-hidden">
                     <div className="bg-green-500 p-6 flex flex-col items-center justify-center text-white">
                         <CheckCircle className="h-16 w-16 mb-2" />
-                        <DialogTitle className="text-2xl font-black uppercase tracking-tight text-center">Registration Successful!</DialogTitle>
+                        <DialogTitle className="text-3xl font-black uppercase tracking-tight text-center">Registration Successful!</DialogTitle>
                     </div>
                     <div className="p-6 text-center space-y-4">
-                        <p className="text-lg font-black text-slate-800">
+                        <p className="text-xl font-black text-slate-800">
                             Welcome to <span className="font-black">TECHBETA'2K26</span>
                         </p>
                         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left">
-                            <p className="text-[10px] font-black uppercase text-orange-500 tracking-widest mb-1">Important</p>
-                            <ol className="list-decimal list-inside space-y-2 text-sm font-bold text-orange-900 leading-tight">
+                            <p className="text-xs font-black uppercase text-orange-500 tracking-widest mb-1">Important</p>
+                            <ol className="list-decimal list-inside space-y-2 text-base font-bold text-orange-900 leading-tight">
                                 <li>You will receive a verification email on your registered email address. If not found, check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span>.</li>
                                 <li>After our team verifies your registration, you will receive your <span className="underline decoration-2 decoration-orange-500">QR Code</span> via email.</li>
                             </ol>

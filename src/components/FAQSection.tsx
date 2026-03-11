@@ -28,11 +28,15 @@ const faqs = [
   },
   {
     q: "What should I bring to the event?",
-    a: "Please bring your college ID card, your registration confirmation, and any specific equipment required for your events (e.g., laptops for coding/technical competitions).",
+    a: "Please bring your college ID card, your QR registration confirmation, and any specific equipment required for your events (e.g., laptops for coding/technical competitions).",
   },
   {
     q: "Will certificates be provided?",
     a: "Yes, all participants will receive participation certificates. Winners will receive merit certificates along with prizes.",
+  },
+  {
+    q: "How many events can a participant register for?",
+    a: "A participant can register for any 2 events, and not more than 2.",
   },
 ];
 
