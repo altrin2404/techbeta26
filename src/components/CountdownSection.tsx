@@ -12,7 +12,7 @@ interface TimeLeft {
 }
 
 const CountdownSection = () => {
-    const targetDate = new Date("2026-03-27T09:00:00").getTime();
+    const targetDate = new Date("2026-04-10T09:00:00").getTime();
 
     const calculateTimeLeft = useCallback((): TimeLeft => {
         const now = new Date().getTime();
@@ -48,7 +48,7 @@ const CountdownSection = () => {
     ];
 
     return (
-        <section className="relative py-12 px-4 overflow-hidden">
+        <section className="relative py-2 md:py-12 px-4 overflow-hidden">
             <div className="container mx-auto max-w-5xl">
                 <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
                     {/* Left: Countdown Timer */}
@@ -94,11 +94,11 @@ const CountdownSection = () => {
 
                             <div className="text-center">
                                 <p className="font-display text-sm font-black tracking-widest text-secondary uppercase mb-2">
-                                    March 2026
+                                    April 2026
                                 </p>
                                 <div className="relative inline-block">
                                     <span className="font-display text-8xl font-black text-foreground">
-                                        27
+                                        10
                                     </span>
                                     <motion.div
                                         animate={{ scale: [1, 1.2, 1] }}
