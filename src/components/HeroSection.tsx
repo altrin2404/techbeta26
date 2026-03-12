@@ -14,7 +14,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section id="hero" className="relative flex min-h-[70vh] md:min-h-screen items-start md:items-center justify-center overflow-hidden px-4 pt-24 md:pt-32 pb-12 md:pb-0">
+    <section id="hero" className="relative flex min-h-[70vh] md:min-h-screen items-start md:items-center justify-center overflow-hidden px-4 pt-28 md:pt-32 pb-12 md:pb-0">
       {/* Background grid effect */}
       <div className="absolute inset-0 bg-[linear-gradient(hsl(190_100%_50%/0.03)_1px,transparent_1px),linear-gradient(90deg,hsl(190_100%_50%/0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
