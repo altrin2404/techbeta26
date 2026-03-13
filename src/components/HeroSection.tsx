@@ -33,6 +33,8 @@ const HeroSection = () => {
                 src="/College-logo.png" 
                 alt="ST XAVIER'S CATHOLIC COLLEGE OF ENGINEERING" 
                 className="h-24 md:h-32 lg:h-44 w-auto object-contain drop-shadow-sm"
+                loading="lazy"
+                decoding="async"
               />
             </div>
 
@@ -141,15 +143,19 @@ const HeroSection = () => {
           opacity: 0;
           transform: translateY(20px);
           animation: heroFadeIn 0.8s ease-out forwards;
+          will-change: transform, opacity;
         }
         .hero-scale-in {
           animation: heroScaleIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+          will-change: transform, opacity;
         }
         .hero-float {
           animation: heroFloat 4s ease-in-out infinite;
+          will-change: transform;
         }
         .hero-scroll-bounce {
           animation: heroScrollBounce 2s ease-in-out infinite;
+          will-change: transform;
         }
         @keyframes heroFadeIn {
           from { opacity: 0; transform: translateY(20px); }

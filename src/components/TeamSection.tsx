@@ -4,7 +4,7 @@ import { Users, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const team = [
-  { name: "Dr. Suja A. Alex", role: "Convener (Associate Professor, Hod/IT)", img: "👩‍🏫" },
+  { name: "Dr. Suja A. Alex", role: "Convener (Associate Professor & Hod/IT)", img: "👩‍🏫" },
   { name: "Dr. G Geo Jenefer", role: "Staff Coordinator (AP/IT)", img: "👩‍🏫" },
   { name: "Mr. Tony Mathew R", role: "Secretary (Final Year/IT)", img: "👨‍🎓" },
   { name: "Ms. Sheno Mcjus J", role: "Treasurer (Final Year/IT)", img: "👩‍🎓" },
@@ -86,6 +86,7 @@ const TeamSection = () => {
                     transition={{ delay: i * 0.1, duration: 0.6 }}
                     whileHover={{ y: -10, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    style={{ willChange: "transform, opacity" }}
                     className="group glass-card relative overflow-hidden flex flex-col items-center rounded-2xl border border-black/5 p-8 text-center transition-all duration-500 hover:border-secondary/40 hover:box-glow-purple cursor-pointer"
                   >
                     <div className="absolute -inset-1 opacity-0 group-hover:opacity-10 transition-opacity duration-500 bg-gradient-to-br from-secondary via-transparent to-primary blur-2xl" />

@@ -28,11 +28,11 @@ const DynamicBackground = () => {
 
             {/* Radial Glows — CSS animated */}
             <div
-                className={`absolute -top-[10%] -left-[10%] h-[60%] w-[60%] rounded-full bg-primary/10 ${isMobile ? 'blur-[20px]' : 'blur-[30px] dynamic-bg-orb-1'}`}
+                className={`absolute -top-[10%] -left-[10%] h-[60%] w-[60%] rounded-full bg-primary/10 ${isMobile ? 'blur-[15px]' : 'blur-[20px] dynamic-bg-orb-1'}`}
             />
 
             <div
-                className={`absolute bottom-[0%] -right-[10%] h-[50%] w-[50%] rounded-full bg-secondary/10 ${isMobile ? 'blur-[20px]' : 'blur-[30px] dynamic-bg-orb-2'}`}
+                className={`absolute bottom-[0%] -right-[10%] h-[50%] w-[50%] rounded-full bg-secondary/10 ${isMobile ? 'blur-[15px]' : 'blur-[20px] dynamic-bg-orb-2'}`}
             />
 
             {/* Particles — CSS animated, desktop only */}
@@ -60,9 +60,11 @@ const DynamicBackground = () => {
             <style>{`
                 .dynamic-bg-orb-1 {
                     animation: orb1Pulse 15s ease-in-out infinite;
+                    will-change: transform, opacity;
                 }
                 .dynamic-bg-orb-2 {
                     animation: orb2Pulse 18s ease-in-out 2s infinite;
+                    will-change: transform, opacity;
                 }
                 .dynamic-bg-particle {
                     animation: particleDrift linear infinite;
@@ -71,7 +73,7 @@ const DynamicBackground = () => {
                 }
                 .dynamic-bg-scanline {
                     animation: scanlineMove 25s linear infinite;
-                    will-change: top;
+                    will-change: transform;
                 }
                 @keyframes orb1Pulse {
                     0%, 100% { transform: scale(1); opacity: 0.3; }
@@ -89,8 +91,8 @@ const DynamicBackground = () => {
                     100% { transform: translate(0, 0); opacity: 0.1; }
                 }
                 @keyframes scanlineMove {
-                    0% { top: -5%; }
-                    100% { top: 105%; }
+                    0% { transform: translateY(-100%); }
+                    100% { transform: translateY(250%); }
                 }
             `}</style>
         </div>

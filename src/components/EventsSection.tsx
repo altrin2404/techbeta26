@@ -107,6 +107,7 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                 transition={{ delay: index * 0.1, duration: 0.6 }}
                 whileHover={{ y: -10, scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
+                style={{ willChange: "transform, opacity" }}
                 className="group glass-card relative overflow-hidden rounded-2xl border border-black/5 p-6 transition-all duration-500 hover:border-primary/30 hover:box-glow-cyan cursor-pointer"
                 onClick={() => setIsInfoOpen(true)}
             >

@@ -31,7 +31,7 @@ const Navbar = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
       <div className="container relative z-10 mx-auto flex h-20 items-center justify-between px-4">
         <div className="flex items-center h-11">
-          <a href="#" className="font-display text-xl font-bold text-white text-glow-cyan transition-all duration-300 hover:scale-105 flex items-center gap-2 leading-none">
+          <a href="#" className="font-display text-xl font-bold text-white text-glow-cyan transition-all duration-300 hover:scale-105 flex items-center gap-2 leading-none" style={{ willChange: "transform" }}>
             <span>TECHBETA'</span>
             <span className="text-primary">2K26</span>
           </a>
@@ -55,6 +55,7 @@ const Navbar = () => {
           <Button
             onClick={() => setIsRegOpen(true)}
             className="font-display text-sm font-bold tracking-wider box-glow-cyan bg-primary hover:bg-primary/90 text-white border-none h-11 px-8 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center leading-none"
+            style={{ willChange: "transform" }}
           >
             Register Now
           </Button>

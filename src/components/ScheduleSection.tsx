@@ -99,6 +99,7 @@ const ScheduleSection = () => {
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ duration: 0.6, delay: i * 0.1 }}
                                             className={`relative flex items-center justify-between md:justify-between md:odd:flex-row-reverse group`}
+                                            style={{ willChange: "transform, opacity" }}
                                         >
                                             {/* Time Mobile */}
                                             <div className="flex flex-col items-center md:hidden pr-8 z-10">

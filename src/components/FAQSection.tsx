@@ -118,6 +118,7 @@ const FAQSection = () => {
                       <motion.div
                         whileHover={{ x: 5 }}
                         whileTap={{ scale: 0.99 }}
+                        style={{ willChange: "transform" }}
                         className="group glass-card border border-black/5 rounded-2xl overflow-hidden px-5 transition-all duration-300 data-[state=open]:border-primary/40 data-[state=open]:box-glow-cyan cursor-pointer"
                       >
                         <AccordionTrigger className="font-display text-sm font-bold text-foreground py-6 hover:no-underline hover:text-primary transition-colors text-left uppercase tracking-wider">

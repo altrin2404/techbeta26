@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode, CheckCircle, Plus, Trash2, Users, X, HelpCircle } from "lucide-react";
+import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode, CheckCircle, Plus, Trash2, Users, X, HelpCircle, Info } from "lucide-react";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import type { Registration } from "@/lib/registrationService";
 
@@ -83,7 +83,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     });
 
     const watchMembers = form.watch("members");
-    const totalAmount = (watchMembers?.length || 0) * 20000;
+    const totalAmount = (watchMembers?.length || 0) * 100;
 
     const nextStep = async () => {
         const isValid = await form.trigger("members");
@@ -418,39 +418,135 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                     </div>
                                                                     <FormLabel className="text-sm font-black uppercase tracking-[0.2em] text-slate-400 mb-4 block">Technical Events</FormLabel>
                                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                                        {technicalEvents.map((event) => (
-                                                                            <FormField
-                                                                                key={event}
-                                                                                control={form.control}
-                                                                                name={`members.${index}.events` as any}
-                                                                                render={({ field }) => (
-                                                                                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-xl border border-slate-200 bg-white p-3 hover:bg-slate-50 transition-colors shadow-sm">
-                                                                                        <FormControl>
-                                                                                            <Checkbox
-                                                                                                checked={(field.value as string[])?.includes(event)}
-                                                                                                onCheckedChange={(checked) => {
-                                                                                                     const currentValue = (field.value as string[]) || [];
-                                                                                                      if (checked && currentValue.length >= 2) {
-                                                                                                         toast.error("Maximum 2 events allowed", {
-                                                                                                             description: "A participant can only register for up to 2 technical events."
-                                                                                                         });
-                                                                                                         alert("Attention: You can only register for a maximum of 2 events per participant.");
-                                                                                                         return;
-                                                                                                     }
-                                                                                                     return checked
-                                                                                                         ? field.onChange([...currentValue, event])
-                                                                                                         : field.onChange(currentValue.filter((value: string) => value !== event))
-                                                                                                 }}
-                                                                                                className="h-5 w-5 border-primary"
+                                                                        {technicalEvents.map((event) => {
+                                                                            const isTeamEvent = ["FutureMinds", "Postercraft"].includes(event);
+                                                                            const fieldName = `members.${index}.events` as const;
+                                                                            const participationFieldName = `members.${index}.participationType.${event}` as const;
+
+                                                                            return (
+                                                                                <div key={event} className="space-y-2">
+                                                                                    <FormField
+                                                                                        control={form.control}
+                                                                                        name={fieldName as any}
+                                                                                        render={({ field }) => (
+                                                                                            <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-xl border border-slate-200 bg-white p-3 hover:bg-slate-50 transition-colors shadow-sm">
+                                                                                                <FormControl>
+                                                                                                    <Checkbox
+                                                                                                        checked={(field.value as string[])?.includes(event)}
+                                                                                                        onCheckedChange={(checked) => {
+                                                                                                            const currentValue = (field.value as string[]) || [];
+                                                                                                            if (checked && currentValue.length >= 2) {
+                                                                                                                toast.error("Maximum 2 events allowed", {
+                                                                                                                    description: "A participant can only register for up to 2 technical events."
+                                                                                                                });
+                                                                                                                alert("Attention: You can only register for a maximum of 2 events per participant.");
+                                                                                                                return;
+                                                                                                            }
+                                                                                                            const newValue = checked
+                                                                                                                ? [...currentValue, event]
+                                                                                                                : currentValue.filter((value: string) => value !== event);
+                                                                                                            
+                                                                                                            field.onChange(newValue);
+                                                                                                            
+                                                                                                            // If unchecked and was a team event, clear participation type
+                                                                                                            if (!checked && isTeamEvent) {
+                                                                                                                form.setValue(participationFieldName as any, undefined);
+                                                                                                            }
+                                                                                                        }}
+                                                                                                        className="h-5 w-5 border-primary"
+                                                                                                    />
+                                                                                                </FormControl>
+                                                                                                <FormLabel className="text-sm font-bold cursor-pointer text-slate-700 leading-none">
+                                                                                                    {event}
+                                                                                                </FormLabel>
+                                                                                            </FormItem>
+                                                                                        )}
+                                                                                    />
+                                                                                    {isTeamEvent && (form.watch(fieldName as any) || []).includes(event) && (
+                                                                                        <motion.div
+                                                                                            initial={{ opacity: 0, height: 0 }}
+                                                                                            animate={{ opacity: 1, height: "auto" }}
+                                                                                            className="pl-8 pb-2 space-y-3"
+                                                                                        >
+                                                                                            <FormField
+                                                                                                control={form.control}
+                                                                                                name={participationFieldName as any}
+                                                                                                render={({ field }) => (
+                                                                                                    <FormItem className="space-y-1">
+                                                                                                        <FormLabel className="text-[10px] uppercase font-black text-slate-400">Participation Type</FormLabel>
+                                                                                                        <FormControl>
+                                                                                                            <div className="space-y-1.5">
+                                                                                                                <select
+                                                                                                                    {...field}
+                                                                                                                    className="flex h-8 w-full rounded-md border border-input bg-white px-3 py-1 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                                                                                                >
+                                                                                                                    <option value="" disabled>Select Type</option>
+                                                                                                                    <option value="Individual">Individual</option>
+                                                                                                                    <option value="Team">Team</option>
+                                                                                                                </select>
+                                                                                                              {field.value === "Team" && (
+                                                                                     <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 flex gap-3 items-start animate-in fade-in slide-in-from-top-1 duration-300">
+                                                                                         <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                                                                                         <div className="text-sm font-bold text-blue-800 leading-tight">
+                                                                                             <ul className="list-disc pl-4 space-y-1">
+                                                                                                 <li>Teams are limited to exactly 2 members.</li>
+                                                                                                 <li>Ensure both members enter the EXACT SAME team name.</li>
+                                                                                             </ul>
+                                                                                         </div>
+                                                                                     </div>
+                                                                                 )}
+                                                                                                            </div>
+                                                                                                        </FormControl>
+                                                                                                    </FormItem>
+                                                                                                )}
                                                                                             />
-                                                                                        </FormControl>
-                                                                                        <FormLabel className="text-sm font-bold cursor-pointer text-slate-700 leading-none">
-                                                                                            {event}
-                                                                                        </FormLabel>
-                                                                                    </FormItem>
-                                                                                )}
-                                                                            />
-                                                                        ))}
+                                                                                            {form.watch(participationFieldName as any) === "Team" && (
+                                                                                                <FormField
+                                                                                                    control={form.control}
+                                                                                                    name={`members.${index}.teamName.${event}` as any}
+                                                                                                    render={({ field }) => (
+                                                                                                        <FormItem className="space-y-1">
+                                                                                                            <FormLabel className="text-[10px] uppercase font-black text-slate-400">Team Name</FormLabel>
+                                                                                                            <FormControl>
+                                                                                                                <Input 
+                                                                                                                    {...field} 
+                                                                                                                    placeholder="Enter Team Name" 
+                                                                                                                    className="h-8 text-xs bg-white"
+                                                                                                                    onChange={(e) => {
+                                                                                                                        const newName = e.target.value;
+                                                                                                                        const allMembers = form.getValues("members") || [];
+                                                                                                                        const sameTeamCount = allMembers.filter((m: any, i: number) => 
+                                                                                                                            i !== index && 
+                                                                                                                            m.participationType?.[event] === "Team" && 
+                                                                                                                            m.teamName?.[event]?.trim().toLowerCase() === newName.trim().toLowerCase() &&
+                                                                                                                            newName.trim() !== ""
+                                                                                                                        ).length;
+
+                                                                                                                        if (sameTeamCount >= 1) {
+                                                                                                                            // Already has 1 other member, so this would be the 2nd
+                                                                                                                            // If it were >= 2, we should block. 
+                                                                                                                            // But let's check correctly: total would be sameTeamCount + 1
+                                                                                                                            const total = sameTeamCount + 1;
+                                                                                                                            if (total > 2) {
+                                                                                                                                toast.error("Team limit exceeded", {
+                                                                                                                                    description: "A team can have a maximum of 2 members."
+                                                                                                                                });
+                                                                                                                                return; 
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                        field.onChange(newName);
+                                                                                                                    }}
+                                                                                                                />
+                                                                                                            </FormControl>
+                                                                                                        </FormItem>
+                                                                                                    )}
+                                                                                                />
+                                                                                            )}
+                                                                                        </motion.div>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        })}
                                                                     </div>
                                                                 </div>
 
@@ -503,7 +599,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                 <p className="text-base text-muted-foreground px-6">
                                                     For {fields.length} Team Member(s)
                                                     <br />
-                                                    <span className="text-sm opacity-70">(₹200 per member)</span>
+                                                    <span className="text-sm opacity-70">(₹1 per member)</span>
                                                 </p>
                                             </div>
 
