@@ -105,46 +105,14 @@ export const addRegistration = async (data: Omit<Registration, "id" | "status" |
         };
 
         const registrationDate = new Date().toISOString();
-        const status = "Verified";
+        const status = "Pending Verification";
 
         const docRef = await addDoc(collection(db, COLLECTION_NAME), {
             ...sanitizedData,
-            members: sanitizedData.members?.map(m => ({ ...m, isVerified: true })),
             status: status,
             registrationDate: registrationDate,
             timestamp: serverTimestamp()
         });
-
-        // Send Verification Emails (QR Codes) to all members immediately
-        const membersToNotify = sanitizedData.members || [{
-            name: sanitizedData.name,
-            email: sanitizedData.email,
-            phone: sanitizedData.phone,
-            college: sanitizedData.college,
-            department: sanitizedData.department,
-            year: (sanitizedData as any).year,
-            events: sanitizedData.events
-        }];
-
-        const { sendVerificationEmail } = await import("./emailService");
-
-        for (let i = 0; i < membersToNotify.length; i++) {
-            const m = membersToNotify[i];
-            const qrData = JSON.stringify({ 
-                id: docRef.id, 
-                index: i, 
-                name: m.name, 
-                events: (m.events || []) 
-            });
-            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
-            
-            // We use await to ensure emails are sent, but in a real-world scenario 
-            // we might want to handle failures more gracefully or do it in the background.
-            // For now, we'll try to send them and log results.
-            sendVerificationEmail(m.name, m.email, sanitizedData.transactionId, qrCodeUrl)
-                .then(res => console.log(`Email sent to ${m.name}:`, res))
-                .catch(err => console.error(`Failed to send email to ${m.name}:`, err));
-        }
 
         // Backup to Google Sheets (Async, don't wait for it to finish)
         // We now loop through each member to create individual rows as requested
