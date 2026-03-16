@@ -41,6 +41,30 @@ export interface Registration {
 }
 
 const COLLECTION_NAME = "registrations";
+const GOOGLE_SHEETS_URL = import.meta.env.VITE_GOOGLE_SHEETS_WEBHOOK_URL;
+
+const backupToGoogleSheets = async (data: any) => {
+    if (!GOOGLE_SHEETS_URL) {
+        console.warn("Google Sheets Webhook URL missing in .env");
+        return;
+    }
+
+    try {
+        // We use fetch with 'no-cors' because Google Apps Script redirects 
+        // cause CORS issues in browsers even if the script works.
+        await fetch(GOOGLE_SHEETS_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        console.log("Backup sent to Google Sheets");
+    } catch (error) {
+        console.error("Error sending backup to Google Sheets:", error);
+    }
+};
 
 // Sanitize user input: trim, remove HTML tags, limit length
 const sanitizeInput = (value: string, maxLength: number = 200): string => {
@@ -80,14 +104,34 @@ export const addRegistration = async (data: Omit<Registration, "id" | "status" |
             members: data.members ? sanitizeMembers(data.members) : undefined,
         };
 
+        const registrationDate = new Date().toISOString();
+        const status = "Pending Verification";
+
         const docRef = await addDoc(collection(db, COLLECTION_NAME), {
             ...sanitizedData,
-            status: "Pending Verification",
-            registrationDate: new Date().toISOString(),
+            status: status,
+            registrationDate: registrationDate,
             timestamp: serverTimestamp()
         });
 
-
+        // Backup to Google Sheets (Async, don't wait for it to finish)
+        // We now loop through each member to create individual rows as requested
+        if (sanitizedData.members && sanitizedData.members.length > 0) {
+            sanitizedData.members.forEach((member) => {
+                backupToGoogleSheets({
+                    name: member.name,
+                    department: member.department,
+                    year: member.year,
+                    college: member.college,
+                    phone: member.phone,
+                    email: member.email,
+                    eventsList: member.events.join(", "),
+                    status: status,
+                    transactionId: sanitizedData.transactionId, // Keep for reference if needed
+                    id: docRef.id // Firestore ID for reference
+                });
+            });
+        }
 
         return { success: true, id: docRef.id };
     } catch (error) {
