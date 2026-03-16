@@ -83,7 +83,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     });
 
     const watchMembers = form.watch("members");
-    const totalAmount = (watchMembers?.length || 0) * 20000;
+    const totalAmount = (watchMembers?.length || 0) * 100;
 
     const nextStep = async () => {
         const isValid = await form.trigger("members");
@@ -192,7 +192,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             return;
         }
 
-        const amountToPay = fields.length * 20000; // 20000 paise = 200 INR per member
+        const amountToPay = fields.length * 100; // 100 paise = 1 INR per member
 
         const options = {
             key: razorpayKey,
@@ -599,7 +599,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                 <p className="text-base text-muted-foreground px-6">
                                                     For {fields.length} Team Member(s)
                                                     <br />
-                                                    <span className="text-sm opacity-70">(₹200 per member)</span>
+                                                    <span className="text-sm opacity-70">(₹1 per member)</span>
                                                 </p>
                                             </div>
 
@@ -647,8 +647,8 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left">
                             <p className="text-xs font-black uppercase text-orange-500 tracking-widest mb-1">Important</p>
                             <ol className="list-decimal list-inside space-y-2 text-base font-bold text-orange-900 leading-tight">
-                                <li>You will receive a verification email on your registered email address. If not found, check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span>.</li>
-                                <li>After our team verifies your registration, you will receive your <span className="underline decoration-2 decoration-orange-500">QR Code</span> via email.</li>
+                                <li>You will receive your <span className="underline decoration-2 decoration-orange-500">QR Code</span> via email immediately. If not found, check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span>.</li>
+                                <li>Show this QR code at the registration desk on the day of the event.</li>
                             </ol>
                         </div>
                         <Button onClick={() => setShowSuccess(false)} className="w-full font-bold bg-green-500 text-white hover:bg-green-600">
