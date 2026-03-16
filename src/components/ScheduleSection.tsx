@@ -7,7 +7,7 @@ const schedule = [
     {
         time: "09:00 AM",
         event: "Inaugration",
-        description: "Official opening ceremony of TechBeta'2k26.",
+        description: "Official opening ceremony of TECHBETA 2026.",
         icon: PlayCircle,
         color: "bg-blue-500",
     },

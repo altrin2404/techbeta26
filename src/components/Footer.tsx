@@ -23,7 +23,7 @@ const Footer = () => {
                             ALTRIN BENSER <span className="text-primary mx-2">|</span> <span className="text-slate-300">III IT</span>
                         </p>
                         <p className="mt-3 text-[10px] font-bold text-white tracking-widest uppercase opacity-60">
-                            &copy; 2026 techbeta2k26 . All Rights Reserved
+                            &copy; 2026 TECHBETA 2026 . All Rights Reserved
                         </p>
                     </div>
                 </motion.div>

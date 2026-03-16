@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 
 const faqs = [
   {
-    q: "Who can participate in TECHBETA'2K26?",
-    a: "TECHBETA'2K26 is open to all college students across the country. Both undergraduate and postgraduate students can participate.",
+    q: "Who can participate in TECHBETA 2026?",
+    a: "TECHBETA 2026 is open to all college students across the country. Both undergraduate and postgraduate students can participate.",
   },
   {
     q: "Is there a registration fee?",

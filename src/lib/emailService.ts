@@ -43,7 +43,7 @@ export const sendVerificationEmail = async (
                 event_date: "April 10, 2026",
                 event_time: "09:00 AM",
                 event_venue: "Rock Auditorium, SXCCE, Nagercoil",
-                message: "Congratulations! Your registration for TechBeta'26 has been verified. Please show the QR code below at the registration desk."
+                message: "Congratulations! Your registration for TECHBETA 2026 has been verified. Please show the QR code below at the registration desk."
             },
             PUBLIC_KEY
         );

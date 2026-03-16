@@ -198,7 +198,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             key: razorpayKey,
             amount: amountToPay.toString(),
             currency: "INR",
-            name: "TECHBETA'2K26",
+            name: "TECHBETA 2026",
             description: `Registration Fee for ${fields.length} Member(s)`,
             image: `${window.location.origin}/brigitz-logo.png`,
             redirect: false,
@@ -254,7 +254,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                             </div>
                             <div>
                                 <DialogTitle className="text-base font-bold tracking-wide uppercase text-white">Event Registration</DialogTitle>
-                                <DialogDescription className="text-xs text-slate-400 font-medium">Join TECHBETA'2K26</DialogDescription>
+                                <DialogDescription className="text-xs text-slate-400 font-medium">Join TECHBETA 2026</DialogDescription>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -642,7 +642,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                     </div>
                     <div className="p-6 text-center space-y-4">
                         <p className="text-xl font-black text-slate-800">
-                            Welcome to <span className="font-black">TECHBETA'2K26</span>
+                            Welcome to <span className="font-black">TECHBETA 2026</span>
                         </p>
                         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left">
                             <p className="text-xs font-black uppercase text-orange-500 tracking-widest mb-1">Important</p>

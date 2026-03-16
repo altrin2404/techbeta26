@@ -61,13 +61,16 @@ const technicalEvents = [
         description: "Poster Presentation - Visually present your technical concepts.",
         shortRules: "Poster Presentation",
         detailedRules: [
-            "The poster must be related to the given theme or topic of the event.",
-            "Participants can present individually or in teams of maximum 2 members.",
-            "The poster should include a clear title, visuals, and brief explanation of the idea.",
-            "Use of charts, diagrams, and creative designs is encouraged.",
-            "Participants will be given 3–5 minutes to explain their poster to the judges.",
-            "Posters should be submitted/displayed before the competition begins.",
-            "The judges’ decision will be final."
+            "Each team can have maximum 2 participants.",
+            "The poster must be prepared on chart paper (A1 or A2 size).",
+            "Posters should include diagrams, flowcharts, architecture, and key explanations.",
+            "Participants will be given 5 minutes for presentation and 2 minutes for questions.",
+            "Posters must be original and not copied directly from the internet.",
+            "The title of the topic should be clearly displayed at the top of the chart.",
+            "Participants must explain the concept, working, applications, and future scope of the technology.",
+            "Charts should be neatly written and visually appealing.",
+            "Use of printed pictures and diagrams is allowed.",
+            "Judges’ decision will be final."
         ]
     },
     {
