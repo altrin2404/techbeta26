@@ -493,6 +493,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                                                             <div className="space-y-1.5">
                                                                                                                 <select
                                                                                                                     {...field}
+                                                                                                                    value={field.value || ""}
                                                                                                                     className="flex h-8 w-full rounded-md border border-input bg-white px-3 py-1 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                                                                                                 >
                                                                                                                     <option value="" disabled>Select</option>
