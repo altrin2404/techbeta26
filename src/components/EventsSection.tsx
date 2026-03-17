@@ -127,7 +127,7 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                         </div>
                     </div>
 
-                    <p className="text-[15px] leading-relaxed text-slate-800 dark:text-slate-200 font-bold line-clamp-2 min-h-[2.5rem]">
+                    <p className="text-base leading-relaxed text-black mb-4 font-medium opacity-90">
                         {event.description}
                     </p>
 
@@ -189,7 +189,7 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                                                 <span className="shrink-0 flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-white text-[10px] font-black tracking-wider">{ps.id}</span>
                                                 <div>
                                                     <p className="text-base font-extrabold text-foreground leading-tight">{ps.title}</p>
-                                                    <p className="text-sm font-semibold text-muted-foreground mt-1.5 leading-relaxed">{ps.desc}</p>
+                                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-1.5 leading-relaxed">{ps.desc}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -247,7 +247,7 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                                                 <span className="shrink-0 flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-white text-[10px] font-black tracking-wider">{ps.id}</span>
                                                 <div>
                                                     <p className="text-base font-extrabold text-foreground leading-tight">{ps.title}</p>
-                                                    <p className="text-sm font-semibold text-muted-foreground mt-1.5 leading-relaxed">{ps.desc}</p>
+                                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-1.5 leading-relaxed">{ps.desc}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -274,8 +274,8 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                         <p className="text-xs font-bold text-primary uppercase tracking-widest">Event Rules & Guidelines</p>
                     </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
-                    <p className="text-base font-bold text-foreground">{event.description}</p>
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0 text-black">
+                    <p className="text-base font-medium">{event.description}</p>
 
                     <div className="space-y-3">
                         {event.detailedRules.length > 0 ? (
