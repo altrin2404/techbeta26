@@ -495,7 +495,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                                                                     {...field}
                                                                                                                     className="flex h-8 w-full rounded-md border border-input bg-white px-3 py-1 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                                                                                                 >
-                                                                                                                    <option value="" disabled>Select Type</option>
+                                                                                                                    <option value="" disabled>Select</option>
                                                                                                                     <option value="Individual">Individual</option>
                                                                                                                     <option value="Team">Team</option>
                                                                                                                 </select>
