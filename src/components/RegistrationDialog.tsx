@@ -94,84 +94,107 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     const prevStep = () => setStep(1);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        // Rate limiting: block submissions within 10 seconds (reduced from 30)
+        console.log("Submitting registration with values:", values);
+        
+        // Rate limiting: block submissions within 5 seconds for testing
         const lastSubmit = localStorage.getItem('lastRegistrationSubmit');
         const now = Date.now();
-        if (lastSubmit && now - parseInt(lastSubmit) < 10000) {
-            const remainingSec = Math.ceil((10000 - (now - parseInt(lastSubmit))) / 1000);
-            toast.error(`Please wait ${remainingSec} seconds before submitting again.`);
+        if (lastSubmit && now - parseInt(lastSubmit) < 5000) {
+            console.log("Rate limited");
             return;
         }
 
         setIsSubmitting(true);
         localStorage.setItem('lastRegistrationSubmit', now.toString());
 
+        const loadingToast = toast.loading("Saving your registration details...");
+
         try {
             const leadMember = values.members[0];
             const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
 
+            // Cleanly map members to avoid any Hidden/Internal fields from React Hook Form or nested UI state
+            const cleanedMembers = values.members.map(m => ({
+                name: String(m.name).trim(),
+                email: String(m.email).trim().toLowerCase(),
+                phone: String(m.phone).trim(),
+                college: String(m.college).trim(),
+                department: String(m.department).trim(),
+                year: String(m.year),
+                events: [...m.events],
+                // Include participation details if they exist in the raw member object
+                participationType: (m as any).participationType || {},
+                teamName: (m as any).teamName || {}
+            }));
+
             const registrationData: Omit<Registration, 'id' | 'registrationDate' | 'status' | 'timestamp'> = {
-                name: leadMember.name,
-                email: leadMember.email,
-                phone: leadMember.phone,
-                college: leadMember.college,
-                department: leadMember.department,
+                name: String(leadMember.name).trim(),
+                email: String(leadMember.email).trim().toLowerCase(),
+                phone: String(leadMember.phone).trim(),
+                college: String(leadMember.college).trim(),
+                department: String(leadMember.department).trim(),
                 events: allEvents,
                 transactionId: values.transactionId,
                 upiName: values.upiName || 'Razorpay Online',
-                members: values.members.map(m => ({
-                    ...m,
-                    year: m.year
-                })) as any,
+                members: cleanedMembers as any,
             };
+
+            console.log("Prepared registration data for Firestore:", registrationData);
 
             const result = await addRegistration(registrationData);
 
             if (result.success) {
-                // Fire confetti immediately
-                const count = 80;
-                const defaults = { origin: { y: 0.7 } };
-                const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
-                
-                const fire = (particleRatio: number, opts: any) => {
-                    (window as any).confetti?.({
-                        ...defaults,
-                        ...opts,
-                        particleCount: Math.floor(count * particleRatio),
-                        colors: colors,
-                        zIndex: 9999
-                    });
-                };
+                console.log("Registration successful, ID:", result.id);
+                toast.dismiss(loadingToast);
+                toast.success("Registration confirmed!");
 
-                fire(0.25, { spread: 26, startVelocity: 55 });
-                fire(0.2, { spread: 60 });
-                fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-                fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-                fire(0.1, { spread: 120, startVelocity: 45 });
+                // Fire confetti
+                try {
+                    const count = 80;
+                    const defaults = { origin: { y: 0.7 } };
+                    const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
+                    const fire = (particleRatio: number, opts: any) => {
+                        (window as any).confetti?.({
+                            ...defaults,
+                            ...opts,
+                            particleCount: Math.floor(count * particleRatio),
+                            colors: colors,
+                            zIndex: 9999
+                        });
+                    };
+                    fire(0.25, { spread: 26, startVelocity: 55 });
+                    fire(0.2, { spread: 60 });
+                    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+                    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+                    fire(0.1, { spread: 120, startVelocity: 45 });
+                } catch (confettiError) {
+                    console.error("Confetti error (non-critical):", confettiError);
+                }
 
                 window.dispatchEvent(new Event("registration-updated"));
                 setSavedPaymentId(values.transactionId);
                 
-                // Reset form and state
+                // Clear state and close
                 form.reset();
                 setStep(1);
                 setIsSubmitting(false);
                 setOpen(false);
                 
-                // Show success dialog after a small delay to ensure modal transitions smoothly
+                // Show success dialog
                 setTimeout(() => {
                     setShowSuccess(true);
                 }, 100);
             } else {
-                throw new Error(result.error || "Registration failed");
+                console.error("Registration write failed:", result.error);
+                throw new Error(result.error || "Failed to save to database");
             }
         } catch (error: any) {
-            console.error("Submission error:", error);
+            console.error("Submission error catch:", error);
+            toast.dismiss(loadingToast);
             toast.error("Registration Failed", {
-                description: error.message || "Please try again or contact support.",
+                description: error.message || "Please check your internet and try again.",
             });
             setIsSubmitting(false);
-            // Clear rate limit on error to allow immediate retry
             localStorage.removeItem('lastRegistrationSubmit');
         }
     }
@@ -210,14 +233,19 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             image: `${window.location.origin}/brigitz-logo.png`,
             redirect: false,
             handler: function (response: any) {
-                form.setValue('transactionId', response.razorpay_payment_id);
-                form.setValue('upiName', 'Razorpay Online');
-
-                toast.success("Payment Successful!");
-
-                // Capture current state with the newly set values
+                console.log("Razorpay payment successful:", response.razorpay_payment_id);
+                
                 const currentValues = form.getValues();
-                onSubmit(currentValues);
+                const valuesWithPayment = {
+                    ...currentValues,
+                    transactionId: response.razorpay_payment_id,
+                    upiName: 'Razorpay Online'
+                };
+                
+                // Wait for the modal to start closing before submitting
+                setTimeout(() => {
+                    onSubmit(valuesWithPayment);
+                }, 300);
             },
             modal: {
                 ondismiss: function () {
