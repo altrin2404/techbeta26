@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 const RegistrationDialog = lazy(() => import("./RegistrationDialog"));
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 const HeroSection = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -120,22 +120,6 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div
-        className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 hero-scroll-bounce cursor-pointer group z-30 items-center justify-center p-4"
-        onClick={() => {
-          const eventsSection = document.getElementById('events');
-          if (eventsSection) {
-            eventsSection.scrollIntoView({ behavior: 'smooth' });
-            window.dispatchEvent(new Event('open-events'));
-          }
-        }}
-      >
-        <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-2 border-primary/30 bg-primary/5 backdrop-blur-sm group-hover:border-primary group-hover:bg-primary/20 transition-all duration-300 shadow-[0_0_15px_rgba(34,211,238,0.2)]">
-          <div className="absolute inset-0 rounded-full bg-primary/20 blur-md opacity-40 group-hover:opacity-100 transition-opacity duration-500" />
-          <ChevronDown className="relative z-10 h-8 w-8 text-primary transition-transform duration-300 group-hover:translate-y-1" />
-        </div>
-      </div>
 
       {/* CSS animations replacing framer-motion */}
       <style>{`

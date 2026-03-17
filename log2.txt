@@ -1,0 +1,5 @@
+5ca4d60 Update fee to rs 1 and automate verification/email
+2882761 feat: updated Google Sheets backup to individual rows with specific columns
+444f867 Update team names and formatting
+6e6f09c Update team member names with initials in front
+7d9a1fb Update event rules, contact numbers, and rename symposium to TECHBETA 2026

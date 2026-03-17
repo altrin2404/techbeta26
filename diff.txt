@@ -1,0 +1,95 @@
+diff --git a/src/components/RegistrationDialog.tsx b/src/components/RegistrationDialog.tsx
+index 32b0058..038e24f 100644
+--- a/src/components/RegistrationDialog.tsx
++++ b/src/components/RegistrationDialog.tsx
+@@ -83,7 +83,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
+     });
+ 
+     const watchMembers = form.watch("members");
+-    const totalAmount = (watchMembers?.length || 0) * 100;
++    const totalAmount = (watchMembers?.length || 0) * 20000;
+ 
+     const nextStep = async () => {
+         const isValid = await form.trigger("members");
+@@ -192,7 +192,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
+             return;
+         }
+ 
+-        const amountToPay = fields.length * 100; // 100 paise = 1 INR per member
++        const amountToPay = fields.length * 20000; // 20000 paise = 200 INR per member
+ 
+         const options = {
+             key: razorpayKey,
+@@ -599,7 +599,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
+                                                 <p className="text-base text-muted-foreground px-6">
+                                                     For {fields.length} Team Member(s)
+                                                     <br />
+-                                                    <span className="text-sm opacity-70">(₹1 per member)</span>
++                                                    <span className="text-sm opacity-70">(₹200 per member)</span>
+                                                 </p>
+                                             </div>
+ 
+@@ -647,8 +647,8 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
+                         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left">
+                             <p className="text-xs font-black uppercase text-orange-500 tracking-widest mb-1">Important</p>
+                             <ol className="list-decimal list-inside space-y-2 text-base font-bold text-orange-900 leading-tight">
+-                                <li>You will receive your <span className="underline decoration-2 decoration-orange-500">QR Code</span> via email immediately. If not found, check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span>.</li>
+-                                <li>Show this QR code at the registration desk on the day of the event.</li>
++                                <li>You will receive a verification email on your registered email address. If not found, check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span>.</li>
++                                <li>After our team verifies your registration, you will receive your <span className="underline decoration-2 decoration-orange-500">QR Code</span> via email.</li>
+                             </ol>
+                         </div>
+                         <Button onClick={() => setShowSuccess(false)} className="w-full font-bold bg-green-500 text-white hover:bg-green-600">
+diff --git a/src/lib/registrationService.ts b/src/lib/registrationService.ts
+index beb773b..fdedf23 100644
+--- a/src/lib/registrationService.ts
++++ b/src/lib/registrationService.ts
+@@ -105,47 +105,15 @@ export const addRegistration = async (data: Omit<Registration, "id" | "status" |
+         };
+ 
+         const registrationDate = new Date().toISOString();
+-        const status = "Verified";
++        const status = "Pending Verification";
+ 
+         const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+             ...sanitizedData,
+-            members: sanitizedData.members?.map(m => ({ ...m, isVerified: true })),
+             status: status,
+             registrationDate: registrationDate,
+             timestamp: serverTimestamp()
+         });
+ 
+-        // Send Verification Emails (QR Codes) to all members immediately
+-        const membersToNotify = sanitizedData.members || [{
+-            name: sanitizedData.name,
+-            email: sanitizedData.email,
+-            phone: sanitizedData.phone,
+-            college: sanitizedData.college,
+-            department: sanitizedData.department,
+-            year: (sanitizedData as any).year,
+-            events: sanitizedData.events
+-        }];
+-
+-        const { sendVerificationEmail } = await import("./emailService");
+-
+-        for (let i = 0; i < membersToNotify.length; i++) {
+-            const m = membersToNotify[i];
+-            const qrData = JSON.stringify({ 
+-                id: docRef.id, 
+-                index: i, 
+-                name: m.name, 
+-                events: (m.events || []) 
+-            });
+-            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
+-            
+-            // We use await to ensure emails are sent, but in a real-world scenario 
+-            // we might want to handle failures more gracefully or do it in the background.
+-            // For now, we'll try to send them and log results.
+-            sendVerificationEmail(m.name, m.email, sanitizedData.transactionId, qrCodeUrl)
+-                .then(res => console.log(`Email sent to ${m.name}:`, res))
+-                .catch(err => console.error(`Failed to send email to ${m.name}:`, err));
+-        }
+-
+         // Backup to Google Sheets (Async, don't wait for it to finish)
+         // We now loop through each member to create individual rows as requested
+         if (sanitizedData.members && sanitizedData.members.length > 0) {

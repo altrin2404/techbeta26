@@ -29,7 +29,7 @@ const technicalEvents = [
     {
         icon: Code,
         name: "Webfusion",
-        description: "Web Designing - Create stunning and functional web interfaces.",
+        description: "Theme: EcoTech Solutions – Think Green",
         shortRules: "Web Design Competition",
         detailedRules: [
             "Time Limit: 1 Hour",
@@ -127,7 +127,7 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                         </div>
                     </div>
 
-                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-medium line-clamp-2 min-h-[2.5rem]">
+                    <p className="text-[15px] leading-relaxed text-slate-800 dark:text-slate-200 font-bold line-clamp-2 min-h-[2.5rem]">
                         {event.description}
                     </p>
 
@@ -206,6 +206,64 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                             </Dialog>
                         </div>
                     )}
+                    {event.name === "Postercraft" && (
+                        <div className="mt-4" onClick={(e) => e.stopPropagation()}>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" size="sm" className="w-full text-sm font-black bg-primary text-white hover:bg-primary/90 rounded-xl border-2 border-primary shadow-lg shadow-primary/30 animate-pulse">
+                                        Topics
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl bg-white border-black/5 rounded-3xl p-0 overflow-hidden flex flex-col" style={{ maxHeight: '85vh' }}>
+                                    <div className="bg-primary/5 px-6 py-6 shrink-0">
+                                        <DialogHeader>
+                                            <DialogTitle className="font-display text-xl font-black text-foreground">Topics</DialogTitle>
+                                            <DialogDescription className="text-xs font-bold text-primary uppercase tracking-widest mt-1">Postercraft — Poster Presentation</DialogDescription>
+                                        </DialogHeader>
+                                        <div className="mt-3 inline-flex items-center gap-2 bg-primary/10 border-2 border-primary/20 rounded-xl px-4 py-2">
+                                            <span className="flex items-center justify-center h-6 w-6 rounded-md bg-primary text-white text-xs font-black">15</span>
+                                            <span className="text-sm font-extrabold text-primary uppercase tracking-widest">Topics</span>
+                                        </div>
+                                    </div>
+                                    <div className="overflow-y-auto flex-1 px-6 pb-6 pt-4 space-y-3">
+                                        {[
+                                            { id: "T1", title: "Generative AI", desc: "The Future of Intelligent Content Creation" },
+                                            { id: "T2", title: "Cybersecurity Trends", desc: "Defending the Digital World from Modern Threats" },
+                                            { id: "T3", title: "Metaverse Technology", desc: "Exploring the Next Generation of the Internet" },
+                                            { id: "T4", title: "Internet of Things (IoT)", desc: "Smart Devices Transforming Everyday Life" },
+                                            { id: "T5", title: "Blockchain Technology", desc: "Securing the Digital Economy" },
+                                            { id: "T6", title: "Artificial Intelligence in Healthcare", desc: "Smart Diagnosis and Treatment" },
+                                            { id: "T7", title: "Edge Computing", desc: "Bringing Data Processing Closer to Devices" },
+                                            { id: "T8", title: "Digital Forensics", desc: "Investigating and Solving Cyber Crimes" },
+                                            { id: "T9", title: "DevOps Culture", desc: "Accelerating Modern Software Development" },
+                                            { id: "T10", title: "Green Computing", desc: "Building Environment-Friendly IT Systems" },
+                                            { id: "T11", title: "Augmented Reality and Virtual Reality", desc: "Immersive Digital Experiences" },
+                                            { id: "T12", title: "Quantum Computing", desc: "The Next Revolution in Computing Power" },
+                                            { id: "T13", title: "5G Technology", desc: "Enabling Ultra-Fast Communication Networks" },
+                                            { id: "T14", title: "Ethical Hacking", desc: "Protecting Systems by Thinking Like Hackers" },
+                                            { id: "T15", title: "Smart Cities", desc: "Using Technology for Sustainable Urban Development" }
+                                        ].map((ps) => (
+                                            <div key={ps.id} className="flex gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-primary/20 transition-colors">
+                                                <span className="shrink-0 flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-white text-[10px] font-black tracking-wider">{ps.id}</span>
+                                                <div>
+                                                    <p className="text-base font-extrabold text-foreground leading-tight">{ps.title}</p>
+                                                    <p className="text-sm font-semibold text-muted-foreground mt-1.5 leading-relaxed">{ps.desc}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <DialogClose asChild>
+                                            <Button className="w-full h-11 bg-primary hover:bg-primary/90 font-black tracking-widest uppercase text-xs rounded-xl mt-2">
+                                                Close
+                                            </Button>
+                                        </DialogClose>
+                                    </div>
+                                    <div className="shrink-0 flex justify-center py-2 bg-gradient-to-t from-white to-transparent border-t border-slate-100">
+                                        <ChevronDown className="h-6 w-6 text-primary animate-bounce" />
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                    )}
                 </div>
             </motion.div>
 
@@ -217,7 +275,7 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                     </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
-                    <p className="text-sm font-medium text-muted-foreground italic">{event.description}</p>
+                    <p className="text-base font-bold text-foreground">{event.description}</p>
 
                     <div className="space-y-3">
                         {event.detailedRules.length > 0 ? (
