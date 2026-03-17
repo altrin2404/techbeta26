@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode, CheckCircle, Plus, Trash2, Users, X, HelpCircle, Info } from "lucide-react";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import type { Registration } from "@/lib/registrationService";
+import { addRegistration } from "@/lib/registrationService";
 
 const memberSchema = z.object({
     name: z.string().min(2, "Name is required"),
@@ -93,11 +94,11 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     const prevStep = () => setStep(1);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        // Rate limiting: block submissions within 30 seconds
+        // Rate limiting: block submissions within 10 seconds (reduced from 30)
         const lastSubmit = localStorage.getItem('lastRegistrationSubmit');
         const now = Date.now();
-        if (lastSubmit && now - parseInt(lastSubmit) < 30000) {
-            const remainingSec = Math.ceil((30000 - (now - parseInt(lastSubmit))) / 1000);
+        if (lastSubmit && now - parseInt(lastSubmit) < 10000) {
+            const remainingSec = Math.ceil((10000 - (now - parseInt(lastSubmit))) / 1000);
             toast.error(`Please wait ${remainingSec} seconds before submitting again.`);
             return;
         }
@@ -105,34 +106,9 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
         setIsSubmitting(true);
         localStorage.setItem('lastRegistrationSubmit', now.toString());
 
-        const leadMember = values.members[0];
-        const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
-
-        const fireConfetti = () => {
-            const count = 80;
-            const defaults = { origin: { y: 0.7 } };
-            const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
-
-            function fire(particleRatio: number, opts: any) {
-                (window as any).confetti({
-                    ...defaults,
-                    ...opts,
-                    particleCount: Math.floor(count * particleRatio),
-                    colors: colors,
-                    zIndex: 9999
-                });
-            }
-
-            fire(0.25, { spread: 26, startVelocity: 55 });
-            fire(0.2, { spread: 60 });
-            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-            fire(0.1, { spread: 120, startVelocity: 45 });
-        };
-
-        setTimeout(async () => {
-
-            const { addRegistration } = await import("@/lib/registrationService");
+        try {
+            const leadMember = values.members[0];
+            const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
 
             const registrationData: Omit<Registration, 'id' | 'registrationDate' | 'status' | 'timestamp'> = {
                 name: leadMember.name,
@@ -142,7 +118,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 department: leadMember.department,
                 events: allEvents,
                 transactionId: values.transactionId,
-                upiName: values.upiName,
+                upiName: values.upiName || 'Razorpay Online',
                 members: values.members.map(m => ({
                     ...m,
                     year: m.year
@@ -152,21 +128,52 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             const result = await addRegistration(registrationData);
 
             if (result.success) {
+                // Fire confetti immediately
+                const count = 80;
+                const defaults = { origin: { y: 0.7 } };
+                const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
+                
+                const fire = (particleRatio: number, opts: any) => {
+                    (window as any).confetti?.({
+                        ...defaults,
+                        ...opts,
+                        particleCount: Math.floor(count * particleRatio),
+                        colors: colors,
+                        zIndex: 9999
+                    });
+                };
+
+                fire(0.25, { spread: 26, startVelocity: 55 });
+                fire(0.2, { spread: 60 });
+                fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+                fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+                fire(0.1, { spread: 120, startVelocity: 45 });
+
                 window.dispatchEvent(new Event("registration-updated"));
-                setIsSubmitting(false);
                 setSavedPaymentId(values.transactionId);
-                setOpen(false);
-                setStep(1);
+                
+                // Reset form and state
                 form.reset();
-                fireConfetti();
-                setShowSuccess(true);
-            } else {
-                toast.error("Registration Failed", {
-                    description: "Please try again or contact support.",
-                });
+                setStep(1);
                 setIsSubmitting(false);
+                setOpen(false);
+                
+                // Show success dialog after a small delay to ensure modal transitions smoothly
+                setTimeout(() => {
+                    setShowSuccess(true);
+                }, 100);
+            } else {
+                throw new Error(result.error || "Registration failed");
             }
-        }, 1500);
+        } catch (error: any) {
+            console.error("Submission error:", error);
+            toast.error("Registration Failed", {
+                description: error.message || "Please try again or contact support.",
+            });
+            setIsSubmitting(false);
+            // Clear rate limit on error to allow immediate retry
+            localStorage.removeItem('lastRegistrationSubmit');
+        }
     }
 
     const { isLoaded: isRazorpayLoaded, error: razorpayError } = useRazorpay();
@@ -208,8 +215,9 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
 
                 toast.success("Payment Successful!");
 
-                const values = form.getValues();
-                onSubmit(values);
+                // Capture current state with the newly set values
+                const currentValues = form.getValues();
+                onSubmit(currentValues);
             },
             modal: {
                 ondismiss: function () {
