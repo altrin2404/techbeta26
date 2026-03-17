@@ -24,9 +24,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Rocket, CreditCard, ChevronRight, ArrowLeft, QrCode, CheckCircle, Plus, Trash2, Users, X, HelpCircle, Info } from "lucide-react";
+import { Loader2, QrCode, PLUS, Trash2, Users, X, HelpCircle, Info, ChevronRight, ArrowLeft, CheckCircle, Plus } from "lucide-react";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import type { Registration } from "@/lib/registrationService";
+import { addRegistration } from "@/lib/registrationService";
 
 const memberSchema = z.object({
     name: z.string().min(2, "Name is required"),
@@ -93,11 +94,10 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     const prevStep = () => setStep(1);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        // Rate limiting: block submissions within 30 seconds
         const lastSubmit = localStorage.getItem('lastRegistrationSubmit');
         const now = Date.now();
-        if (lastSubmit && now - parseInt(lastSubmit) < 30000) {
-            const remainingSec = Math.ceil((30000 - (now - parseInt(lastSubmit))) / 1000);
+        if (lastSubmit && now - parseInt(lastSubmit) < 10000) {
+            const remainingSec = Math.ceil((10000 - (now - parseInt(lastSubmit))) / 1000);
             toast.error(`Please wait ${remainingSec} seconds before submitting again.`);
             return;
         }
@@ -105,34 +105,9 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
         setIsSubmitting(true);
         localStorage.setItem('lastRegistrationSubmit', now.toString());
 
-        const leadMember = values.members[0];
-        const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
-
-        const fireConfetti = () => {
-            const count = 80;
-            const defaults = { origin: { y: 0.7 } };
-            const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
-
-            function fire(particleRatio: number, opts: any) {
-                (window as any).confetti({
-                    ...defaults,
-                    ...opts,
-                    particleCount: Math.floor(count * particleRatio),
-                    colors: colors,
-                    zIndex: 9999
-                });
-            }
-
-            fire(0.25, { spread: 26, startVelocity: 55 });
-            fire(0.2, { spread: 60 });
-            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-            fire(0.1, { spread: 120, startVelocity: 45 });
-        };
-
-        setTimeout(async () => {
-
-            const { addRegistration } = await import("@/lib/registrationService");
+        try {
+            const leadMember = values.members[0];
+            const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
 
             const registrationData: Omit<Registration, 'id' | 'registrationDate' | 'status' | 'timestamp'> = {
                 name: leadMember.name,
@@ -142,7 +117,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 department: leadMember.department,
                 events: allEvents,
                 transactionId: values.transactionId,
-                upiName: values.upiName,
+                upiName: values.upiName || 'Razorpay Online',
                 members: values.members.map(m => ({
                     ...m,
                     year: m.year
@@ -152,26 +127,52 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             const result = await addRegistration(registrationData);
 
             if (result.success) {
+                const count = 80;
+                const defaults = { origin: { y: 0.7 } };
+                const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
+                
+                const fire = (particleRatio: number, opts: any) => {
+                    (window as any).confetti?.({
+                        ...defaults,
+                        ...opts,
+                        particleCount: Math.floor(count * particleRatio),
+                        colors: colors,
+                        zIndex: 9999
+                    });
+                };
+
+                fire(0.25, { spread: 26, startVelocity: 55 });
+                fire(0.2, { spread: 60 });
+                fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+                fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+                fire(0.1, { spread: 120, startVelocity: 45 });
+
                 window.dispatchEvent(new Event("registration-updated"));
-                setIsSubmitting(false);
                 setSavedPaymentId(values.transactionId);
-                setOpen(false);
-                setStep(1);
+                
                 form.reset();
-                fireConfetti();
-                setShowSuccess(true);
-            } else {
-                toast.error("Registration Failed", {
-                    description: "Please try again or contact support.",
-                });
+                setStep(1);
                 setIsSubmitting(false);
+                setOpen(false);
+                
+                setTimeout(() => {
+                    setShowSuccess(true);
+                }, 100);
+            } else {
+                throw new Error(result.error || "Registration failed");
             }
-        }, 1500);
+        } catch (error: any) {
+            console.error("Submission error:", error);
+            toast.error("Registration Failed", {
+                description: error.message || "Please try again or contact support.",
+            });
+            setIsSubmitting(false);
+            localStorage.removeItem('lastRegistrationSubmit');
+        }
     }
 
     const { isLoaded: isRazorpayLoaded, error: razorpayError } = useRazorpay();
 
-    // Effect to handle Razorpay load error
     React.useEffect(() => {
         if (razorpayError) {
             toast.error("Failed to load payment gateway. Please check your internet connection.");
@@ -182,17 +183,17 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
         const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY;
 
         if (!razorpayKey) {
-            console.error("Razorpay API Key is missing! Please check environment variables.");
-            toast.error("Payment configuration error. Please try again later.");
+            console.error("Razorpay API Key is missing!");
+            toast.error("Payment configuration error.");
             return;
         }
 
         if (!isRazorpayLoaded) {
-            toast.error("Payment gateway is still loading. Please wait a moment...");
+            toast.error("Payment gateway is still loading. Please wait...");
             return;
         }
 
-        const amountToPay = fields.length * 100; // 100 paise = 1 INR per member
+        const amountToPay = fields.length * 100;
 
         const options = {
             key: razorpayKey,
@@ -203,19 +204,14 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             image: `${window.location.origin}/brigitz-logo.png`,
             redirect: false,
             handler: function (response: any) {
-                form.setValue('transactionId', response.razorpay_payment_id);
-                form.setValue('upiName', 'Razorpay Online');
-
-                toast.success("Payment Successful!");
-
-                const values = form.getValues();
-                onSubmit(values);
+                const currentValues = form.getValues();
+                onSubmit({
+                    ...currentValues,
+                    transactionId: response.razorpay_payment_id,
+                    upiName: 'Razorpay Online'
+                });
             },
             modal: {
-                ondismiss: function () {
-                    // User closed the Razorpay modal without completing payment
-                    console.log("Payment modal dismissed by user.");
-                },
                 confirm_close: true,
                 escape: true,
             },
@@ -223,10 +219,6 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 name: form.getValues('members.0.name'),
                 email: form.getValues('members.0.email'),
                 contact: form.getValues('members.0.phone')
-            },
-            notes: {
-                address: "SXCCE Campus",
-                teamSize: fields.length
             },
             theme: {
                 color: "#0EA5E9"
@@ -270,7 +262,6 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                     <div className="flex-1 overflow-y-auto bg-slate-50 text-slate-900 custom-scrollbar">
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4 sm:p-6">
-                                {/* ... keep DialogHeader ... */}
                                 <DialogHeader className="mb-4 space-y-2">
                                     <DialogTitle className="text-xl sm:text-2xl font-black text-slate-900 flex flex-wrap items-center justify-center gap-2">
                                         {step === 1 ? (
@@ -436,10 +427,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                                                         onCheckedChange={(checked) => {
                                                                                                             const currentValue = (field.value as string[]) || [];
                                                                                                             if (checked && currentValue.length >= 2) {
-                                                                                                                toast.error("Maximum 2 events allowed", {
-                                                                                                                    description: "A participant can only register for up to 2 technical events."
-                                                                                                                });
-                                                                                                                alert("Attention: You can only register for a maximum of 2 events per participant.");
+                                                                                                                toast.error("Maximum 2 events allowed");
                                                                                                                 return;
                                                                                                             }
                                                                                                             const newValue = checked
@@ -447,8 +435,6 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                                                                 : currentValue.filter((value: string) => value !== event);
                                                                                                             
                                                                                                             field.onChange(newValue);
-                                                                                                            
-                                                                                                            // If unchecked and was a team event, clear participation type
                                                                                                             if (!checked && isTeamEvent) {
                                                                                                                 form.setValue(participationFieldName as any, undefined);
                                                                                                             }
@@ -484,17 +470,17 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                                                                     <option value="Individual">Individual</option>
                                                                                                                     <option value="Team">Team</option>
                                                                                                                 </select>
-                                                                                                              {field.value === "Team" && (
-                                                                                     <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 flex gap-3 items-start animate-in fade-in slide-in-from-top-1 duration-300">
-                                                                                         <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                                                                                         <div className="text-sm font-bold text-blue-800 leading-tight">
-                                                                                             <ul className="list-disc pl-4 space-y-1">
-                                                                                                 <li>Teams are limited to exactly 2 members.</li>
-                                                                                                 <li>Ensure both members enter the EXACT SAME team name.</li>
-                                                                                             </ul>
-                                                                                         </div>
-                                                                                     </div>
-                                                                                 )}
+                                                                                                                {field.value === "Team" && (
+                                                                                                                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 flex gap-3 items-start animate-in fade-in slide-in-from-top-1 duration-300">
+                                                                                                                        <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                                                                                                                        <div className="text-sm font-bold text-blue-800 leading-tight">
+                                                                                                                            <ul className="list-disc pl-4 space-y-1">
+                                                                                                                                <li>Teams are limited to exactly 2 members.</li>
+                                                                                                                                <li>Ensure both members enter the EXACT SAME team name.</li>
+                                                                                                                            </ul>
+                                                                                                                        </div>
+                                                                                                                    </div>
+                                                                                                                )}
                                                                                                             </div>
                                                                                                         </FormControl>
                                                                                                     </FormItem>
@@ -512,30 +498,6 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                                                                     {...field} 
                                                                                                                     placeholder="Enter Team Name" 
                                                                                                                     className="h-8 text-xs bg-white"
-                                                                                                                    onChange={(e) => {
-                                                                                                                        const newName = e.target.value;
-                                                                                                                        const allMembers = form.getValues("members") || [];
-                                                                                                                        const sameTeamCount = allMembers.filter((m: any, i: number) => 
-                                                                                                                            i !== index && 
-                                                                                                                            m.participationType?.[event] === "Team" && 
-                                                                                                                            m.teamName?.[event]?.trim().toLowerCase() === newName.trim().toLowerCase() &&
-                                                                                                                            newName.trim() !== ""
-                                                                                                                        ).length;
-
-                                                                                                                        if (sameTeamCount >= 1) {
-                                                                                                                            // Already has 1 other member, so this would be the 2nd
-                                                                                                                            // If it were >= 2, we should block. 
-                                                                                                                            // But let's check correctly: total would be sameTeamCount + 1
-                                                                                                                            const total = sameTeamCount + 1;
-                                                                                                                            if (total > 2) {
-                                                                                                                                toast.error("Team limit exceeded", {
-                                                                                                                                    description: "A team can have a maximum of 2 members."
-                                                                                                                                });
-                                                                                                                                return; 
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                        field.onChange(newName);
-                                                                                                                    }}
                                                                                                                 />
                                                                                                             </FormControl>
                                                                                                         </FormItem>
@@ -549,7 +511,6 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                                         })}
                                                                     </div>
                                                                 </div>
-
 
                                                                 <FormField
                                                                     name={`members.${index}.events` as any}
@@ -575,7 +536,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                             <Button
                                                 type="button"
                                                 onClick={nextStep}
-                                                className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 min-h-[44px]"
+                                                className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12"
                                             >
                                                 Proceed to Payment <ChevronRight className="ml-2 h-4 w-4" />
                                             </Button>
@@ -588,10 +549,9 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                             exit={{ opacity: 0, x: -20 }}
                                             className="space-y-6"
                                         >
-                                            {/* ... keep payment step ... */}
                                             <div className="text-center space-y-4 py-4">
                                                 <div className="mx-auto w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-4 border border-primary/10">
-                                                    <img src="/brigitz-logo.png" alt="Logo" className="h-16 w-auto object-contain" loading="lazy" decoding="async" />
+                                                    <img src="/brigitz-logo.png" alt="Logo" className="h-16 w-auto object-contain" />
                                                 </div>
                                                 <h3 className="text-2xl font-bold">
                                                     Total Fee: <span className="inline-block bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-1 rounded-lg text-3xl font-black shadow-lg shadow-slate-800/40">₹{totalAmount / 100}</span>
@@ -618,7 +578,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                     disabled={isSubmitting || !isRazorpayLoaded}
                                                     className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
                                                 >
-                                                    {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : (!isRazorpayLoaded ? "Loading Payment..." : "Pay Now")}
+                                                    {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : (!isRazorpayLoaded ? "Loading..." : "Pay Now")}
                                                 </Button>
                                             </div>
 
@@ -647,8 +607,8 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left">
                             <p className="text-xs font-black uppercase text-orange-500 tracking-widest mb-1">Important</p>
                             <ol className="list-decimal list-inside space-y-2 text-base font-bold text-orange-900 leading-tight">
-                                <li>You will receive a verification email on your registered email address. If not found, check your <span className="underline decoration-2 decoration-orange-500">SPAM / JUNK FOLDER</span>.</li>
-                                <li>After our team verifies your registration, you will receive your <span className="underline decoration-2 decoration-orange-500">QR Code</span> via email.</li>
+                                <li>You will receive a verification email on your registered email address.</li>
+                                <li>After our team verifies your registration, you will receive your QR Code via email.</li>
                             </ol>
                         </div>
                         <Button onClick={() => setShowSuccess(false)} className="w-full font-bold bg-green-500 text-white hover:bg-green-600">
