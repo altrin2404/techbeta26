@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, QrCode, PLUS, Trash2, Users, X, HelpCircle, Info, ChevronRight, ArrowLeft, CheckCircle, Plus } from "lucide-react";
+import { Loader2, QrCode, Trash2, Users, X, HelpCircle, Info, ChevronRight, ArrowLeft, CheckCircle, Plus } from "lucide-react";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import type { Registration } from "@/lib/registrationService";
 import { addRegistration } from "@/lib/registrationService";
@@ -37,6 +37,8 @@ const memberSchema = z.object({
     department: z.string().min(2, "Department is required"),
     year: z.string().min(1, "Year is required"),
     events: z.array(z.string()).min(1, "Select at least one event").max(2, "Maximum 2 events allowed"),
+    participationType: z.record(z.string()).optional(),
+    teamName: z.record(z.string()).optional(),
 });
 
 const formSchema = z.object({
@@ -96,9 +98,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const lastSubmit = localStorage.getItem('lastRegistrationSubmit');
         const now = Date.now();
-        if (lastSubmit && now - parseInt(lastSubmit) < 10000) {
-            const remainingSec = Math.ceil((10000 - (now - parseInt(lastSubmit))) / 1000);
-            toast.error(`Please wait ${remainingSec} seconds before submitting again.`);
+        if (lastSubmit && now - parseInt(lastSubmit) < 5000) {
             return;
         }
 
@@ -109,19 +109,48 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             const leadMember = values.members[0];
             const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
 
+            // Explicitly clean team data to avoid Firestore rejection of undefined
+            const cleanedMembers = values.members.map(m => {
+                const member: any = {
+                    name: m.name.trim(),
+                    email: m.email.trim().toLowerCase(),
+                    phone: m.phone.trim(),
+                    college: m.college.trim(),
+                    department: m.department.trim(),
+                    year: m.year,
+                    events: m.events,
+                };
+
+                // Only include if they have values to keep Firestore data clean
+                if (m.participationType && Object.keys(m.participationType).length > 0) {
+                    member.participationType = {};
+                    Object.entries(m.participationType).forEach(([k, v]) => {
+                        if (v) member.participationType[k] = v;
+                    });
+                    if (Object.keys(member.participationType).length === 0) delete member.participationType;
+                }
+
+                if (m.teamName && Object.keys(m.teamName).length > 0) {
+                    member.teamName = {};
+                    Object.entries(m.teamName).forEach(([k, v]) => {
+                        if (v) member.teamName[k] = v.trim();
+                    });
+                    if (Object.keys(member.teamName).length === 0) delete member.teamName;
+                }
+
+                return member;
+            });
+
             const registrationData: Omit<Registration, 'id' | 'registrationDate' | 'status' | 'timestamp'> = {
-                name: leadMember.name,
-                email: leadMember.email,
-                phone: leadMember.phone,
-                college: leadMember.college,
-                department: leadMember.department,
+                name: leadMember.name.trim(),
+                email: leadMember.email.trim().toLowerCase(),
+                phone: leadMember.phone.trim(),
+                college: leadMember.college.trim(),
+                department: leadMember.department.trim(),
                 events: allEvents,
                 transactionId: values.transactionId,
                 upiName: values.upiName || 'Razorpay Online',
-                members: values.members.map(m => ({
-                    ...m,
-                    year: m.year
-                })) as any,
+                members: cleanedMembers as any,
             };
 
             const result = await addRegistration(registrationData);
@@ -131,21 +160,22 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 const defaults = { origin: { y: 0.7 } };
                 const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
                 
-                const fire = (particleRatio: number, opts: any) => {
-                    (window as any).confetti?.({
-                        ...defaults,
-                        ...opts,
-                        particleCount: Math.floor(count * particleRatio),
-                        colors: colors,
-                        zIndex: 9999
-                    });
-                };
-
-                fire(0.25, { spread: 26, startVelocity: 55 });
-                fire(0.2, { spread: 60 });
-                fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-                fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-                fire(0.1, { spread: 120, startVelocity: 45 });
+                try {
+                    const fire = (particleRatio: number, opts: any) => {
+                        (window as any).confetti?.({
+                            ...defaults,
+                            ...opts,
+                            particleCount: Math.floor(count * particleRatio),
+                            colors: colors,
+                            zIndex: 9999
+                        });
+                    };
+                    fire(0.25, { spread: 26, startVelocity: 55 });
+                    fire(0.2, { spread: 60 });
+                    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+                    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+                    fire(0.1, { spread: 120, startVelocity: 45 });
+                } catch (e) {}
 
                 window.dispatchEvent(new Event("registration-updated"));
                 setSavedPaymentId(values.transactionId);
@@ -159,7 +189,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                     setShowSuccess(true);
                 }, 100);
             } else {
-                throw new Error(result.error || "Registration failed");
+                throw new Error(result.error?.message || "Registration failed");
             }
         } catch (error: any) {
             console.error("Submission error:", error);
@@ -175,7 +205,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
 
     React.useEffect(() => {
         if (razorpayError) {
-            toast.error("Failed to load payment gateway. Please check your internet connection.");
+            toast.error("Failed to load payment gateway.");
         }
     }, [razorpayError]);
 
@@ -183,13 +213,12 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
         const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY;
 
         if (!razorpayKey) {
-            console.error("Razorpay API Key is missing!");
             toast.error("Payment configuration error.");
             return;
         }
 
         if (!isRazorpayLoaded) {
-            toast.error("Payment gateway is still loading. Please wait...");
+            toast.error("Payment gateway is still loading...");
             return;
         }
 
