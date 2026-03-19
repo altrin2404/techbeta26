@@ -97,17 +97,57 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
 
     const prevStep = () => setStep(1);
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
-        const lastSubmit = localStorage.getItem('lastRegistrationSubmit');
-        const now = Date.now();
-        if (lastSubmit && now - parseInt(lastSubmit) < 5000) {
-            return;
-        }
-
-        setIsSubmitting(true);
-        localStorage.setItem('lastRegistrationSubmit', now.toString());
-
+    const handleSuccess = (transactionId: string) => {
+        // Success animation
+        const count = 80;
+        const defaults = { origin: { y: 0.7 } };
+        const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
+        
         try {
+            const fire = (particleRatio: number, opts: any) => {
+                (window as any).confetti?.({
+                    ...defaults,
+                    ...opts,
+                    particleCount: Math.floor(count * particleRatio),
+                    colors: colors,
+                    zIndex: 9999
+                });
+            };
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+        } catch (e) {}
+
+        window.dispatchEvent(new Event("registration-updated"));
+        setSavedPaymentId(transactionId);
+        
+        form.reset();
+        setStep(1);
+        setIsSubmitting(false);
+        setOpen(false);
+        
+        setTimeout(() => {
+            setShowSuccess(true);
+        }, 100);
+    };
+
+    async function onSubmit(values: z.infer<typeof formSchema>, isPreSaved: boolean = false) {
+        console.log("onSubmit called, isPreSaved:", isPreSaved);
+        try {
+            const now = Date.now();
+            const lastSubmit = localStorage.getItem('lastRegistrationSubmit');
+            
+            // Only debounce if it's NOT a final payment submission
+            if (!values.transactionId && lastSubmit && now - parseInt(lastSubmit) < 5000) {
+                console.log("Debounce blocked submission");
+                return;
+            }
+            
+            if (!isSubmitting) setIsSubmitting(true);
+            localStorage.setItem('lastRegistrationSubmit', now.toString());
+
             const leadMember = values.members[0];
             const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
 
@@ -155,51 +195,56 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 members: cleanedMembers as any,
             };
 
-            const result = await addRegistration(registrationData);
-
-            if (result.success) {
-                const count = 80;
-                const defaults = { origin: { y: 0.7 } };
-                const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
-                
-                try {
-                    const fire = (particleRatio: number, opts: any) => {
-                        (window as any).confetti?.({
-                            ...defaults,
-                            ...opts,
-                            particleCount: Math.floor(count * particleRatio),
-                            colors: colors,
-                            zIndex: 9999
-                        });
-                    };
-                    fire(0.25, { spread: 26, startVelocity: 55 });
-                    fire(0.2, { spread: 60 });
-                    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-                    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-                    fire(0.1, { spread: 120, startVelocity: 45 });
-                } catch (e) {}
-
-                window.dispatchEvent(new Event("registration-updated"));
-                setSavedPaymentId(values.transactionId);
-                
-                form.reset();
-                setStep(1);
-                setIsSubmitting(false);
-                setOpen(false);
-                
-                setTimeout(() => {
-                    setShowSuccess(true);
-                }, 100);
-            } else {
-                throw new Error(result.error?.message || "Registration failed");
+            // Only save to database if it hasn't been pre-saved by the Pay Now handler
+            if (!isPreSaved) {
+                const result = await addRegistration(registrationData);
+                if (!result.success) {
+                    throw new Error(result.error?.message || "Registration failed");
+                }
             }
+
+            // Success animation and cleanup
+            const count = 80;
+            const defaults = { origin: { y: 0.7 } };
+            const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
+            
+            try {
+                const fire = (particleRatio: number, opts: any) => {
+                    (window as any).confetti?.({
+                        ...defaults,
+                        ...opts,
+                        particleCount: Math.floor(count * particleRatio),
+                        colors: colors,
+                        zIndex: 9999
+                    });
+                };
+                fire(0.25, { spread: 26, startVelocity: 55 });
+                fire(0.2, { spread: 60 });
+                fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+                fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+                fire(0.1, { spread: 120, startVelocity: 45 });
+            } catch (e) {}
+
+            window.dispatchEvent(new Event("registration-updated"));
+            setSavedPaymentId(values.transactionId);
+            
+            form.reset();
+            setStep(1);
+            setIsSubmitting(false);
+            setOpen(false);
+            
+            setTimeout(() => {
+                setShowSuccess(true);
+            }, 100);
         } catch (error: any) {
             console.error("Submission error:", error);
             toast.error("Registration Failed", {
                 description: error.message || "Please try again or contact support.",
             });
-            setIsSubmitting(false);
             localStorage.removeItem('lastRegistrationSubmit');
+        } finally {
+            console.log("Cleaning up submission state");
+            setIsSubmitting(false);
         }
     }
 
@@ -285,30 +330,39 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 description: `Registration Fee for ${fields.length} Member(s)`,
                 image: `${window.location.origin}/brigitz-logo.png`,
                 redirect: false,
-                handler: async function (response: any) {
-                    try {
-                        const confirmResult = await updateRegistrationAfterPayment(
-                            docId as string, 
-                            response.razorpay_payment_id
-                        );
-                        
+                handler: function (response: any) {
+                    console.log("Razorpay handler triggered, payment ID:", response.razorpay_payment_id);
+                    updateRegistrationAfterPayment(
+                        docId as string, 
+                        response.razorpay_payment_id
+                    ).then((confirmResult) => {
+                        console.log("Database update result:", confirmResult);
                         if (confirmResult.success) {
-                            // Finish the flow
                             onSubmit({
                                 ...values,
                                 transactionId: response.razorpay_payment_id,
                                 upiName: 'Razorpay Online'
+                            }, true).then(() => {
+                                console.log("Final submission complete");
+                            }).catch(err => {
+                                console.error("Final submission error:", err);
+                                setIsSubmitting(false);
                             });
                         } else {
-                            throw new Error("Payment confirmed but database update failed. Please save your Transaction ID: " + response.razorpay_payment_id);
+                            toast.error("Confirmation failed. Please save your ID: " + response.razorpay_payment_id);
+                            setIsSubmitting(false);
                         }
-                    } catch (err: any) {
-                        console.error("Confirmation error:", err);
-                        toast.error(err.message || "Payment verification failed.");
-                    }
+                    }).catch((err) => {
+                        console.error("Handler error:", err);
+                        toast.error("Payment confirmation failed.");
+                        setIsSubmitting(false);
+                    });
                 },
                 modal: {
-                    onany: () => setIsSubmitting(false),
+                    ondismiss: () => {
+                        console.log("Razorpay modal dismissed");
+                        setIsSubmitting(false);
+                    },
                     confirm_close: true,
                     escape: true,
                 },
