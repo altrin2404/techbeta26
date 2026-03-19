@@ -12,6 +12,22 @@ import {
     Timestamp
 } from "firebase/firestore";
 
+// Helper to remove undefined values recursively for Firestore
+const removeUndefined = (obj: any): any => {
+    if (Array.isArray(obj)) {
+        return obj.map(removeUndefined);
+    } else if (obj !== null && typeof obj === 'object' && !(obj instanceof Timestamp)) {
+        const newObj: any = {};
+        Object.entries(obj).forEach(([key, value]) => {
+            if (value !== undefined) {
+                newObj[key] = removeUndefined(value);
+            }
+        });
+        return newObj;
+    }
+    return obj;
+};
+
 export interface TeamMember {
     name: string;
     email: string;
@@ -35,7 +51,7 @@ export interface Registration {
     events: string[];
     transactionId: string;
     upiName?: string;
-    status: 'Pending Verification' | 'Verified' | 'Rejected';
+    status: 'Payment Initiated' | 'Pending Verification' | 'Verified' | 'Rejected';
     registrationDate: string; // ISO String
     timestamp: any; // Firestore server timestamp
 }
@@ -89,7 +105,7 @@ const sanitizeMembers = (members: TeamMember[]): TeamMember[] => {
     }));
 };
 
-export const addRegistration = async (data: Omit<Registration, "id" | "status" | "registrationDate" | "timestamp">) => {
+export const addRegistration = async (data: Omit<Registration, "id" | "status" | "registrationDate" | "timestamp">, overrideStatus?: Registration['status']) => {
     try {
         const sanitizedData = {
             ...data,
@@ -105,14 +121,17 @@ export const addRegistration = async (data: Omit<Registration, "id" | "status" |
         };
 
         const registrationDate = new Date().toISOString();
-        const status = "Pending Verification";
+        const status = overrideStatus || "Pending Verification";
 
-        const docRef = await addDoc(collection(db, COLLECTION_NAME), {
-            ...sanitizedData,
+        // Remove any undefined values recursively to prevent Firestore rejection
+        const firestoreData = {
+            ...removeUndefined(sanitizedData),
             status: status,
             registrationDate: registrationDate,
             timestamp: serverTimestamp()
-        });
+        };
+
+        const docRef = await addDoc(collection(db, COLLECTION_NAME), firestoreData);
 
         // Backup to Google Sheets (Async, don't wait for it to finish)
         // We now loop through each member to create individual rows as requested
@@ -196,6 +215,20 @@ export const updateRegistrationMembers = async (registrationId: string, members:
         return { success: true };
     } catch (error) {
         console.error("Error updating members: ", error);
+        return { success: false, error };
+    }
+};
+export const updateRegistrationAfterPayment = async (id: string, transactionId: string, upiName: string = 'Razorpay Online') => {
+    try {
+        const docRef = doc(db, COLLECTION_NAME, id);
+        await updateDoc(docRef, {
+            status: 'Pending Verification',
+            transactionId,
+            upiName
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating registration after payment: ", error);
         return { success: false, error };
     }
 };

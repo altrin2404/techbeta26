@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { Loader2, QrCode, Trash2, Users, X, HelpCircle, Info, ChevronRight, ArrowLeft, CheckCircle, Plus } from "lucide-react";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import type { Registration } from "@/lib/registrationService";
-import { addRegistration } from "@/lib/registrationService";
+import { addRegistration, updateRegistrationAfterPayment } from "@/lib/registrationService";
 
 const memberSchema = z.object({
     name: z.string().min(2, "Name is required"),
@@ -71,6 +71,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     const [showSuccess, setShowSuccess] = React.useState(false);
     const [step, setStep] = React.useState(1);
     const [savedPaymentId, setSavedPaymentId] = React.useState("");
+    const [lastRegistrationId, setLastRegistrationId] = React.useState<string | null>(null);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -223,40 +224,114 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             return;
         }
 
-        const amountToPay = fields.length * 20000;
+        setIsSubmitting(true);
+        
+        try {
+            const values = form.getValues();
+            const leadMember = values.members[0];
+            const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
 
-        const options = {
-            key: razorpayKey,
-            amount: amountToPay.toString(),
-            currency: "INR",
-            name: "TECHBETA 2026",
-            description: `Registration Fee for ${fields.length} Member(s)`,
-            image: `${window.location.origin}/brigitz-logo.png`,
-            redirect: false,
-            handler: function (response: any) {
-                const currentValues = form.getValues();
-                onSubmit({
-                    ...currentValues,
-                    transactionId: response.razorpay_payment_id,
-                    upiName: 'Razorpay Online'
-                });
-            },
-            modal: {
-                confirm_close: true,
-                escape: true,
-            },
-            prefill: {
-                name: form.getValues('members.0.name'),
-                email: form.getValues('members.0.email'),
-                contact: form.getValues('members.0.phone')
-            },
-            theme: {
-                color: "#0EA5E9"
+            // Clean team data
+            const cleanedMembers = values.members.map(m => {
+                const member: any = {
+                    name: m.name.trim(),
+                    email: m.email.trim().toLowerCase(),
+                    phone: m.phone.trim(),
+                    college: m.college.trim(),
+                    department: m.department.trim(),
+                    year: m.year,
+                    events: m.events,
+                };
+                if (m.participationType && Object.keys(m.participationType).length > 0) {
+                    member.participationType = {};
+                    Object.entries(m.participationType).forEach(([k, v]) => { if (v) member.participationType[k] = v; });
+                }
+                if (m.teamName && Object.keys(m.teamName).length > 0) {
+                    member.teamName = {};
+                    Object.entries(m.teamName).forEach(([k, v]) => { if (v) member.teamName[k] = v.trim(); });
+                }
+                return member;
+            });
+
+            const registrationData = {
+                name: leadMember.name.trim(),
+                email: leadMember.email.trim().toLowerCase(),
+                phone: leadMember.phone.trim(),
+                college: leadMember.college.trim(),
+                department: leadMember.department.trim(),
+                events: allEvents,
+                transactionId: "PAYMENT_INITIATED",
+                upiName: "Razorpay Online",
+                members: cleanedMembers as any,
+            };
+
+            // Pre-save registration to database with Initiated status
+            const result = await addRegistration(registrationData, "Payment Initiated");
+            
+            if (!result.success) {
+                throw new Error("Could not initialize registration.");
             }
-        };
 
-        const paymentObject = new (window as any).Razorpay(options);
-        paymentObject.open();
+            const docId = result.id;
+            setLastRegistrationId(docId);
+
+            const amountToPay = fields.length * 20000;
+
+            const options = {
+                key: razorpayKey,
+                amount: amountToPay.toString(),
+                currency: "INR",
+                name: "TECHBETA 2026",
+                description: `Registration Fee for ${fields.length} Member(s)`,
+                image: `${window.location.origin}/brigitz-logo.png`,
+                redirect: false,
+                handler: async function (response: any) {
+                    try {
+                        const confirmResult = await updateRegistrationAfterPayment(
+                            docId as string, 
+                            response.razorpay_payment_id
+                        );
+                        
+                        if (confirmResult.success) {
+                            // Finish the flow
+                            onSubmit({
+                                ...values,
+                                transactionId: response.razorpay_payment_id,
+                                upiName: 'Razorpay Online'
+                            });
+                        } else {
+                            throw new Error("Payment confirmed but database update failed. Please save your Transaction ID: " + response.razorpay_payment_id);
+                        }
+                    } catch (err: any) {
+                        console.error("Confirmation error:", err);
+                        toast.error(err.message || "Payment verification failed.");
+                    }
+                },
+                modal: {
+                    onany: () => setIsSubmitting(false),
+                    confirm_close: true,
+                    escape: true,
+                },
+                prefill: {
+                    name: leadMember.name,
+                    email: leadMember.email,
+                    contact: leadMember.phone
+                },
+                theme: {
+                    color: "#0EA5E9"
+                }
+            };
+
+            const paymentObject = new (window as any).Razorpay(options);
+            paymentObject.on('payment.failed', function () {
+                setIsSubmitting(false);
+            });
+            paymentObject.open();
+        } catch (error: any) {
+            console.error("Payment initiation error:", error);
+            toast.error(error.message || "Failed to start payment.");
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -640,6 +715,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                             <ol className="list-decimal list-inside space-y-2 text-base font-bold text-orange-900 leading-tight">
                                 <li>You will receive a verification email on your registered email address.</li>
                                 <li>After our team verifies your registration, you will receive your QR Code via email.</li>
+                                <li className="text-sm font-black text-slate-500 uppercase mt-2">Transaction ID: <span className="text-slate-900 break-all">{savedPaymentId}</span></li>
                             </ol>
                         </div>
                         <Button onClick={() => setShowSuccess(false)} className="w-full font-bold bg-green-500 text-white hover:bg-green-600">
