@@ -68,6 +68,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     const setOpen = setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
 
     const [registrationStatus, setRegistrationStatus] = React.useState<'form' | 'submitting' | 'success'>('form');
+    const [step, setStep] = React.useState(1);
     const [savedPaymentId, setSavedPaymentId] = React.useState("");
     const [lastRegistrationId, setLastRegistrationId] = React.useState<string | null>(null);
 
@@ -95,49 +96,14 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
 
     const prevStep = () => setStep(1);
 
-    const handleSuccess = (transactionId: string) => {
-        // Success animation
-        const count = 80;
-        const defaults = { origin: { y: 0.7 } };
-        const colors = ['#0EA5E9', '#9333EA', '#22C55E', '#EAB308', '#EF4444'];
-        
-        try {
-            const fire = (particleRatio: number, opts: any) => {
-                (window as any).confetti?.({
-                    ...defaults,
-                    ...opts,
-                    particleCount: Math.floor(count * particleRatio),
-                    colors: colors,
-                    zIndex: 9999
-                });
-            };
-            fire(0.25, { spread: 26, startVelocity: 55 });
-            fire(0.2, { spread: 60 });
-            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-            fire(0.1, { spread: 120, startVelocity: 45 });
-        } catch (e) {}
-
-        window.dispatchEvent(new Event("registration-updated"));
-        setSavedPaymentId(transactionId);
-        
-        form.reset();
-        setStep(1);
-        setIsSubmitting(false);
-        setOpen(false);
-        
-        setTimeout(() => {
-            setShowSuccess(true);
-        }, 100);
-    };
-
-    async function onSubmit(values: z.infer<typeof formSchema>, isPreSaved: boolean = false) {
-        console.log("onSubmit called, isPreSaved:", isPreSaved);
+    // Unified submission handler
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        console.log("onSubmit called");
         try {
             const now = Date.now();
             const lastSubmit = localStorage.getItem('lastRegistrationSubmit');
             
-            // Only debounce if it's NOT a final payment submission
+            // Only debounce if it's NOT a final payment submission (transactionId will be present for confirmation)
             if (!values.transactionId && lastSubmit && now - parseInt(lastSubmit) < 5000) {
                 console.log("Debounce blocked submission");
                 return;
@@ -193,12 +159,10 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 members: cleanedMembers as any,
             };
 
-            // Only save to database if it hasn't been pre-saved by the Pay Now handler
-            if (!isPreSaved) {
-                const result = await addRegistration(registrationData);
-                if (!result.success) {
-                    throw new Error(result.error?.message || "Registration failed");
-                }
+            // Save final registration to database (this will always work as a new 'create' call)
+            const result = await addRegistration(registrationData, values.transactionId ? 'Pending Verification' : 'Payment Initiated');
+            if (!result.success) {
+                throw new Error(result.error?.message || "Registration failed");
             }
 
             // Success animation and cleanup
@@ -324,33 +288,64 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 description: `Registration Fee for ${fields.length} Member(s)`,
                 image: `${window.location.origin}/brigitz-logo.png`,
                 redirect: false,
-                handler: function (response: any) {
+                handler: async function (response: any) {
                     console.log("Razorpay handler triggered, payment ID:", response.razorpay_payment_id);
-                    updateRegistrationAfterPayment(
-                        docId as string, 
-                        response.razorpay_payment_id
-                    ).then((confirmResult) => {
-                        console.log("Database update result:", confirmResult);
-                        if (confirmResult.success) {
-                            onSubmit({
-                                ...values,
-                                transactionId: response.razorpay_payment_id,
-                                upiName: 'Razorpay Online'
-                            }, true).then(() => {
-                                console.log("Final submission complete");
-                            }).catch(err => {
-                                console.error("Final submission error:", err);
-                                setRegistrationStatus('form');
-                            });
+                    setRegistrationStatus('submitting');
+                    
+                    try {
+                        const values = form.getValues();
+                        const leadMember = values.members[0];
+                        const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
+                        
+                        // Construct the final data exactly like onSubmit does
+                        const cleanedMembers = values.members.map(m => ({
+                            name: m.name.trim(),
+                            email: m.email.trim().toLowerCase(),
+                            phone: m.phone.trim(),
+                            college: m.college.trim(),
+                            department: m.department.trim(),
+                            year: m.year,
+                            events: m.events,
+                        }));
+
+                        const registrationData: Omit<Registration, 'id' | 'registrationDate' | 'status' | 'timestamp'> = {
+                            name: leadMember.name.trim(),
+                            email: leadMember.email.trim().toLowerCase(),
+                            phone: leadMember.phone.trim(),
+                            college: leadMember.college.trim(),
+                            department: leadMember.department.trim(),
+                            events: allEvents,
+                            transactionId: response.razorpay_payment_id,
+                            upiName: 'Razorpay Online',
+                            members: cleanedMembers as any,
+                        };
+
+                        console.log("Saving final record to Firestore...");
+                        const result = await addRegistration(registrationData, 'Pending Verification');
+                        
+                        if (result.success) {
+                            console.log("Final record saved successfully!");
+                            setSavedPaymentId(response.razorpay_payment_id);
+                            window.dispatchEvent(new Event("registration-updated"));
+                            setRegistrationStatus('success');
+                            
+                            // Delayed cleanup
+                            setTimeout(() => {
+                                form.reset();
+                                setStep(1);
+                            }, 500);
                         } else {
-                            toast.error("Confirmation failed. Please save your ID: " + response.razorpay_payment_id);
-                            setRegistrationStatus('form');
+                            throw new Error(result.error?.toString() || "Firestore save failed");
                         }
-                    }).catch((err) => {
-                        console.error("Handler error:", err);
-                        toast.error("Payment confirmation failed.");
+                    } catch (err: any) {
+                        console.error("FATAL ERROR in handler:", err);
+                        toast.error("Registration Save Error", {
+                            description: "Payment was successful, but we failed to save your details. ID: " + response.razorpay_payment_id
+                        });
+                        // IMPORTANT: Don't set status back to form if they actually paid
+                        // Stay on submitting but show an error message with their ID
                         setRegistrationStatus('form');
-                    });
+                    }
                 },
                 modal: {
                     ondismiss: () => {
@@ -778,7 +773,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                     disabled={registrationStatus !== 'form' || !isRazorpayLoaded}
                                                     className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
                                                 >
-                                                    {registrationStatus === 'submitting' ? <Loader2 className="animate-spin h-4 w-4" /> : (!isRazorpayLoaded ? "Loading..." : "Pay Now")}
+                                                    {!isRazorpayLoaded ? "Loading..." : "Pay Now"}
                                                 </Button>
                                             </div>
 
