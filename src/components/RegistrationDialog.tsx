@@ -67,9 +67,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
     const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
     const setOpen = setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
 
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [showSuccess, setShowSuccess] = React.useState(false);
-    const [step, setStep] = React.useState(1);
+    const [registrationStatus, setRegistrationStatus] = React.useState<'form' | 'submitting' | 'success'>('form');
     const [savedPaymentId, setSavedPaymentId] = React.useState("");
     const [lastRegistrationId, setLastRegistrationId] = React.useState<string | null>(null);
 
@@ -145,7 +143,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 return;
             }
             
-            if (!isSubmitting) setIsSubmitting(true);
+            setRegistrationStatus('submitting');
             localStorage.setItem('lastRegistrationSubmit', now.toString());
 
             const leadMember = values.members[0];
@@ -227,24 +225,20 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
 
             window.dispatchEvent(new Event("registration-updated"));
             setSavedPaymentId(values.transactionId);
+            setRegistrationStatus('success');
             
-            form.reset();
-            setStep(1);
-            setIsSubmitting(false);
-            setOpen(false);
-            
+            // Clean up form after a short delay so user doesn't see flicker
             setTimeout(() => {
-                setShowSuccess(true);
-            }, 100);
+                form.reset();
+                setStep(1);
+            }, 500);
         } catch (error: any) {
             console.error("Submission error:", error);
             toast.error("Registration Failed", {
                 description: error.message || "Please try again or contact support.",
             });
             localStorage.removeItem('lastRegistrationSubmit');
-        } finally {
-            console.log("Cleaning up submission state");
-            setIsSubmitting(false);
+            setRegistrationStatus('form');
         }
     }
 
@@ -269,7 +263,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             return;
         }
 
-        setIsSubmitting(true);
+        setRegistrationStatus('submitting');
         
         try {
             const values = form.getValues();
@@ -346,22 +340,22 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                 console.log("Final submission complete");
                             }).catch(err => {
                                 console.error("Final submission error:", err);
-                                setIsSubmitting(false);
+                                setRegistrationStatus('form');
                             });
                         } else {
                             toast.error("Confirmation failed. Please save your ID: " + response.razorpay_payment_id);
-                            setIsSubmitting(false);
+                            setRegistrationStatus('form');
                         }
                     }).catch((err) => {
                         console.error("Handler error:", err);
                         toast.error("Payment confirmation failed.");
-                        setIsSubmitting(false);
+                        setRegistrationStatus('form');
                     });
                 },
                 modal: {
                     ondismiss: () => {
                         console.log("Razorpay modal dismissed");
-                        setIsSubmitting(false);
+                        setRegistrationStatus('form');
                     },
                     confirm_close: true,
                     escape: true,
@@ -378,13 +372,13 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
 
             const paymentObject = new (window as any).Razorpay(options);
             paymentObject.on('payment.failed', function () {
-                setIsSubmitting(false);
+                setRegistrationStatus('form');
             });
             paymentObject.open();
         } catch (error: any) {
             console.error("Payment initiation error:", error);
             toast.error(error.message || "Failed to start payment.");
-            setIsSubmitting(false);
+            setRegistrationStatus('form');
         }
     };
 
@@ -435,13 +429,59 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                             </>
                                         )}
                                     </DialogTitle>
-                                    <DialogDescription className="text-center font-bold text-slate-500 text-sm sm:text-base">
-                                        {step === 1 ? "Step 1: Participant Details" : <>Step 2: Pay Registration Fee: <span className="text-emerald-500 font-bold">₹{totalAmount / 100}</span></>}
-                                    </DialogDescription>
-                                </DialogHeader>
+                                <DialogDescription className="text-center font-bold text-slate-500 text-sm sm:text-base">
+                                    {registrationStatus === 'success' ? "Welcome to TECHBETA 2026" : (step === 1 ? "Step 1: Participant Details" : <>Step 2: Pay Registration Fee: <span className="text-emerald-500 font-bold">₹{totalAmount / 100}</span></>)}
+                                </DialogDescription>
+                            </DialogHeader>
 
-                                <AnimatePresence mode="wait">
-                                    {step === 1 ? (
+                            <AnimatePresence mode="wait">
+                                {registrationStatus === 'submitting' ? (
+                                    <motion.div
+                                        key="submitting"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="py-12 flex flex-col items-center justify-center space-y-4"
+                                    >
+                                        <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                                        <p className="text-lg font-bold text-slate-600">Processing Registration...</p>
+                                        <p className="text-sm text-slate-400">Please do not close this window</p>
+                                    </motion.div>
+                                ) : registrationStatus === 'success' ? (
+                                    <motion.div
+                                        key="success"
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="py-8 px-4 flex flex-col items-center text-center space-y-6"
+                                    >
+                                        <div className="bg-green-100 p-4 rounded-full">
+                                            <CheckCircle className="h-16 w-16 text-green-500" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h3 className="text-2xl font-black text-slate-800 uppercase">Success!</h3>
+                                            <p className="text-slate-600 font-medium">Your registration is complete.</p>
+                                        </div>
+                                        
+                                        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-left w-full max-w-sm">
+                                            <p className="text-xs font-black uppercase text-orange-500 tracking-widest mb-2">Next Steps</p>
+                                            <ul className="list-disc list-inside space-y-1 text-sm font-bold text-orange-900">
+                                                <li>Check your email for confirmation.</li>
+                                                <li>Your QR code will arrive after verification.</li>
+                                                <li className="text-slate-500 mt-2 truncate">ID: <span className="text-slate-900">{savedPaymentId}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <Button 
+                                            onClick={() => {
+                                                setOpen(false);
+                                                setRegistrationStatus('form');
+                                            }} 
+                                            className="w-full max-w-sm font-bold bg-green-500 hover:bg-green-600 text-white h-12 rounded-xl"
+                                        >
+                                            Done
+                                        </Button>
+                                    </motion.div>
+                                ) : step === 1 ? (
                                         <motion.div
                                             key="step1"
                                             initial={{ opacity: 0, x: -20 }}
@@ -735,10 +775,10 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                 <Button
                                                     type="button"
                                                     onClick={displayRazorpay}
-                                                    disabled={isSubmitting || !isRazorpayLoaded}
+                                                    disabled={registrationStatus !== 'form' || !isRazorpayLoaded}
                                                     className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11"
                                                 >
-                                                    {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : (!isRazorpayLoaded ? "Loading..." : "Pay Now")}
+                                                    {registrationStatus === 'submitting' ? <Loader2 className="animate-spin h-4 w-4" /> : (!isRazorpayLoaded ? "Loading..." : "Pay Now")}
                                                 </Button>
                                             </div>
 
@@ -750,31 +790,6 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                 </AnimatePresence>
                             </form>
                         </Form>
-                    </div>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
-                <DialogContent className="max-w-sm bg-white border-2 border-green-500 rounded-3xl p-0 overflow-hidden">
-                    <div className="bg-green-500 p-6 flex flex-col items-center justify-center text-white">
-                        <CheckCircle className="h-16 w-16 mb-2" />
-                        <DialogTitle className="text-3xl font-black uppercase tracking-tight text-center">Registration Successful!</DialogTitle>
-                    </div>
-                    <div className="p-6 text-center space-y-4">
-                        <p className="text-xl font-black text-slate-800">
-                            Welcome to <span className="font-black">TECHBETA 2026</span>
-                        </p>
-                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-left">
-                            <p className="text-xs font-black uppercase text-orange-500 tracking-widest mb-1">Important</p>
-                            <ol className="list-decimal list-inside space-y-2 text-base font-bold text-orange-900 leading-tight">
-                                <li>You will receive a verification email on your registered email address.</li>
-                                <li>After our team verifies your registration, you will receive your QR Code via email.</li>
-                                <li className="text-sm font-black text-slate-500 uppercase mt-2">Transaction ID: <span className="text-slate-900 break-all">{savedPaymentId}</span></li>
-                            </ol>
-                        </div>
-                        <Button onClick={() => setShowSuccess(false)} className="w-full font-bold bg-green-500 text-white hover:bg-green-600">
-                            Got it!
-                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>
