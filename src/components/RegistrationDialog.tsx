@@ -52,7 +52,8 @@ const technicalEvents = [
     "Webfusion",
     "PromptStorm",
     "Postercraft",
-    "LogoHub"
+    "LogoHub",
+    "VIBE CODING"
 ];
 
 interface RegistrationDialogProps {

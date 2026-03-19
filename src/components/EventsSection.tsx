@@ -87,6 +87,19 @@ const technicalEvents = [
             "Final logo must be submitted in PNG/JPG format within the given time."
         ]
     },
+    {
+        icon: Music,
+        name: "VIBE CODING",
+        description: "Workshop - Master the art of rapid development with AI and modern tools.",
+        shortRules: "Coding Workshop",
+        detailedRules: [
+            "Hands-on workshop on modern development workflows.",
+            "Individual participation.",
+            "Learn how to leverage AI tools for accelerated coding.",
+            "Understand the concepts of 'Vibe Coding' and rapid prototyping.",
+            "Certificate of participation for all attendees."
+        ]
+    },
 ];
 
 type EventItem = {
