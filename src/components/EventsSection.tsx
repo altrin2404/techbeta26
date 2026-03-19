@@ -135,7 +135,9 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                             {event.name}
                         </h3>
                         <div className="mt-2 inline-flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity bg-primary/10 px-3 py-1.5 rounded-full">
-                            <span className="text-[10px] font-black text-primary uppercase tracking-widest whitespace-nowrap">Click for Rules</span>
+                            <span className="text-[10px] font-black text-primary uppercase tracking-widest whitespace-nowrap">
+                                {event.name === "VIBE CODING" ? "Description" : "Click for Rules"}
+                            </span>
                             <Info size={14} className="text-primary" />
                         </div>
                     </div>
@@ -284,7 +286,9 @@ const EventCard = React.memo(({ event, index }: { event: EventItem; index: numbe
                 <div className="bg-primary/5 px-6 py-8 flex items-center gap-4 shrink-0">
                     <div>
                         <h4 className="font-display text-xl font-black text-foreground">{event.name}</h4>
-                        <p className="text-xs font-bold text-primary uppercase tracking-widest">Event Rules & Guidelines</p>
+                        <p className="text-xs font-bold text-primary uppercase tracking-widest">
+                            {event.name === "VIBE CODING" ? "Workshop Description" : "Event Rules & Guidelines"}
+                        </p>
                     </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0 text-black">
