@@ -54,6 +54,8 @@ export interface Registration {
     status: 'Payment Initiated' | 'Pending Verification' | 'Verified' | 'Rejected';
     registrationDate: string; // ISO String
     timestamp: any; // Firestore server timestamp
+    totalAmount?: number;
+    initiatedDocId?: string;
 }
 
 const COLLECTION_NAME = "registrations";
@@ -118,6 +120,8 @@ export const addRegistration = async (data: Omit<Registration, "id" | "status" |
             upiName: data.upiName ? sanitizeInput(data.upiName, 100) : undefined,
             events: (data.events || []).map(e => sanitizeInput(e, 50)),
             members: data.members ? sanitizeMembers(data.members) : undefined,
+            totalAmount: data.totalAmount,
+            initiatedDocId: data.initiatedDocId,
         };
 
         const registrationDate = new Date().toISOString();

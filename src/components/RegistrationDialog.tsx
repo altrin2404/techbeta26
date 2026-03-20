@@ -256,7 +256,8 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 return member;
             });
 
-            const registrationData = {
+            const amountToPay = fields.length * 20000;
+            const registrationData: any = {
                 name: leadMember.name.trim(),
                 email: leadMember.email.trim().toLowerCase(),
                 phone: leadMember.phone.trim(),
@@ -266,6 +267,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                 transactionId: "PAYMENT_INITIATED",
                 upiName: "Razorpay Online",
                 members: cleanedMembers as any,
+                totalAmount: amountToPay,
             };
 
             // Pre-save registration to database with Initiated status
@@ -278,7 +280,7 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
             const docId = result.id;
             setLastRegistrationId(docId);
 
-            const amountToPay = fields.length * 20000;
+            // amountToPay already declared above
 
             const options = {
                 key: razorpayKey,
@@ -293,22 +295,34 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                     setRegistrationStatus('submitting');
                     
                     try {
+                        // We use the full form values again to ensure we have everything
                         const values = form.getValues();
                         const leadMember = values.members[0];
                         const allEvents = Array.from(new Set(values.members.flatMap(m => m.events)));
                         
-                        // Construct the final data exactly like onSubmit does
-                        const cleanedMembers = values.members.map(m => ({
-                            name: m.name.trim(),
-                            email: m.email.trim().toLowerCase(),
-                            phone: m.phone.trim(),
-                            college: m.college.trim(),
-                            department: m.department.trim(),
-                            year: m.year,
-                            events: m.events,
-                        }));
+                        // Clean team data exactly like displayRazorpay did
+                        const cleanedMembers = values.members.map(m => {
+                            const member: any = {
+                                name: m.name.trim(),
+                                email: m.email.trim().toLowerCase(),
+                                phone: m.phone.trim(),
+                                college: m.college.trim(),
+                                department: m.department.trim(),
+                                year: m.year,
+                                events: m.events,
+                            };
+                            if (m.participationType && Object.keys(m.participationType).length > 0) {
+                                member.participationType = {};
+                                Object.entries(m.participationType).forEach(([k, v]) => { if (v) member.participationType[k] = v; });
+                            }
+                            if (m.teamName && Object.keys(m.teamName).length > 0) {
+                                member.teamName = {};
+                                Object.entries(m.teamName).forEach(([k, v]) => { if (v) member.teamName[k] = v.trim(); });
+                            }
+                            return member;
+                        });
 
-                        const registrationData: Omit<Registration, 'id' | 'registrationDate' | 'status' | 'timestamp'> = {
+                        const registrationData: any = {
                             name: leadMember.name.trim(),
                             email: leadMember.email.trim().toLowerCase(),
                             phone: leadMember.phone.trim(),
@@ -318,13 +332,18 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                             transactionId: response.razorpay_payment_id,
                             upiName: 'Razorpay Online',
                             members: cleanedMembers as any,
+                            totalAmount: amountToPay,
+                            // Link to the initial record to help admin reconciliation
+                            initiatedDocId: docId 
                         };
 
-                        console.log("Saving final record to Firestore...");
+                        console.log("Saving full success record to Firestore...");
+                        // Use addRegistration (which uses addDoc) because students 
+                        // likely lack update permissions for public security reasons.
                         const result = await addRegistration(registrationData, 'Pending Verification');
                         
                         if (result.success) {
-                            console.log("Final record saved successfully!");
+                            console.log("Success record saved successfully!");
                             setSavedPaymentId(response.razorpay_payment_id);
                             window.dispatchEvent(new Event("registration-updated"));
                             setRegistrationStatus('success');
@@ -342,8 +361,6 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                         toast.error("Registration Save Error", {
                             description: "Payment was successful, but we failed to save your details. ID: " + response.razorpay_payment_id
                         });
-                        // IMPORTANT: Don't set status back to form if they actually paid
-                        // Stay on submitting but show an error message with their ID
                         setRegistrationStatus('form');
                     }
                 },
@@ -756,6 +773,18 @@ const RegistrationDialog = ({ children, open: controlledOpen, onOpenChange: setC
                                                     <br />
                                                     <span className="text-sm opacity-70">(₹200 per member)</span>
                                                 </p>
+                                            </div>
+
+                                            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 flex gap-4 items-start animate-in fade-in slide-in-from-top-2 duration-500 shadow-sm">
+                                                <div className="bg-orange-100 p-2 rounded-full text-orange-600 shrink-0">
+                                                    <Info size={20} />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-xs font-black uppercase text-orange-600 tracking-widest">Important Message</p>
+                                                    <p className="text-sm font-bold text-orange-950 leading-tight">
+                                                        Please do not close this window after payment until you see the Success message.
+                                                    </p>
+                                                </div>
                                             </div>
 
                                             <div className="flex gap-3 pt-4">
