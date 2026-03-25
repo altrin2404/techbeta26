@@ -23,7 +23,7 @@ const technicalEvents = [
             "1–2 participants per team are allowed.",
             "Each team will get 5 minutes (4 minutes for presentation + 1 minute for Q&A).",
             "Presentation must contain 8–12 slides.",
-            "Submit the problem statement and idea presentation (PDF/PPT) on or before 25/03/2026 to ideathonit@gmail.com."
+            "Submit the problem statement and idea presentation (PDF/PPT) on or before 25/03/2026 to itideathon@gmail.com."
         ]
     },
     {
