@@ -12,7 +12,7 @@ const schedule = [
         color: "bg-blue-500",
     },
     {
-        time: "10:00 AM",
+        time: "09:30 AM",
         event: "Events Commences",
         description: "Commencement of all technical competitions and workshops",
         icon: UserCheck,
@@ -26,7 +26,7 @@ const schedule = [
         color: "bg-orange-500",
     },
     {
-        time: "01:45 PM",
+        time: "02:00 PM",
         event: "Valedictory & Prize Distribution",
         description: "Closing ceremony and awarding the winners.",
         icon: Trophy,
