@@ -61,11 +61,11 @@ const CountdownSection = () => {
                         <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
                             <Clock className="h-5 w-5 text-primary animate-pulse" />
                             <span className="font-display text-xs tracking-[0.3em] text-foreground/80 uppercase font-bold">
-                                Countdown to Event
+                                Event Status
                             </span>
                         </div>
                         <h2 className="font-display text-2xl sm:text-4xl font-bold text-foreground mb-6 sm:mb-8">
-                            The Clock is <span className="text-primary">Ticking</span>
+                            Event Successfully <span className="text-primary">Completed</span>
                         </h2>
 
                         <div className="grid grid-cols-4 gap-2 sm:gap-4">
@@ -109,21 +109,16 @@ const CountdownSection = () => {
                                 <div className="mt-4 flex flex-col items-center gap-1">
                                     <div className="flex items-center gap-2 rounded-full border border-secondary/20 bg-secondary/10 px-4 py-1">
                                         <CalendarIcon className="h-4 w-4 text-secondary" />
-                                        <span className="font-display text-xs font-bold text-secondary">COUNTDOWN TO EVENT</span>
+                                        <span className="font-display text-xs font-bold text-secondary text-center">EVENT SUCCESSFULLY COMPLETED</span>
                                     </div>
                                     <p className="mt-2 text-sm text-foreground/80 font-bold">
                                         Friday | SXCCE, Nagercoil
                                     </p>
 
                                     <div className="mt-6 w-full">
-                                        <Suspense fallback={<Button className="w-full h-12" disabled><Loader2 className="animate-spin" /></Button>}>
-                                            <RegistrationDialog>
-                                                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black tracking-widest uppercase text-xs h-12 shadow-xl shadow-primary/20 group">
-                                                    Register Today
-                                                    <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                                </Button>
-                                            </RegistrationDialog>
-                                        </Suspense>
+                                        <Button disabled className="w-full bg-slate-700 text-white/50 font-black tracking-widest uppercase text-xs h-12 shadow-xl cursor-not-allowed opacity-70 border-none transition-none">
+                                            Event Completed
+                                        </Button>
                                     </div>
                                 </div>
                             </div>

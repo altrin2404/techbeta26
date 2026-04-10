@@ -71,7 +71,7 @@ const HeroSection = () => {
           className="mb-2 font-display text-[9px] sm:text-xs tracking-[0.4em] text-muted-foreground uppercase font-bold hero-fade-in"
           style={{ animationDelay: '0.15s' }}
         >
-          Proudly Organises
+          Successfully Hosted
         </p>
         <p
           className="mb-4 font-display text-[11px] sm:text-sm tracking-[0.15em] sm:tracking-[0.3em] text-muted-foreground uppercase font-bold hero-fade-in px-4"
@@ -102,13 +102,9 @@ const HeroSection = () => {
           className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center hero-fade-in pb-8 md:pb-0"
           style={{ animationDelay: '1.1s' }}
         >
-          <Suspense fallback={<Button size="lg" disabled className="px-8 bg-primary/20"><Loader2 className="animate-spin h-5 w-5" /></Button>}>
-            <RegistrationDialog>
-              <Button size="lg" className="font-display text-sm font-bold tracking-wider box-glow-cyan px-8 cursor-pointer min-h-[48px] active:scale-95 transition-transform">
-                Register Now
-              </Button>
-            </RegistrationDialog>
-          </Suspense>
+          <Button size="lg" disabled className="font-display text-sm font-bold tracking-wider box-glow-cyan px-8 cursor-not-allowed bg-slate-700 text-white/50 border-none min-h-[48px] opacity-70">
+            Event Completed
+          </Button>
           <Button variant="outline" size="lg" className="font-display text-sm tracking-wider border-glow-cyan min-h-[48px] active:scale-95 transition-transform"
             onClick={() => {
               window.location.hash = 'events';

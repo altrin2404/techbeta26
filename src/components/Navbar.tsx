@@ -53,11 +53,11 @@ const Navbar = () => {
           </div>
 
           <Button
-            onClick={() => setIsRegOpen(true)}
-            className="font-display text-sm font-bold tracking-wider box-glow-cyan bg-primary hover:bg-primary/90 text-white border-none h-11 px-8 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center leading-none"
-            style={{ willChange: "transform" }}
+            disabled
+            className="font-display text-sm font-bold tracking-wider box-glow-cyan bg-slate-700 text-white/50 border-none h-11 px-8 rounded-xl cursor-not-allowed opacity-70"
+            style={{ swallowClicks: true }}
           >
-            Register Now
+            Event Completed
           </Button>
         </div>
 
@@ -89,15 +89,8 @@ const Navbar = () => {
             </a>
           ))}
           <div className="pt-2">
-            <Button
-              size="sm"
-              onClick={() => {
-                setIsRegOpen(true);
-                setIsOpen(false);
-              }}
-              className="font-display text-xs font-semibold tracking-wider box-glow-cyan w-full bg-primary hover:bg-primary/90 text-white border-none"
-            >
-              Register Now
+            <Button size="lg" disabled className="font-display text-sm font-bold tracking-wider box-glow-cyan px-8 cursor-not-allowed bg-slate-700 text-white/50 border-none min-h-[48px] opacity-70">
+              Event Completed
             </Button>
           </div>
         </div>

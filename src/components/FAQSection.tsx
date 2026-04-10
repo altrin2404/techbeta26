@@ -16,7 +16,7 @@ const faqs = [
   },
   {
     q: "Is there a registration fee?",
-    a: "The registration fee is ₹200 per participant, which includes lunch. This is available through online registration only.",
+    a: "Registration is now closed as the event date has passed. The fee was ₹200 per participant.",
   },
   {
     q: "Is lunch provided during the event?",
@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "How do I register for the event?",
-    a: "Please register using the official registration link provided on the website. Online registration is the only valid method for participation.",
+    a: "Registration for TECHBETA 2026 is now officially closed. We are no longer accepting new participants.",
   },
   {
     q: "What should I bring to the event?",
